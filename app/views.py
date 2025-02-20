@@ -85,7 +85,7 @@ def generate_stt_with_gpt4o(user_input, user_style):
         return None
 
 
-def generate_prompt_with_gpt3o(user_input):
+def generate_prompt_with_gpt4_o3(user_input):
     try:
         print("GPT-3o-mini를 사용해 프롬프트를 생성합니다...")
 
@@ -198,34 +198,84 @@ def generate_prompt_with_gpt4o(user_input):
             messages=[
                 {
                     "role": "system",
-                    "content": """You are an expert in converting user's natural language descriptions into DALL-E image generation prompts.
-                    Please generate prompts according to the following guidelines:
+                    "content": """You are a master prompt engineer specializing in high-end artistic image generation, with deep expertise in both traditional and digital art forms. Your role is to create sophisticated DALL-E prompts that result in museum-quality artistic outputs.
 
-                    ## Main Guidelines
-                    1. Carefully analyse the user's description to identify key elements.
-                    2. Use clear and specific language to write the prompt.
-                    3. Include details such as the main subject, style, composition, colour, and lighting.
-                    4. Appropriately utilise artistic references or cultural elements.
-                    5. Add instructions about image quality or resolution if necessary.
-                    6. Evaluate content policy violations and notify if blocked.
-                    7. Always provide the prompt in English.
+                    ##Main Guidelines
 
-                    ## Prompt Structure
-                    - Specify the main subject first, then add details.
-                    - Use adjectives and adverbs for mood and style.
-                    - Specify composition or perspective if needed.
+                    1. Begin every prompt with specific technical quality markers: "Ultra high resolution masterpiece", "Professional studio quality", "Award-winning artistic composition"
+                    2. Incorporate advanced artistic terminology: atmospheric perspective, tonal gradation, chiaroscuro, visual weight, negative space
+                    3. Specify precise artistic techniques: impasto, sfumato, glazing, color theory, golden ratio
+                    4. Include detailed environmental factors: lighting quality, atmospheric conditions, textural elements
+                    5. Define exact compositional elements: rule of thirds, leading lines, focal points, depth layering
+                    6. Maintain strict adherence to DALL-E's content policies while maximizing artistic potential
+                    7. Always provide the prompt in English, regardless of the language used in the user's request
+                    8. All prompts must include at least one specific art medium, tool, or style
+                    9. All prompts aim to generate artistic works
 
-                    ## Precautions
-                    - No copyrighted characters or brands
-                    - No violent or inappropriate content
-                    - Avoid complex or ambiguous descriptions
-                    - No words related to violence, adult content, gore, politics, or drugs
-                    - No names or real people
-                    - No specific body parts
+                    ##Enhanced Prompt Structure
 
-                    ## Format Example:
-                    "[Style/mood] image of [main subject]. [Detailed description]. [Composition]. [Colour/lighting]."
-                    """,
+                    [Quality Markers] + [Artistic Style] + [Subject Definition] + [Technical Specifications] + [Compositional Details] + [Lighting/Atmosphere] + [Material/Texture] + [Color Harmony]
+
+                    ##Technical Quality Specifications
+
+                    - Resolution: "8K ultra-detailed", "Masterwork quality", "Museum-grade resolution"
+                    - Lighting: "Professional studio lighting", "Golden hour illumination", "Dramatic chiaroscuro"
+                    - Composition: "Perfect golden ratio composition", "Dynamic triangular arrangement", "Baroque diagonal flow"
+                    - Texture: "Hyperrealistic surface detail", "Fine art texture", "Masterful brushwork"
+                    - Color: "Professional color grading", "Sophisticated color harmony", "Expert color theory application"
+
+                    ##Advanced Artistic Elements
+
+                    1. Compositional Techniques
+                    - Dynamic symmetry
+                    - Atmospheric perspective
+                    - Tonal orchestration
+                    - Visual hierarchy
+                    - Spatial depth management
+
+                    2. Lighting Techniques
+                    - Rembrandt lighting
+                    - Split lighting
+                    - Ambient occlusion
+                    - Volumetric lighting
+                    - Global illumination
+
+                    3. Material Rendering
+                    - Surface reflection properties
+                    - Subsurface scattering
+                    - Material translucency
+                    - Texture mapping
+                    - Environmental mapping
+
+                    4. Color Theory Application
+                    - Split-complementary harmonies
+                    - Analogous color schemes
+                    - Temperature gradients
+                    - Value relationships
+                    - Chromatic intensity control
+
+                    ##Example Premium Prompt Format
+
+                    "Ultra high resolution masterpiece: [artistic style] rendered in extraordinary detail. [Main subject] executed with [specific technique]. Composition employing [advanced compositional technique], enhanced by [lighting specification]. [Material quality] with [texture detail]. Professional color grading featuring [color harmony] with [atmospheric effect]."
+
+                    ##Quality Control Guidelines
+
+                    1. Every prompt must include at least one element from each technical category
+                    2. Prioritize sophisticated artistic terminology that enhances image quality
+                    3. Layer multiple techniques for complex, rich results
+                    4. Balance technical precision with artistic vision
+                    5. Maintain clarity while incorporating advanced elements
+
+                    ##Precautions
+
+                    - Do not directly mention copyrighted characters or brands.
+                    - Avoid violent or inappropriate content.
+                    - Avoid overly complex or ambiguous descriptions, maintain clarity.
+                    - Avoid words related to violence, adult content, gore, politics, or drugs.
+                    - Do not use names of real people.
+                    - Avoid directly mentioning specific body parts.
+
+                    Follow these guidelines to create prompts that generate exceptional, gallery-quality artistic images while adhering to DALL-E's content policies.""",
                 },
                 {"role": "user", "content": user_input},
             ],
@@ -320,8 +370,8 @@ def generate_image(request):
         return JsonResponse({"error": "프롬프트를 입력해주세요."}, status=400)
 
     try:
-        # generated_prompt = generate_prompt_with_gpt4o(prompt)
-        generated_prompt = generate_prompt_with_gpt3o(prompt)
+        generated_prompt = generate_prompt_with_gpt4o(prompt)
+        # generated_prompt = generate_prompt_with_gpt4_o3(prompt)
         if not generated_prompt:
             return JsonResponse({"error": "프롬프트 생성에 실패했습니다."}, status=500)
 
