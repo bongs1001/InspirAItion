@@ -101,6 +101,8 @@
                 <textarea class="form-control" id="commentMessage" rows="2" required></textarea>
             </div>
             <button type="submit" class="btn btn-primary mt-2">댓글 작성</button>
+            <!-- 댓글 평가 버튼 추가 -->
+            <button type="button" id="evaluateCommentBtn" class="btn btn-secondary mt-2">댓글 평가</button>
         </form>
         {% endif %}
         <div id="commentList"></div>
@@ -329,6 +331,59 @@
             .catch(error => {
                 console.error('Error:', error);
                 alert('좋아요 처리 중 오류가 발생했습니다.');
+            });
+    });
+
+    // 댓글 기능 스크립트: 댓글 평가 버튼 이벤트 추가
+    document.getElementById('evaluateCommentBtn')?.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector('#loadingModal div').innerText = 'AI 큐레이션 생성중...';
+        showLoadingModal();
+        const commentMessageElem = document.getElementById('commentMessage');
+        const commentText = commentMessageElem.value;
+        if (!commentText) {
+            alert('댓글 내용을 입력해주세요.');
+            hideLoadingModal();
+            return;
+        }
+        const curationUrl = `{% url 'evaluate_curation' post.id %}`;
+        fetch(curationUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            // 수정: comment 값도 함께 전달
+            body: JSON.stringify({
+                style: document.getElementById('curationStyleSelect').value,
+                comment: commentText
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                // 업데이트: curation_text 값도 받아와서 해당 영역에 표시
+                document.getElementById('curationText').innerHTML = `<small class="text-muted">큐레이션: ${data.curation_text}</small>`;
+                const combinedComment = `* 사용자 감상 : ${commentText}\n* AI 큐레이터의 감상평가 : ${data.evaluation_feedback}`;
+                return fetch(`/posts/${postId}/comments/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({ message: combinedComment })
+                });
+            })
+            .then(response => response.json())
+            .then(data => {
+                commentMessageElem.value = '';
+                loadComments();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('댓글 평가 처리 중 오류가 발생했습니다.');
+            })
+            .finally(() => {
+                hideLoadingModal();
             });
     });
 </script>

@@ -23,8 +23,17 @@ urlpatterns = [
         views.generate_curation,
         name="generate_curation",
     ),
+    path(
+        "posts/<int:pk>/ealuate/",
+        views.evaluate_curation,
+        name="evaluate_curation",
+    ),
     path("read_text/", views.read_text, name="read_text"),
     path("posts/<int:pk>/like/", views.like_post, name="like_post"),
     path("ai/gpt4o/", views.gpt4o_stt_api, name="gpt4o_stt_api"),
-    path('auction/register/<int:post_id>/', views.register_auction, name='register_auction')
+    path(
+        "auction/register/<int:post_id>/",
+        views.register_auction,
+        name="register_auction",
+    ),
 ]

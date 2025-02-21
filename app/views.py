@@ -455,6 +455,85 @@ def post_detail(request: HttpRequest, pk: int) -> HttpResponse:
 
 @login_required
 @require_http_methods(["POST"])
+def evaluate_curation(request, pk):
+    post = get_object_or_404(Post.objects.select_related("user__profile"), pk=pk)
+    caption = post.caption
+    tags = post.tags
+    caption_str = caption[0] if caption else ""
+    # ensure tags is a list
+    if tags and not isinstance(tags, list):
+        tags_list = [tags]
+    else:
+        tags_list = tags if tags else []
+    try:
+        data = json.loads(request.body)
+        selected_style = data.get("style", "Emotional")
+        user_comment = data.get("comment", "")  # 수정된 부분
+    except Exception:
+        selected_style = "Emotional"
+        user_comment = ""
+
+    print(user_comment)
+    try:
+        curation_text = generate_ai_curation(
+            selected_style, post.title, caption_str, ", ".join(tags_list)
+        )
+        evaluation_feedback = evaluate_ai_curation(
+            curation_text, user_comment
+        )  # 수정된 부분
+    except Exception as e:
+        return JsonResponse(
+            {"error": "큐레이션 평가 중 오류 발생", "details": str(e)},
+            status=500,
+        )
+    return JsonResponse(
+        {"curation_text": curation_text, "evaluation_feedback": evaluation_feedback}
+    )
+
+
+def evaluate_ai_curation(curation_text, user_comment):
+    try:
+        print("GPT-4o를 사용해 프롬프트를 생성합니다...")
+
+        response = GPT_CLIENT.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"""
+                        You are an AI assistant that evaluates user comments based on how well they describe a given text. 
+                        Your task is to analyze both the provided curation text and user comment, assess the accuracy and completeness of the comment, 
+                        and provide constructive feedback on its strengths and areas for improvement.
+
+                        1. Read the curation_text carefully to understand its key message and intent.
+                        2. Analyze user_comment to determine how well it captures the essence of curation_text.
+                        3. Highlight the positive aspects of the user_comment, including accurate interpretations and insightful observations.
+                        4. Identify any missing or misinterpreted elements in the user_comment and suggest specific improvements.
+                        5. Provide feedback in Korean, ensuring it is clear and concise while maintaining a constructive tone.
+
+                        Return only the final feedback in Korean without any additional formatting or explanations.
+                    """,
+                },
+                {
+                    "role": "user",
+                    "content": f"curation_text: {curation_text}\n user_comment: {user_comment}",
+                },
+            ],
+        )
+
+        if response.choices and len(response.choices) > 0:
+            return response.choices[0].message.content
+        else:
+            print("응답을 생성하지 못했습니다.")
+            return None
+
+    except Exception as e:
+        print("GPT-4o 호출 중 예외 발생:", str(e))
+        return None
+
+
+@login_required
+@require_http_methods(["POST"])
 def generate_curation(request, pk):
     post = get_object_or_404(Post.objects.select_related("user__profile"), pk=pk)
     caption = post.caption
