@@ -14,7 +14,7 @@
 <section class="hero-section" style="background-image: url('{% static 'img/home.jpg' %}'); background-size: cover; background-position: center;">
     <h1 class="hero-title">Smarter creativity, faster designs</h1>
     <p class="hero-subtitle">Everything you need, from stock images and videos to AI-powered design tools</p>
-    
+
     <div class="search-container">
         {% csrf_token %}
         <div class="search-bar">
@@ -34,10 +34,10 @@
                         </button>
                     </li>
                     <li>
-                        <button class="dropdown-item" type="button" id="aiVoiceInputBtn">
-                            <span class="ai-mic-icon me-2">
-                                <i class="fas fa-microphone"></i>
-                                <i class="fas fa-star ai-icon-overlay"></i>
+                        <button class="dropdown-item" type="button" id="aiVoiceInputBtn" data-user-style="{{ user.profile.user_style }}"">
+                            <span class=" ai-mic-icon me-2">
+                            <i class="fas fa-microphone"></i>
+                            <i class="fas fa-star ai-icon-overlay"></i>
                             </span>
                             AI 음성 입력
                         </button>
@@ -52,7 +52,7 @@
     </div>
 </section>
 
-<div id ="speechRecognitionModal" class="recognition-modal">
+<div id="speechRecognitionModal" class="recognition-modal">
     <div class="recognition-content">
         <div class="recognition-text">음성 인식중...</div>
         <div class="wave-animation">

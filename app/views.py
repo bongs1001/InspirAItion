@@ -61,17 +61,21 @@ def generate_stt_with_gpt4o(user_input, user_style):
                 {
                     "role": "system",
                     "content": f"""
-                        You are an AI Assistant designed to take user input (`user_input`), refine it, and transform it into a high-quality prompt suitable for an image-generating AI. Follow the guidelines below:
-                        1. Analyze the user's input (`user_input`) to extract the core idea or theme they want represented in the image while preserving their intent. Add relevant details only when necessary to enhance the clarity and specificity of the image request.
-                        2. Ensure the generated prompt is concise, vivid, and descriptive, making it suitable for creating visually stunning illustrations through an image-generating AI. Use nouns, adjectives, and action words effectively to create a clear and compelling image.
-                        3. Avoid overinterpreting or expanding the meaning of the user's input. Stay as true as possible to the user's vision while enhancing its suitability for image generation.
-                        4. Remove any inappropriate expressions, such as profanity, explicit content, or violent language, from the `user_input` while maintaining the overall intent.
-                        5. Translate the generated sentence into Korean to ensure accessibility for Korean-speaking users.
-                        6. Generate a refined and visually inspiring prompt that ensures the user's intent is accurately expressed and optimized for generating impressive illustrations.
-                        7. Provide the output prompt in Korean to facilitate the user's understanding and engagement with the image-generating AI.
+                        You are an AI Assistant designed to create vivid and high-quality prompts for an image-generating AI. 
+                        Your task is to take user input and stylistic preferences, refine them, and transform them into a descriptive and cohesive prompt. 
+
+                        1. Analyze this user input: "A single, elegant cat rests gracefully on a plush velvet cushion." 
+                        2. Combine it with this stylistic preference: "The scene is peaceful and refined, with subtle and tasteful decorations." 
+                        3. Create a single refined prompt that vividly describes the scene, emotions, and theme reflected in both the user input and style. 
+                        4. Translate it into Korean, ensuring the translation maintains all stylistic and thematic elements.
+
+                        Return only a single refined prompt in Korean. Avoid any additional explanations or formatting.
                     """,
                 },
-                {"role": "user", "content": user_input},
+                {
+                    "role": "user",
+                    "content": f"User Input: {user_input}\n Characteristics to Use for Sentence Generation: {user_style}",
+                },
             ],
         )
 
@@ -86,7 +90,7 @@ def generate_stt_with_gpt4o(user_input, user_style):
         return None
 
 
-def generate_prompt_with_gpt3o(user_input):
+def generate_prompt_with_gpt4_o3(user_input):
     try:
         print("GPT-3o-mini를 사용해 프롬프트를 생성합니다...")
 
@@ -199,34 +203,84 @@ def generate_prompt_with_gpt4o(user_input):
             messages=[
                 {
                     "role": "system",
-                    "content": """You are an expert in converting user's natural language descriptions into DALL-E image generation prompts.
-                    Please generate prompts according to the following guidelines:
+                    "content": """You are a master prompt engineer specializing in high-end artistic image generation, with deep expertise in both traditional and digital art forms. Your role is to create sophisticated DALL-E prompts that result in museum-quality artistic outputs.
 
-                    ## Main Guidelines
-                    1. Carefully analyse the user's description to identify key elements.
-                    2. Use clear and specific language to write the prompt.
-                    3. Include details such as the main subject, style, composition, colour, and lighting.
-                    4. Appropriately utilise artistic references or cultural elements.
-                    5. Add instructions about image quality or resolution if necessary.
-                    6. Evaluate content policy violations and notify if blocked.
-                    7. Always provide the prompt in English.
+                    ##Main Guidelines
 
-                    ## Prompt Structure
-                    - Specify the main subject first, then add details.
-                    - Use adjectives and adverbs for mood and style.
-                    - Specify composition or perspective if needed.
+                    1. Begin every prompt with specific technical quality markers: "Ultra high resolution masterpiece", "Professional studio quality", "Award-winning artistic composition"
+                    2. Incorporate advanced artistic terminology: atmospheric perspective, tonal gradation, chiaroscuro, visual weight, negative space
+                    3. Specify precise artistic techniques: impasto, sfumato, glazing, color theory, golden ratio
+                    4. Include detailed environmental factors: lighting quality, atmospheric conditions, textural elements
+                    5. Define exact compositional elements: rule of thirds, leading lines, focal points, depth layering
+                    6. Maintain strict adherence to DALL-E's content policies while maximizing artistic potential
+                    7. Always provide the prompt in English, regardless of the language used in the user's request
+                    8. All prompts must include at least one specific art medium, tool, or style
+                    9. All prompts aim to generate artistic works
 
-                    ## Precautions
-                    - No copyrighted characters or brands
-                    - No violent or inappropriate content
-                    - Avoid complex or ambiguous descriptions
-                    - No words related to violence, adult content, gore, politics, or drugs
-                    - No names or real people
-                    - No specific body parts
+                    ##Enhanced Prompt Structure
 
-                    ## Format Example:
-                    "[Style/mood] image of [main subject]. [Detailed description]. [Composition]. [Colour/lighting]."
-                    """,
+                    [Quality Markers] + [Artistic Style] + [Subject Definition] + [Technical Specifications] + [Compositional Details] + [Lighting/Atmosphere] + [Material/Texture] + [Color Harmony]
+
+                    ##Technical Quality Specifications
+
+                    - Resolution: "8K ultra-detailed", "Masterwork quality", "Museum-grade resolution"
+                    - Lighting: "Professional studio lighting", "Golden hour illumination", "Dramatic chiaroscuro"
+                    - Composition: "Perfect golden ratio composition", "Dynamic triangular arrangement", "Baroque diagonal flow"
+                    - Texture: "Hyperrealistic surface detail", "Fine art texture", "Masterful brushwork"
+                    - Color: "Professional color grading", "Sophisticated color harmony", "Expert color theory application"
+
+                    ##Advanced Artistic Elements
+
+                    1. Compositional Techniques
+                    - Dynamic symmetry
+                    - Atmospheric perspective
+                    - Tonal orchestration
+                    - Visual hierarchy
+                    - Spatial depth management
+
+                    2. Lighting Techniques
+                    - Rembrandt lighting
+                    - Split lighting
+                    - Ambient occlusion
+                    - Volumetric lighting
+                    - Global illumination
+
+                    3. Material Rendering
+                    - Surface reflection properties
+                    - Subsurface scattering
+                    - Material translucency
+                    - Texture mapping
+                    - Environmental mapping
+
+                    4. Color Theory Application
+                    - Split-complementary harmonies
+                    - Analogous color schemes
+                    - Temperature gradients
+                    - Value relationships
+                    - Chromatic intensity control
+
+                    ##Example Premium Prompt Format
+
+                    "Ultra high resolution masterpiece: [artistic style] rendered in extraordinary detail. [Main subject] executed with [specific technique]. Composition employing [advanced compositional technique], enhanced by [lighting specification]. [Material quality] with [texture detail]. Professional color grading featuring [color harmony] with [atmospheric effect]."
+
+                    ##Quality Control Guidelines
+
+                    1. Every prompt must include at least one element from each technical category
+                    2. Prioritize sophisticated artistic terminology that enhances image quality
+                    3. Layer multiple techniques for complex, rich results
+                    4. Balance technical precision with artistic vision
+                    5. Maintain clarity while incorporating advanced elements
+
+                    ##Precautions
+
+                    - Do not directly mention copyrighted characters or brands.
+                    - Avoid violent or inappropriate content.
+                    - Avoid overly complex or ambiguous descriptions, maintain clarity.
+                    - Avoid words related to violence, adult content, gore, politics, or drugs.
+                    - Do not use names of real people.
+                    - Avoid directly mentioning specific body parts.
+
+                    Follow these guidelines to create prompts that generate exceptional, gallery-quality artistic images while adhering to DALL-E's content policies.""",
                 },
                 {"role": "user", "content": user_input},
             ],
@@ -321,8 +375,8 @@ def generate_image(request):
         return JsonResponse({"error": "프롬프트를 입력해주세요."}, status=400)
 
     try:
-        # generated_prompt = generate_prompt_with_gpt4o(prompt)
-        generated_prompt = generate_prompt_with_gpt3o(prompt)
+        generated_prompt = generate_prompt_with_gpt4o(prompt)
+        # generated_prompt = generate_prompt_with_gpt4_o3(prompt)
         if not generated_prompt:
             return JsonResponse({"error": "프롬프트 생성에 실패했습니다."}, status=500)
 
@@ -669,9 +723,9 @@ def my_gallery(request):
         like_count=Count("likes")
     )
 
-    if ownership_filter == 'created':
+    if ownership_filter == "created":
         posts_qs = Post.objects.filter(original_creator=request.user)
-    elif ownership_filter == 'all':
+    elif ownership_filter == "all":
         posts_qs = Post.objects.filter(
             Q(current_owner=request.user) | Q(original_creator=request.user)
         )
@@ -1006,6 +1060,7 @@ def gpt4o_stt_api(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
+
 @login_required
 def register_auction(request, post_id):
     post = get_object_or_404(Post, id=post_id, current_owner=request.user)
@@ -1016,14 +1071,11 @@ def register_auction(request, post_id):
             auction = form.save(commit=False)
             auction.post = post
             auction.seller = request.user
-            auction.current_price = form.cleaned_data['start_price']
+            auction.current_price = form.cleaned_data["start_price"]
             auction.status = AuctionStatus.ACTIVE
             auction.save()
-            return redirect('auction_detail', auction_id=auction.id)
+            return redirect("auction_detail", auction_id=auction.id)
     else:
         form = AuctionForm()
 
-    return render(request, 'app/auction/register.html', {
-        'form': form,
-        'post': post
-    })
+    return render(request, "app/auction/register.html", {"form": form, "post": post})
