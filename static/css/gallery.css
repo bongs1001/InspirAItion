@@ -82,11 +82,33 @@
     overflow: hidden;
     border-radius: 8px;
     transition: transform 0.3s ease;
+    background: var(--card-bg);
+    margin-bottom: 1rem;
 }
 
 .gallery-item:hover {
     transform: translateY(-5px);
 }
+
+.gallery-item .btn-primary {
+    margin-right: 1rem;
+    opacity: 0.9;
+    transition: opacity 0.3s ease;
+ }
+ 
+ .gallery-item .btn-primary:hover {
+    opacity: 1;
+ }
+ 
+ .gallery-item .badge {
+    margin-right: 1rem;
+    font-size: 0.8rem;
+ }
+ 
+ .gallery-item .badge.bg-info {
+    background-color: #17a2b8;
+    color: white;
+ }
 
 .gallery-image {
     width: 100%;
@@ -104,7 +126,7 @@
     right: 0;
     padding: 1rem;
     background: linear-gradient(transparent, rgba(0,0,0,0.8));
-    color: white;
+    color: var(--text-primary);
 }
 
 .gallery-title {
@@ -115,9 +137,16 @@
     text-overflow: ellipsis;
 }
 
-.gallery-author {
+
+.gallery-text {
     font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.gallery-author {
+    font-size: 0.8rem;
     opacity: 0.8;
+    color: var(--text-secondary);
 }
 
 .no-posts-message {
@@ -168,3 +197,34 @@
     background: linear-gradient(transparent, rgba(0,0,0,0.8));
     color: white;
 }
+
+.likes-badge {
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.likes-badge i.text-danger {
+    color: #dc3545;
+}
+
+.auction-controls {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+ }
+
+ .fa-gavel {
+    transform-origin: center right;
+    animation: gavel-bounce 2s infinite;
+ }
+ 
+ @keyframes gavel-bounce {
+    0%, 100% { transform: rotate(0deg); }
+    10% { transform: rotate(-15deg); }
+    20% { transform: rotate(0deg); }
+ }

@@ -16,13 +16,14 @@ from datetime import datetime
 from django.db.models import Count
 from io import BytesIO
 from PIL import Image
+from django.db.models import Q
 
 from util.common.azure_computer_vision import get_image_caption_and_tags
 from util.common.azure_speech import synthesize_text_to_speech
 from django.views.decorators.http import require_GET
 
-from .forms import PostWithAIForm, PostEditForm
-from .models import Post, AIGeneration, Comment, TagUsage, Like
+from .forms import AuctionForm, PostWithAIForm, PostEditForm
+from .models import AuctionStatus, Post, AIGeneration, Comment, TagUsage, Like
 
 logging.basicConfig(
     level=logging.INFO,
@@ -696,8 +697,9 @@ def my_gallery(request):
     search_query = request.GET.get("search", "")
     tag_filter = request.GET.get("tag", "")
     sort_by = request.GET.get("sort", "date")
+    ownership_filter = request.GET.get("ownership", "all")
 
-    user_posts = Post.objects.filter(user=request.user)
+    user_posts = Post.objects.filter(current_owner=request.user)
 
     user_tag_counts = {}
     for post in user_posts:
@@ -713,9 +715,16 @@ def my_gallery(request):
         )
     ][:10]
 
-    posts_qs = Post.objects.filter(user=request.user).annotate(
+    posts_qs = Post.objects.filter(current_owner=request.user).annotate(
         like_count=Count("likes")
     )
+
+    if ownership_filter == 'created':
+        posts_qs = Post.objects.filter(original_creator=request.user)
+    elif ownership_filter == 'all':
+        posts_qs = Post.objects.filter(
+            Q(current_owner=request.user) | Q(original_creator=request.user)
+        )
 
     if search_query:
         posts_qs = posts_qs.filter(title__icontains=search_query)
@@ -1046,3 +1055,25 @@ def gpt4o_stt_api(request):
         return JsonResponse({"result": result})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+@login_required
+def register_auction(request, post_id):
+    post = get_object_or_404(Post, id=post_id, current_owner=request.user)
+
+    if request.method == "POST":
+        form = AuctionForm(request.POST)
+        if form.is_valid():
+            auction = form.save(commit=False)
+            auction.post = post
+            auction.seller = request.user
+            auction.current_price = form.cleaned_data['start_price']
+            auction.status = AuctionStatus.ACTIVE
+            auction.save()
+            return redirect('auction_detail', auction_id=auction.id)
+    else:
+        form = AuctionForm()
+
+    return render(request, 'app/auction/register.html', {
+        'form': form,
+        'post': post
+    })
