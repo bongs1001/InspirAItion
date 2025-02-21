@@ -295,7 +295,7 @@
     color: #ffd700;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
     .search-bar {
         display: flex;
         flex-direction: column; /* 수직 배치 */
@@ -315,19 +315,5 @@
         padding: 8px 10px; /* 수정: 패딩 감소 */
         clear: both;
         margin-top: 20px; /* generate 버튼을 다음 줄에 배치 */
-    }
-}
-
-@media (max-width: 768px) {
-    #searchInput {
-        width: 90%;
-        margin: 0 auto;
-    }
-    #generateBtn,
-    #voiceInputBtn,
-    #aiVoiceInputBtn {
-        width: 90%;
-        margin: 10px auto;
-        display: block;
     }
 }
