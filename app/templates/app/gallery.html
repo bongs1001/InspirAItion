@@ -63,7 +63,7 @@
             </button>
 
             <div class="tag-navigation">
-                <a href="{% if search_query %}?search={{ search_query }}{% endif %}" class="tag-item {% if not selected_tag %}active{% endif %}">
+                <a href="?{% if search_query %}search={{ search_query }}{% endif %}" class="tag-item {% if not selected_tag %}active{% endif %}">
                     전체보기
                 </a>
                 {% for tag in top_tags %}
