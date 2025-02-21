@@ -61,17 +61,21 @@ def generate_stt_with_gpt4o(user_input, user_style):
                 {
                     "role": "system",
                     "content": f"""
-                        You are an AI Assistant designed to take user input (`user_input`), refine it, and transform it into a high-quality prompt suitable for an image-generating AI. Follow the guidelines below:
-                        1. Analyze the user's input (`user_input`) to extract the core idea or theme they want represented in the image while preserving their intent. Add relevant details only when necessary to enhance the clarity and specificity of the image request.
-                        2. Ensure the generated prompt is concise, vivid, and descriptive, making it suitable for creating visually stunning illustrations through an image-generating AI. Use nouns, adjectives, and action words effectively to create a clear and compelling image.
-                        3. Avoid overinterpreting or expanding the meaning of the user's input. Stay as true as possible to the user's vision while enhancing its suitability for image generation.
-                        4. Remove any inappropriate expressions, such as profanity, explicit content, or violent language, from the `user_input` while maintaining the overall intent.
-                        5. Translate the generated sentence into Korean to ensure accessibility for Korean-speaking users.
-                        6. Generate a refined and visually inspiring prompt that ensures the user's intent is accurately expressed and optimized for generating impressive illustrations.
-                        7. Provide the output prompt in Korean to facilitate the user's understanding and engagement with the image-generating AI.
+                        You are an AI Assistant designed to create vivid and high-quality prompts for an image-generating AI. 
+                        Your task is to take user input and stylistic preferences, refine them, and transform them into a descriptive and cohesive prompt. 
+
+                        1. Analyze this user input: "A single, elegant cat rests gracefully on a plush velvet cushion." 
+                        2. Combine it with this stylistic preference: "The scene is peaceful and refined, with subtle and tasteful decorations." 
+                        3. Create a single refined prompt that vividly describes the scene, emotions, and theme reflected in both the user input and style. 
+                        4. Translate it into Korean, ensuring the translation maintains all stylistic and thematic elements.
+
+                        Return only a single refined prompt in Korean. Avoid any additional explanations or formatting.
                     """,
                 },
-                {"role": "user", "content": user_input},
+                {
+                    "role": "user",
+                    "content": f"User Input: {user_input}\n Characteristics to Use for Sentence Generation: {user_style}",
+                },
             ],
         )
 
@@ -719,9 +723,9 @@ def my_gallery(request):
         like_count=Count("likes")
     )
 
-    if ownership_filter == 'created':
+    if ownership_filter == "created":
         posts_qs = Post.objects.filter(original_creator=request.user)
-    elif ownership_filter == 'all':
+    elif ownership_filter == "all":
         posts_qs = Post.objects.filter(
             Q(current_owner=request.user) | Q(original_creator=request.user)
         )
@@ -1056,6 +1060,7 @@ def gpt4o_stt_api(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
+
 @login_required
 def register_auction(request, post_id):
     post = get_object_or_404(Post, id=post_id, current_owner=request.user)
@@ -1066,14 +1071,11 @@ def register_auction(request, post_id):
             auction = form.save(commit=False)
             auction.post = post
             auction.seller = request.user
-            auction.current_price = form.cleaned_data['start_price']
+            auction.current_price = form.cleaned_data["start_price"]
             auction.status = AuctionStatus.ACTIVE
             auction.save()
-            return redirect('auction_detail', auction_id=auction.id)
+            return redirect("auction_detail", auction_id=auction.id)
     else:
         form = AuctionForm()
 
-    return render(request, 'app/auction/register.html', {
-        'form': form,
-        'post': post
-    })
+    return render(request, "app/auction/register.html", {"form": form, "post": post})
