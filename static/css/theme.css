@@ -136,3 +136,37 @@ html[data-theme="light"] .dropdown-divider {
 html[data-theme="dark"] .dropdown-divider {
     border-top-color: rgba(255, 255, 255, 0.15);
 }
+
+/* 모달 팝업 테마 스타일 */
+html[data-theme="light"] .modal-content {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+html[data-theme="dark"] .modal-content {
+    background-color: #2d2d2d;
+    color: #ffffff;
+}
+
+/* 모달 헤더 테마 스타일 */
+html[data-theme="light"] .modal-header {
+    border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+
+html[data-theme="dark"] .modal-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 모달 푸터 테마 스타일 */
+html[data-theme="light"] .modal-footer {
+    border-top-color: rgba(0, 0, 0, 0.1);
+}
+
+html[data-theme="dark"] .modal-footer {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 모달 닫기 버튼 테마 스타일 */
+html[data-theme="dark"] .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
