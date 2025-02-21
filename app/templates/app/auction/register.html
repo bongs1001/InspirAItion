@@ -1,0 +1,49 @@
+{% extends "app/common/frame.html" %}
+{% load static %}
+{% load django_bootstrap5 %}
+{% block title %} New Home {% endblock title %}
+
+{% block header %}
+{% include "app/common/header.html" %}
+{% endblock header %}
+
+{% block content %}
+<hr class="featurette-divider">
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">경매 등록</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>작품 정보</h5>
+                            {% if post.image %}
+                            <img src="{{ post.image }}" alt="{{ post.title }}" class="img-fluid mb-2">
+                            {% endif %}
+                            <h6>{{ post.title }}</h6>
+                            <p class="text-muted">{{ post.content|truncatechars:100 }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <form method="post">
+                                {% csrf_token %}
+                                {% bootstrap_form form %}
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">경매 등록</button>
+                                    <a href="{% url 'my_gallery' %}" class="btn btn-secondary">취소</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block footer %}
+{% include "app/common/footer.html" %}
+{% endblock footer %}

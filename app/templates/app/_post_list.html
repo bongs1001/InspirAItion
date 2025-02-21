@@ -8,13 +8,23 @@
             <p class="gallery-text mb-2">{{ post.content|truncatechars:100 }}</p>
             <p class="gallery-author mb-0">by {{ post.author_nickname }}</p>
         </div>
-        <div class="likes-badge">
-            <i class="fas fa-heart {% if post.is_popular %}text-danger{% endif %}"></i>
-            <span>{{ post.likes_count }}</span>
-            {% if post.is_popular %}
-            <span class="badge bg-warning text-dark ms-2">인기</span>
+        <div class="d-flex justify-content-between align-items-center mt-2">
+            <div class="likes-badge">
+                <i class="fas fa-heart {% if post.is_popular %}text-danger{% endif %}"></i>
+                <span>{{ post.likes_count }}</span>
+                {% if post.is_popular %}
+                <span class="badge bg-warning text-dark ms-2">인기</span>
+                {% endif %}
+            </div>
+            {% if user == post.current_owner and not post.is_on_auction %}
+            <a href="{% url 'register_auction' post.id %}" class="btn btn-sm btn-primary">
+                <i class="fas fa-gavel"></i> 경매 등록
+            </a>
+            {% elif post.is_on_auction %}
+            <span class="badge bg-info">경매 진행중</span>
             {% endif %}
         </div>
+        
     </a>
 </div>
 {% empty %}
