@@ -71,3 +71,16 @@
         </div>
     </nav>
 </header>
+<script>
+    // 페이지 로드 전 테마 즉시 적용
+    (function () {
+        try {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.dataset.theme = theme;
+            document.documentElement.style.visibility = 'hidden';
+            window.addEventListener('DOMContentLoaded', () => {
+                document.documentElement.style.visibility = '';
+            });
+        } catch (e) { }
+    })();
+</script>
