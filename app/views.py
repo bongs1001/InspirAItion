@@ -61,20 +61,17 @@ def generate_stt_with_gpt4o(user_input, user_style):
                 {
                     "role": "system",
                     "content": f"""
-                        You are an AI Assistant designed to create vivid and high-quality prompts for an image-generating AI. 
-                        Your task is to take user input and stylistic preferences, refine them, and transform them into a descriptive and cohesive prompt. 
+                        당신의 사용자 스타일(user_style)을 참고해서 사용자가 입력한 문장(user_input)을 의도에 맞게 개선해주는 것이 역할입니다.
 
-                        1. Analyze this user input: "A single, elegant cat rests gracefully on a plush velvet cushion." 
-                        2. Combine it with this stylistic preference: "The scene is peaceful and refined, with subtle and tasteful decorations." 
-                        3. Create a single refined prompt that vividly describes the scene, emotions, and theme reflected in both the user input and style. 
-                        4. Translate it into Korean, ensuring the translation maintains all stylistic and thematic elements.
-
-                        Return only a single refined prompt in Korean. Avoid any additional explanations or formatting.
+                        사용자 스타일(user_style)을 참고하여 사용자가 입력한 문장(user_input)을 개선하여 사용자가 실제 할것이라 예상되는 문장으로 변환합니다.
+                        사용자 스타일(user_style)에서 MBTI, 문체, 어조, 톤, 표현 방식 등 을 참고하여 문장을 개선합니다.
+                        사용자가 사용한 문장의 개수를 기준으로 문장의 길이를 유지하면서 문장을 개선합니다.
+                        내용은 일반적인 문장으로 생성하고 불필요한 지시어는 출력하지 말아주세요.
                     """,
                 },
                 {
                     "role": "user",
-                    "content": f"User Input: {user_input}\n Characteristics to Use for Sentence Generation: {user_style}",
+                    "content": f"User Input: {user_input}\n User Style {user_style}",
                 },
             ],
         )
