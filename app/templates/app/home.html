@@ -19,7 +19,7 @@
         {% csrf_token %}
         <div class="search-bar">
             <div class="search-type">AI image</div>
-            <input type="text" id="searchInput" class="search-input" placeholder="A giant cat resting on top of a lit skyscraper, realistic">
+            <input type="text" id="searchInput" name="prompt" class="search-input" placeholder="A giant cat resting on top of a lit skyscraper, realistic">
             <div class="dropdown">
                 <button type="button" class="voice-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="음성 입력">
                     <span class="ai-mic-icon">
@@ -44,7 +44,7 @@
                     </li>
                 </ul>
             </div>
-            <button type="button" id="generateBtn" class="generate-btn">
+            <button type="button" id="generateImageBtn" class="generate-btn">
                 <i class="fas fa-wand-magic-sparkles"></i>
                 generate
             </button>

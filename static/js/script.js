@@ -62,14 +62,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // 입력 가능한 모든 필드 조회
-        const inputFields = Array.from(document.querySelectorAll('input[type="text"], textarea')).filter(input => 
-            !input.readOnly && !input.disabled && input.style.display !== 'none'
-        );
+        const inputFields = Array.from(document.querySelectorAll('input[type="text"], textarea')).filter((input) => !input.readOnly && !input.disabled && input.style.display !== "none");
 
         // 타겟 입력 필드 선택 (마지막 포커스 필드 또는 첫 번째 편집 가능한 필드)
-        const targetInput = lastFocusedInput && !lastFocusedInput.readOnly && !lastFocusedInput.disabled
-            ? lastFocusedInput
-            : inputFields[0];
+        const targetInput = lastFocusedInput && !lastFocusedInput.readOnly && !lastFocusedInput.disabled ? lastFocusedInput : inputFields[0];
 
         if (!targetInput) {
             console.error("음성 입력을 처리할 수 있는 입력 필드를 찾을 수 없습니다.");
@@ -115,15 +111,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     const data = await response.json();
                     // 기존 텍스트에 새로운 텍스트 추가 (공백으로 연결)
                     const newText = data.result || transcript;
-                    targetInput.value = targetInput.value
-                        ? `${targetInput.value} ${newText}`
-                        : newText;
+                    targetInput.value = targetInput.value ? `${targetInput.value} ${newText}` : newText;
                 } catch (error) {
                     console.error("AI 처리 오류:", error);
                     // 에러 시에도 기존 텍스트 보존 (공백으로 연결)
-                    targetInput.value = targetInput.value
-                        ? `${targetInput.value} ${transcript}`
-                        : transcript;
+                    targetInput.value = targetInput.value ? `${targetInput.value} ${transcript}` : transcript;
                 } finally {
                     setTimeout(() => {
                         hideModal(aiProcessingModal);
@@ -131,9 +123,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             } else {
                 // 일반 음성인식에서도 기존 텍스트 보존 (공백으로 연결)
-                targetInput.value = targetInput.value
-                    ? `${targetInput.value} ${transcript}`
-                    : transcript;
+                targetInput.value = targetInput.value ? `${targetInput.value} ${transcript}` : transcript;
                 setTimeout(() => {
                     hideModal(speechModal);
                 }, 500);
@@ -199,4 +189,62 @@ document.addEventListener("DOMContentLoaded", function () {
             this.submit();
         });
     }
+
+    async function generateImage() {
+        const prompt = searchInput.value.trim();
+
+        if (!prompt) {
+            alert("프롬프트를 입력해주세요.");
+            return;
+        }
+
+        generateBtn.disabled = true;
+        const originalText = generateBtn.innerHTML;
+        generateBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 생성중...';
+
+        try {
+            const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+            const response = await fetch("/app/ai/generate/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": csrfToken,
+                },
+                body: `prompt=${encodeURIComponent(prompt)}`,
+            });
+
+            if (!response.ok) {
+                throw new Error("이미지 생성에 실패했습니다.");
+            }
+
+            const data = await response.json();
+
+            window.location.href = `/app/create/?${new URLSearchParams({
+                image_url: data.image_url,
+                generated_prompt: data.generated_prompt,
+                original_prompt: prompt,
+            }).toString()}`;
+        } catch (error) {
+            alert(error.message);
+            console.error("Error:", error);
+        } finally {
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = originalText;
+        }
+    }
+
+    generateBtn.addEventListener("click", generateImage);
+    voiceInputBtn.addEventListener("click", () => handleVoiceInput(false)); // 기존 이벤트 핸들러
+    // 변경: data attribute를 사용하여 HTML에서 user_style 값을 읽어 전달
+    aiVoiceInputBtn.addEventListener("click", () => {
+        const user_style = aiVoiceInputBtn.getAttribute("data-user-style");
+        handleVoiceInput(true, user_style);
+    });
+
+    searchInput.addEventListener("keypress", function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            generateImage();
+        }
+    });
 });
