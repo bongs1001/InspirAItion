@@ -5,11 +5,15 @@ from azure.storage.blob import BlobServiceClient
 from django.conf import settings
 from .forms import SignUpForm, ProfileUpdateForm
 from .models import Profile
+from django.contrib import messages
 
 
 def signup(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
+        if not request.POST.get("agree"):
+            messages.error(request, "서비스 이용 약관에 동의해주세요.")
+            return render(request, "accounts/signup.html", {"form": form})
         if form.is_valid():
             user = form.save()
             profile, created = Profile.objects.get_or_create(
