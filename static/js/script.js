@@ -55,11 +55,38 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    // 전역 변수로 recognition 객체와 상태 관리
+    let recognition = null;
+    let isRecognitionActive = false;
+
     function handleVoiceInput(useAI = false, user_style) {
+        // 이미 음성 인식이 실행 중이면 중단
+        if (isRecognitionActive) {
+            console.log("음성 인식이 이미 실행 중입니다.");
+            return;
+        }
+
         if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
             alert("이 브라우저는 음성 인식을 지원하지 않습니다.");
             return;
         }
+
+        // 이전 recognition 객체가 있다면 정리
+        if (recognition) {
+            try {
+                recognition.abort();
+                recognition.stop();
+            } catch (e) {
+                console.log("이전 음성 인식 세션 정리:", e);
+            }
+        }
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.lang = "ko-KR";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        recognition.continuous = false;
 
         // 입력 가능한 모든 필드 조회
         const inputFields = Array.from(document.querySelectorAll('input[type="text"], textarea')).filter((input) => !input.readOnly && !input.disabled && input.style.display !== "none");
@@ -73,19 +100,17 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const recognition = new SpeechRecognition();
-        recognition.lang = "ko-KR";
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-        recognition.continuous = false;
-
-        // 음성인식 시작 전에 모달 표시
         showModal(speechModal);
+        isRecognitionActive = true;
 
         recognition.onstart = function () {
-            // 음성인식이 시작될 때 모달을 확실히 표시
+            isRecognitionActive = true;
             showModal(speechModal);
+        };
+
+        recognition.onend = function () {
+            isRecognitionActive = false;
+            // 모달은 결과 처리 후에 닫도록 유지
         };
 
         recognition.onresult = async function (event) {
@@ -132,23 +157,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
         recognition.onerror = function (event) {
             console.error("음성 인식 오류:", event.error);
+            isRecognitionActive = false;
             setTimeout(() => {
                 hideModal(speechModal);
             }, 300);
             alert("음성 인식 중 오류가 발생했습니다.");
         };
 
-        recognition.onend = function () {
-            // 음성인식 종료 시 자동으로 모달을 닫지 않음
-            // 결과 처리 후 각각의 상황에서 모달을 닫도록 함
-        };
-
-        // 음성인식 시작
+        // 음성인식 시작 시 에러 처리 개선
         setTimeout(() => {
             try {
                 recognition.start();
             } catch (error) {
                 console.error("음성 인식 시작 오류:", error);
+                isRecognitionActive = false;
                 hideModal(speechModal);
             }
         }, 100);
