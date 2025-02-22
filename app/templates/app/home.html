@@ -20,35 +20,36 @@
         <div class="search-bar">
             <div class="search-type">AI image</div>
             <input type="text" id="searchInput" name="prompt" class="search-input" placeholder="A giant cat resting on top of a lit skyscraper, realistic">
-
-            <div class="dropdown">
-                <button type="button" class="voice-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="음성 입력">
-                    <span class="ai-mic-icon">
-                        <i class="fas fa-microphone"></i>
-                        <i class="fas fa-star ai-icon-overlay"></i>
-                    </span>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <button class="dropdown-item" type="button" id="voiceInputBtn">
-                            <i class="fas fa-microphone me-2"></i>일반 음성 입력
-                        </button>
-                    </li>
-                    <li>
-                        <button class="dropdown-item" type="button" id="aiVoiceInputBtn" data-user-style="{{ user.profile.user_style }}"">
-                            <span class=" ai-mic-icon me-2">
+            <div class="button-group d-flex">
+                <div class="dropdown">
+                    <button type="button" class="voice-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="음성 입력">
+                        <span class="ai-mic-icon">
                             <i class="fas fa-microphone"></i>
                             <i class="fas fa-star ai-icon-overlay"></i>
-                            </span>
-                            AI 음성 입력
-                        </button>
-                    </li>
-                </ul>
+                        </span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <button class="dropdown-item" type="button" id="voiceInputBtn">
+                                <i class="fas fa-microphone me-2"></i>일반 음성 입력
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item" type="button" id="aiVoiceInputBtn" data-user-style="{{ user.profile.user_style }}">
+                                <span class="ai-mic-icon me-2">
+                                    <i class="fas fa-microphone"></i>
+                                    <i class="fas fa-star ai-icon-overlay"></i>
+                                </span>
+                                AI 음성 입력
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <button type="button" id="generateImageBtn" class="generate-btn">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                    generate
+                </button>
             </div>
-            <button type="button" id="generateImageBtn" class="generate-btn">
-                <i class="fas fa-wand-magic-sparkles"></i>
-                generate
-            </button>
         </div>
         <div class="alert alert-warning mt-3" role="alert">
             <strong>⚠ 이미지 생성 제한 안내 ⚠</strong>
