@@ -205,7 +205,7 @@
         // 설정: AI 큐레이션 생성중 메시지 출력
         document.querySelector('#loadingModal div').innerText = 'AI 큐레이션 생성중...';
         showLoadingModal();
-        const style = document.getElementById('curationStyleSelect').value;
+        const curation_style = document.getElementById('curationStyleSelect').value;
         const url = `{% url 'generate_curation' post.id %}`;
         fetch(url, {
             method: 'POST',
@@ -213,7 +213,7 @@
                 'Content-Type': 'application/json',
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
             },
-            body: JSON.stringify({ style: style })
+            body: JSON.stringify({ style: curation_style })
         })
             .then(response => response.json())
             .then(data => {
@@ -341,6 +341,7 @@
         showLoadingModal();
         const commentMessageElem = document.getElementById('commentMessage');
         const commentText = commentMessageElem.value;
+        const curationStyle = document.getElementById('curationStyleSelect').value;
         if (!commentText) {
             alert('댓글 내용을 입력해주세요.');
             hideLoadingModal();
@@ -355,7 +356,7 @@
             },
             // 수정: comment 값도 함께 전달
             body: JSON.stringify({
-                style: document.getElementById('curationStyleSelect').value,
+                style: curationStyle,
                 comment: commentText
             })
         })
@@ -363,7 +364,7 @@
             .then(data => {
                 // 업데이트: curation_text 값도 받아와서 해당 영역에 표시
                 document.getElementById('curationText').innerHTML = `<small class="text-muted">큐레이션: ${data.curation_text}</small>`;
-                const combinedComment = `* 사용자 감상 : ${commentText}\n* AI 큐레이터의 감상평가 : ${data.evaluation_feedback}`;
+                const combinedComment = `<p>* 사용자 감상 : ${commentText}</p><hr><p>* AI 큐레이터의[${curationStyle}] 감상평가 : ${data.evaluation_feedback}</p>`;
                 return fetch(`/posts/${postId}/comments/`, {
                     method: 'POST',
                     headers: {
