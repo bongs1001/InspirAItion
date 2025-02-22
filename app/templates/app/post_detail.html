@@ -98,10 +98,33 @@
         <form id="commentForm" class="mb-3">
             {% csrf_token %}
             <div class="form-group">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <button type="button" class="voice-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="음성 입력">
+                        <span class="ai-mic-icon">
+                            <i class="fas fa-microphone"></i>
+                            <i class="fas fa-star ai-icon-overlay"></i>
+                        </span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <button class="dropdown-item" type="button" id="voiceInputBtn">
+                                <i class="fas fa-microphone me-2"></i>일반 음성 입력
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item" type="button" id="aiVoiceInputBtn" data-user-style="{{ user.profile.user_style }}"">
+                                <span class=" ai-mic-icon me-2">
+                                <i class="fas fa-microphone"></i>
+                                <i class="fas fa-star ai-icon-overlay"></i>
+                                </span>
+                                AI 음성 입력
+                            </button>
+                        </li>
+                    </ul>
+                </div>
                 <textarea class="form-control" id="commentMessage" rows="2" required></textarea>
             </div>
             <button type="submit" class="btn btn-primary mt-2">댓글 작성</button>
-            <!-- 댓글 평가 버튼 추가 -->
             <button type="button" id="evaluateCommentBtn" class="btn btn-secondary mt-2">댓글 평가</button>
         </form>
         {% endif %}
@@ -137,6 +160,11 @@
         로딩중...
     </div>
 </div>
+
+
+{% block js %}
+<script src="{% static 'js/script.js' %}"></script>
+{% endblock js %}
 
 <script>
     // 추가: postId 변수 선언 (댓글 처리에 사용)
@@ -387,11 +415,85 @@
                 hideLoadingModal();
             });
     });
+
+    // 음성 입력 버튼 이벤트 리스너 추가
+    document.getElementById('commentVoiceInputBtn')?.addEventListener('click', () => handleVoiceInput(false));
+    document.getElementById('commentAiVoiceInputBtn')?.addEventListener('click', () => {
+        const user_style = document.getElementById('commentAiVoiceInputBtn').getAttribute('data-user-style');
+        handleVoiceInput(true, user_style);
+    });
+
+    // 음성 인식 처리 함수
+    function handleVoiceInput(useAI = false, user_style) {
+        if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+            alert("이 브라우저는 음성 인식을 지원하지 않습니다.");
+            return;
+        }
+
+        const commentInput = document.getElementById('commentMessage');
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = "ko-KR";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        recognition.continuous = false;
+
+        document.getElementById('speechRecognitionModal').style.display = 'flex';
+
+        recognition.onresult = async function (event) {
+            const transcript = event.results[0][0].transcript;
+
+            if (useAI) {
+                document.getElementById('speechRecognitionModal').style.display = 'none';
+                document.getElementById('aiProcessingModal').style.display = 'flex';
+
+                try {
+                    const response = await fetch("/app/ai/gpt4o/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                            "X-CSRFToken": document.querySelector('[name="csrfmiddlewaretoken"]').value,
+                        },
+                        body: `text=${encodeURIComponent(transcript)}&style=${encodeURIComponent(user_style)}`,
+                    });
+
+                    if (!response.ok) throw new Error("AI 처리 실패");
+                    const data = await response.json();
+                    commentInput.value = commentInput.value
+                        ? `${commentInput.value} ${data.result || transcript}`
+                        : data.result || transcript;
+                } catch (error) {
+                    console.error("AI 처리 오류:", error);
+                    commentInput.value = commentInput.value
+                        ? `${commentInput.value} ${transcript}`
+                        : transcript;
+                } finally {
+                    document.getElementById('aiProcessingModal').style.display = 'none';
+                }
+            } else {
+                commentInput.value = commentInput.value
+                    ? `${commentInput.value} ${transcript}`
+                    : transcript;
+                document.getElementById('speechRecognitionModal').style.display = 'none';
+            }
+        };
+
+        recognition.onerror = function (event) {
+            console.error("음성 인식 오류:", event.error);
+            document.getElementById('speechRecognitionModal').style.display = 'none';
+            alert("음성 인식 중 오류가 발생했습니다.");
+        };
+
+        try {
+            recognition.start();
+        } catch (error) {
+            console.error("음성 인식 시작 오류:", error);
+            document.getElementById('speechRecognitionModal').style.display = 'none';
+        }
+    }
 </script>
 {% endblock content %}
 
-<!-- Footer Start -->
 {% block footer %}
 {% include "app/common/footer.html" %}
 {% endblock footer %}
-<!-- Footer End -->

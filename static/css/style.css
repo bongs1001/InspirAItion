@@ -156,6 +156,10 @@
 }
 
 .spinner {
+    margin: 0 auto;  /* 수평 중앙 정렬을 위해 추가 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 40px;
     height: 40px;
     border: 4px solid #f3f3f3;
