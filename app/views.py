@@ -501,17 +501,16 @@ def evaluate_ai_curation(curation_text, user_comment):
                 {
                     "role": "system",
                     "content": f"""
-                        You are an AI assistant that evaluates user comments based on how well they describe a given text. 
-                        Your task is to analyze both the provided curation text and user comment, assess the accuracy and completeness of the comment, 
-                        and provide constructive feedback on its strengths and areas for improvement.
+                        당신의 사용자가 예술 작품을 보고 느낀 점을 평가한 내용을 큐레이어타가 평가한 내용과 비교하여, 사용자가 작품을 얼마나 잘 설명하는지 평가하고,
+                        사용자 평가의  잘 평가한 부분과 인상적인 것을 주로 답해주고 약간의  개선할 점에 대해 건설적인 피드백을 제공하는 것이 역할입니다.
 
-                        1. Read the curation_text carefully to understand its key message and intent.
-                        2. Analyze user_comment to determine how well it captures the essence of curation_text.
-                        3. Highlight the positive aspects of the user_comment, including accurate interpretations and insightful observations.
-                        4. Identify any missing or misinterpreted elements in the user_comment and suggest specific improvements.
-                        5. Provide feedback in Korean, ensuring it is clear and concise while maintaining a constructive tone.
-
-                        Return only the final feedback in Korean without any additional formatting or explanations.
+                        큐레이터의 평가를 주의 깊게 읽어 핵심 메시지와 의도를 파악합니다.
+                        사용자 평가를 분석하여 큐레이터 평가의 본질을 얼마나 잘 표현했는지 확인합니다.
+                        사용자 평가의 긍정적인 측면을 강조하며, 정확한 해석과 통찰력 있는 관찰을 칭찬합니다.
+                        사용자 평가에서 누락되었거나 오해된 요소를 확인하고, 구체적인 개선 방안을 제안합니다.
+                        피드백은 한국어로 작성하며, 명확하고 간결하면서도 건설적인 어조를 유지합니다.
+                        평가는 100단어 이내로 작성하고, 긍정 80%와 부정 20%의 비율을 유지합니다.
+                        평가의 내용은 일반적인 해설문에 형식에 맞도록 하고 불필요한 지시어는 출력하지 말아주세요.
                     """,
                 },
                 {
@@ -530,6 +529,47 @@ def evaluate_ai_curation(curation_text, user_comment):
     except Exception as e:
         print("GPT-4o 호출 중 예외 발생:", str(e))
         return None
+
+
+# def evaluate_ai_curation(curation_text, user_comment):
+#     try:
+#         print("GPT-4o를 사용해 프롬프트를 생성합니다...")
+
+#         response = GPT_CLIENT.chat.completions.create(
+#             model="gpt-4o",
+#             messages=[
+#                 {
+#                     "role": "system",
+#                     "content": f"""
+#                         You are an AI assistant that evaluates user comments based on how well they describe a given text.
+#                         Your task is to analyze both the provided curation text and user comment, assess the accuracy and completeness of the comment,
+#                         and provide constructive feedback on its strengths and areas for improvement.
+
+#                         1. Read the curation_text carefully to understand its key message and intent.
+#                         2. Analyze user_comment to determine how well it captures the essence of curation_text.
+#                         3. Highlight the positive aspects of the user_comment, including accurate interpretations and insightful observations.
+#                         4. Identify any missing or misinterpreted elements in the user_comment and suggest specific improvements.
+#                         5. Provide feedback in Korean, ensuring it is clear and concise while maintaining a constructive tone.
+
+#                         Return only the final feedback in Korean without any additional formatting or explanations.
+#                     """,
+#                 },
+#                 {
+#                     "role": "user",
+#                     "content": f"curation_text: {curation_text}\n user_comment: {user_comment}",
+#                 },
+#             ],
+#         )
+
+#         if response.choices and len(response.choices) > 0:
+#             return response.choices[0].message.content
+#         else:
+#             print("응답을 생성하지 못했습니다.")
+#             return None
+
+#     except Exception as e:
+#         print("GPT-4o 호출 중 예외 발생:", str(e))
+#         return None
 
 
 @login_required
