@@ -28,8 +28,30 @@
                 </div>
 
                 <div class="d-flex gap-2">
-                    <button type="button" id="generateSttBtn" class="btn btn-info" onclick="detect_language_and_transcribe()">음성 입력</button>
-                    <button type="button" id="generateSttBtnAI" class="btn btn-info" onclick="detect_language_and_transcribe_with_ai()">AI 음성 입력</button>
+                    <button type="button" class="voice-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="음성 입력">
+                        <span class="ai-mic-icon">
+                            <i class="fas fa-microphone"></i>
+                            <i class="fas fa-star ai-icon-overlay"></i>
+                        </span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <button class="dropdown-item" type="button" id="voiceInputBtn">
+                                <i class="fas fa-microphone me-2"></i>일반 음성 입력
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item" type="button" id="aiVoiceInputBtn" data-user-style="{{ user.profile.user_style }}"">
+                                <span class=" ai-mic-icon me-2">
+                                <i class="fas fa-microphone"></i>
+                                <i class="fas fa-star ai-icon-overlay"></i>
+                                </span>
+                                AI 음성 입력
+                            </button>
+                        </li>
+                    </ul>
+                    <!-- <button type="button" id="generateSttBtn" class="btn btn-info" onclick="detect_language_and_transcribe()">음성 입력</button> -->
+                    <!-- <button type="button" id="generateSttBtnAI" class="btn btn-info" onclick="detect_language_and_transcribe_with_ai()">AI 음성 입력</button> -->
                     <button type="button" id="generateImageBtn" class="btn btn-info" onclick="generateImage()">AI 이미지 생성</button>
                     <button type="submit" class="btn btn-primary">저장</button>
                     <a href="{% url 'home' %}" class="btn btn-secondary">취소</a>
@@ -45,18 +67,40 @@
     </div>
 </div>
 
-<div id="speechRecognitionModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 1051;">
+<!-- <div id="speechRecognitionModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 1051;">
     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; font-size: 1.5rem;">
         음성 데이터 수신중...
     </div>
-</div>
+</div> -->
 
 <!-- 추가: 프롬프트 변환중 오버레이 -->
-<div id="promptConversionModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 1052;">
+<!-- <div id="promptConversionModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 1052;">
     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; font-size: 1.5rem;">
         사용자 프로필 반영하여 prompt 변환중...
     </div>
+</div> -->
+
+<div id="speechRecognitionModal" class="recognition-modal">
+    <div class="recognition-content">
+        <div class="recognition-text">음성 인식중...</div>
+        <div class="wave-animation">
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+        </div>
+    </div>
 </div>
+
+<div id="aiProcessingModal" class="recognition-modal">
+    <div class="recognition-content">
+        <div class="recognition-text">AI가 프롬프트를 개선하는 중...</div>
+        <div class="spinner"></div>
+    </div>
+</div>
+
+{% block js %}
+<script src="{% static 'js/script.js' %}"></script>
+{% endblock js %}
 
 <script>
     function detect_language_and_transcribe() {
@@ -73,7 +117,7 @@
         recognition.start();
         document.getElementById('speechRecognitionModal').style.display = 'block';
 
-        recognition.onresult = function(event) {
+        recognition.onresult = function (event) {
             const transcript = event.results[0][0].transcript;
             let existingText = document.querySelector('[name="prompt"]').value;
             document.querySelector('[name="prompt"]').value = existingText
@@ -81,31 +125,16 @@
                 : transcript;
         };
 
-        recognition.onerror = function(event) {
+        recognition.onerror = function (event) {
             document.getElementById('speechRecognitionModal').style.display = 'none';
             alert("음성 인식 오류: " + event.error);
         };
 
-        recognition.onend = function() {
+        recognition.onend = function () {
             document.getElementById('speechRecognitionModal').style.display = 'none';
         };
     }
 
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const imageUrl = urlParams.get('image_url');
-        const originalPrompt = urlParams.get('original_prompt');
-
-        if (imageUrl && generatedPrompt) {
-            document.getElementById('imagePreview').style.display = 'block';
-            document.getElementById('generatedImage').src = imageUrl;
-            document.getElementById('generatedImageUrl').value = imageUrl;
-            document.getElementById('generatedPrompt').value = generatedPrompt;
-            
-            document.querySelector('[name="prompt"]').value = originalPrompt;
-        }
-    });
 
     function detect_language_and_transcribe_with_ai() {
         if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -126,7 +155,7 @@
             const transcript = event.results[0][0].transcript;
             const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
             // 표시: prompt 변환 오버레이
-            document.getElementById('promptConversionModal').style.display = 'block';
+            document.getElementById('aiProcessingModal').style.display = 'block';
             fetch('/app/ai/gpt4o/', {
                 method: 'POST',
                 headers: {
@@ -140,7 +169,7 @@
                     return response.json();
                 })
                 .then(data => {
-                    document.getElementById('promptConversionModal').style.display = 'none';
+                    document.getElementById('aiProcessingModal').style.display = 'none';
                     const processedText = data.result || transcript;
                     let existingText = document.querySelector('[name="prompt"]').value;
                     document.querySelector('[name="prompt"]').value = existingText
@@ -148,7 +177,7 @@
                         : processedText;
                 })
                 .catch(error => {
-                    document.getElementById('promptConversionModal').style.display = 'none';
+                    document.getElementById('aiProcessingModal').style.display = 'none';
                     console.error(error);
                     // 오류 발생 시 원본 transcript 사용
                     let existingText = document.querySelector('[name="prompt"]').value;
@@ -240,16 +269,6 @@
             hideLoadingModal();
         }
     }
-
-    document.getElementById('postForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        if (!validateForm()) {
-            return;
-        }
-        document.querySelector('#loadingModal div').innerText = '저장중...';
-        showLoadingModal();
-        this.submit();
-    });
 </script>
 {% endblock content %}
 
