@@ -16,20 +16,17 @@
             <h2 class="mb-4">새 글 작성</h2>
             <form method="post" id="postForm">
                 {% csrf_token %}
-                {% bootstrap_form form %}
+
 
                 <div id="imagePreview" style="display: none;" class="my-3">
                     <img id="generatedImage" src="" alt="" class="img-fluid">
                     <input type="hidden" name="generated_image_url" id="generatedImageUrl">
                     <input type="hidden" name="generated_prompt" id="generatedPrompt">
-                    <div class="mt-2">
+                    <!-- <div class="mt-2">
                         <button type="button" class="btn btn-secondary" onclick="cancelImage()">이미지 취소</button>
-                    </div>
+                    </div> -->
                 </div>
-                <div class="alert alert-warning mt-3" role="alert">
-                    <strong>⚠ 이미지 생성 제한 안내 ⚠</strong>
-                    <p>AI 이미지 생성 시스템은 특정 인물(예: 연예인, 정치인 등)이나 저작권 보호 대상이 포함된 프롬프트에 대해 이미지를 생성할 수 없습니다. 이러한 요청은 자동으로 거부될 수 있으며, 가이드라인을 준수해 주세요.</p>
-                </div>
+
                 <div class="d-flex gap-2">
                     <button type="button" class="voice-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="음성 입력">
                         <span class="ai-mic-icon">
@@ -58,6 +55,11 @@
                     <button type="button" id="generateImageBtn" class="btn btn-info" onclick="generateImage()">AI 이미지 생성</button>
                     <button type="submit" class="btn btn-primary">저장</button>
                     <a href="{% url 'home' %}" class="btn btn-secondary">취소</a>
+                </div>
+                {% bootstrap_form form %}
+                <div class="alert alert-warning mt-3" role="alert">
+                    <strong>⚠ 이미지 생성 제한 안내 ⚠</strong>
+                    <p>AI 이미지 생성 시스템은 특정 인물(예: 연예인, 정치인 등)이나 저작권 보호 대상이 포함된 프롬프트에 대해 이미지를 생성할 수 없습니다. 이러한 요청은 자동으로 거부될 수 있으며, 가이드라인을 준수해 주세요.</p>
                 </div>
             </form>
         </div>
