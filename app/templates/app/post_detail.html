@@ -30,7 +30,13 @@
                 <p class="mt-2">{{ post.caption }}</p>
                 {% endif %}
                 {% if post.tags %}
-                <p class="mt-2"><small class="text-muted">태그: {{ post.tags }}</small></p>
+                <p class="mt-2">
+                    <small class="text-muted">태그:
+                        {% for tag in post.tags %}
+                        <a href="/app/artwork/public/?tag={{ tag }}" class="tag-link">{{ tag }}</a>{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </small>
+                </p>
                 {% endif %}
                 {% if curation_text %}
                 <p id="curationText" class="mt-2"><small class="text-muted">큐레이션: {{ curation_text }}</small></p>
@@ -39,7 +45,7 @@
                 {% endif %}
                 <!-- Modified: 큐레이션 스타일 라벨, select, 생성 및 음성 듣기 버튼을 한 줄에 배치 (모바일 대응: flex-wrap 추가) -->
                 <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
-                    <label for="curationStyleSelect" class="mb-0">큐레이션 스타일:</label>
+                    <label for="curationStyleSelect" class="mb-0">스타일:</label>
                     <select id="curationStyleSelect" class="form-select form-select-sm" style="width: auto;">
                         <option value="Emotional">Emotional</option>
                         <option value="Interpretive">Interpretive</option>
@@ -51,10 +57,10 @@
                         <option value="Praise">Praise</option>
                         <option value="Blind">Blind</option>
                     </select>
-                    <button id="generateCurationBtn" class="btn btn-secondary btn-sm">큐레이션 생성</button>
-                    <button id="playCaptionBtn" class="btn btn-info btn-sm">음성으로 듣기</button>
-                    <button id="pauseAudioBtn" class="btn btn-warning btn-sm" style="display:none;">일시정지</button>
-                    <button id="resumeAudioBtn" class="btn btn-success btn-sm" style="display:none;">재생</button>
+                    <button id="generateCurationBtn" class="btn btn-secondary btn-sm">생성</button>
+                    <button id="playCaptionBtn" class="btn btn-info btn-sm">AI음성</button>
+                    <button id="pauseAudioBtn" class="btn btn-warning btn-sm" style="display:none;">⏸</button>
+                    <button id="resumeAudioBtn" class="btn btn-success btn-sm" style="display:none;">▶</button>
                 </div>
             </div>
             {% endif %}
@@ -98,34 +104,34 @@
         <form id="commentForm" class="mb-3">
             {% csrf_token %}
             <div class="form-group">
-                <div class="d-flex align-items-center gap-2 mb-2">
-                    <button type="button" class="voice-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="음성 입력">
-                        <span class="ai-mic-icon">
+                <textarea class="form-control" id="commentMessage" rows="3" required></textarea>
+            </div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <button type="button" class="voice-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="음성 입력">
+                    <span class="ai-mic-icon">
+                        <i class="fas fa-microphone"></i>
+                        <i class="fas fa-star ai-icon-overlay"></i>
+                    </span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <button class="dropdown-item" type="button" id="voiceInputBtn">
+                            <i class="fas fa-microphone me-2"></i>일반 음성 입력
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item" type="button" id="aiVoiceInputBtn" data-user-style="{{ user.profile.user_style }}"">
+                            <span class=" ai-mic-icon me-2">
                             <i class="fas fa-microphone"></i>
                             <i class="fas fa-star ai-icon-overlay"></i>
-                        </span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <button class="dropdown-item" type="button" id="voiceInputBtn">
-                                <i class="fas fa-microphone me-2"></i>일반 음성 입력
-                            </button>
-                        </li>
-                        <li>
-                            <button class="dropdown-item" type="button" id="aiVoiceInputBtn" data-user-style="{{ user.profile.user_style }}"">
-                                <span class=" ai-mic-icon me-2">
-                                <i class="fas fa-microphone"></i>
-                                <i class="fas fa-star ai-icon-overlay"></i>
-                                </span>
-                                AI 음성 입력
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-                <textarea class="form-control" id="commentMessage" rows="2" required></textarea>
+                            </span>
+                            AI 음성 입력
+                        </button>
+                    </li>
+                </ul>
+                <button type="submit" class="btn btn-primary mt-2">댓글 작성</button>
+                <button type="button" id="evaluateCommentBtn" class="btn btn-secondary mt-2">댓글 평가</button>
             </div>
-            <button type="submit" class="btn btn-primary mt-2">댓글 작성</button>
-            <button type="button" id="evaluateCommentBtn" class="btn btn-secondary mt-2">댓글 평가</button>
         </form>
         {% endif %}
         <div id="commentList"></div>
