@@ -189,14 +189,14 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    if (searchInput) {
-        searchInput.addEventListener("keypress", function (e) {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                generateImage();
-            }
-        });
-    }
+    // if (searchInput) {
+    //     searchInput.addEventListener("keypress", function (e) {
+    //         if (e.key === "Enter") {
+    //             e.preventDefault();
+    //             generateImage();
+    //         }
+    //     });
+    // }
 
     // Add form submit handler
     const postForm = document.getElementById("postForm");
@@ -263,10 +263,10 @@ document.addEventListener("DOMContentLoaded", function () {
         handleVoiceInput(true, user_style);
     });
 
-    searchInput.addEventListener("keypress", function (e) {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            generateImage();
-        }
-    });
+    // searchInput.addEventListener("keypress", function (e) {
+    //     if (e.key === "Enter") {
+    //         e.preventDefault();
+    //         generateImage();
+    //     }
+    // });
 });
