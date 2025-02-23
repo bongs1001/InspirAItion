@@ -11,7 +11,10 @@ from django.core.exceptions import ValidationError
 class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
-    content = models.TextField()
+    content = models.TextField(
+        blank=True,
+        null=True,
+    )
     date_posted = models.DateTimeField(auto_now_add=True)
     image = models.URLField(blank=True, null=True, max_length=1000)
     generated_prompt = models.TextField(blank=True, null=True)
