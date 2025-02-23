@@ -45,10 +45,17 @@
                         </li>
                     </ul>
                 </div>
+                {% if user.is_authenticated %}
                 <button type="button" id="generateImageBtn" class="generate-btn">
                     <i class="fas fa-wand-magic-sparkles"></i>
                     generate
                 </button>
+                {% else %}
+                <button type="button" class="generate-btn" onclick="doLogin()">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                    generate
+                </button>
+                {% endif %}
             </div>
         </div>
         <div class="alert alert-warning mt-3" role="alert">
@@ -61,6 +68,17 @@
 {% endblock content %}
 
 {% block js %}
+<script>
+    function doLogin(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        }
+        alert("로그인이 필요한 서비스입니다.");
+        window.location.href = "{% url 'login' %}";
+        return false;
+    }
+</script>
 <script src="{% static 'js/script.js' %}"></script>
 {% endblock %}
 

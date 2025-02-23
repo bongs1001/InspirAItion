@@ -19,7 +19,9 @@
                             Artwork
                         </a>
                         <ul class="dropdown-menu" style="background-color: var(--dropdown-bg);">
+                            {% if user.is_authenticated %}
                             <li><a class="dropdown-item" style="color: var(--dropdown-text);" href="{% url 'my_gallery' %}">My Gallery</a></li>
+                            {% endif %}
                             <li><a class="dropdown-item" style="color: var(--dropdown-text);" href="{% url 'public_gallery' %}">Public Gallery</a></li>
                             <li>
                                 <hr class="dropdown-divider">
