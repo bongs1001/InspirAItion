@@ -13,6 +13,7 @@ import requests
 import uuid
 import json
 from datetime import datetime
+from django.utils import timezone
 from django.db.models import Count
 from io import BytesIO
 from PIL import Image
@@ -23,7 +24,7 @@ from util.common.azure_speech import synthesize_text_to_speech
 from django.views.decorators.http import require_GET
 
 from .forms import AuctionForm, PostWithAIForm, PostEditForm
-from .models import AuctionStatus, Post, AIGeneration, Comment, TagUsage, Like
+from .models import Auction, AuctionStatus, Post, AIGeneration, Comment, TagUsage, Like
 
 logging.basicConfig(
     level=logging.INFO,
@@ -1202,3 +1203,29 @@ def register_auction(request, post_id):
         form = AuctionForm()
 
     return render(request, "app/auction/register.html", {"form": form, "post": post})
+
+def auction_list(request):
+    sort_by = request.GET.get('sort', 'latest')
+
+    auctions = Auction.objects.filter(
+        status=AuctionStatus.ACTIVE,
+        end_time__gt=timezone.now()
+    ).select_related('post', 'seller', 'post__current_owner')
+
+    if sort_by == 'ending_soon':
+        auctions = auctions.order_by('end_time')
+    elif sort_by == 'popular':
+        auctions = auctions.annotate(bid_count=Count('bids')).order_by('-bid_count')
+    else:
+        auctions = auctions.order_by('-created_at')
+
+    for auction in auctions:
+        auction.time_remaining = auction.end_time - timezone.now()
+        auction.bid_count = auction.bids.count()
+
+    context = {
+        'auctions': auctions,
+        'sort_by': sort_by
+    }
+
+    return render(request, 'app/auction/list.html', context)
