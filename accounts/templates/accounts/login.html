@@ -35,17 +35,26 @@
       <span>또는</span>
     </div>
     
-    <form method="post" novalidate>
+    <form method="post" id="loginForm" novalidate>
       {% csrf_token %}
+      {% if form.errors %}
+      <div class="alert alert-danger">
+        {% for error in form.non_field_errors %}
+          {{ error }}
+        {% endfor %}
+      </div>
+      {% endif %}
       
       <div class="form-floating mb-3">
-        <input type="text" class="form-control custom-input" id="username" name="username" placeholder="사용자 이름 또는 이메일">
-        <label for="username">사용자 이름 또는 이메일</label>
+        <input type="text" class="form-control custom-input" id="username" name="username" placeholder="사용자 이름 또는 이메일" required>
+        <label for="username">사용자 이름</label>
+        <div class="invalid-feedback username-error">사용자 이름을 입력해주세요.</div>
       </div>
       
       <div class="form-floating mb-4">
-        <input type="password" class="form-control custom-input" id="password" name="password" placeholder="비밀번호">
+        <input type="password" class="form-control custom-input" id="password" name="password" placeholder="비밀번호" required>
         <label for="password">비밀번호</label>
+        <div class="invalid-feedback password-error">비밀번호를 입력해주세요.</div>
       </div>
       
       <div class="mb-3">
@@ -58,7 +67,7 @@
           <label class="form-check-label" for="remember">로그인 상태 유지</label>
         </div>
         
-        <button type="submit" class="btn login-btn">로그인하기</button>
+        <button type="submit" class="btn login-btn" id="loginButton">로그인하기</button>
       </div>
     </form>
     
@@ -73,7 +82,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: calc(100vh - 152px); /* 헤더와 푸터 높이 고려 */
+    min-height: calc(100vh - 152px);
     background-color: var(--bg-primary, #121212);
   }
   
@@ -167,6 +176,30 @@
     box-shadow: 0 0 0 0.25rem rgba(252, 69, 97, 0.25);
   }
   
+  .custom-input.is-invalid {
+    border-color: #dc3545;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+  }
+  
+  .custom-input.is-invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+  }
+  
+  .invalid-feedback {
+    display: none;
+    color: #dc3545;
+    font-size: 0.875em;
+    margin-top: 0.25rem;
+  }
+  
+  .is-invalid ~ .invalid-feedback {
+    display: block;
+  }
+  
   .forgot-password {
     color: var(--text-primary, #ffffff);
     text-decoration: underline;
@@ -245,3 +278,53 @@
 {% block footer %}
 {% include "app/common/footer.html" %}
 {% endblock footer %}
+
+{% block js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.querySelector('#loginForm');
+    const usernameInput = document.querySelector('#username');
+    const passwordInput = document.querySelector('#password');
+    
+    if (loginForm) {
+      loginForm.addEventListener('submit', function(event) {
+        let isValid = true;
+        
+        if (!usernameInput.value.trim()) {
+          usernameInput.classList.add('is-invalid');
+          isValid = false;
+        } else {
+          usernameInput.classList.remove('is-invalid');
+        }
+        
+        if (!passwordInput.value.trim()) {
+          passwordInput.classList.add('is-invalid');
+          isValid = false;
+        } else {
+          passwordInput.classList.remove('is-invalid');
+        }
+        
+        if (!isValid) {
+          event.preventDefault();
+        }
+      });
+    }
+    
+    if (usernameInput) {
+      usernameInput.addEventListener('input', function() {
+        if (this.value.trim()) {
+          this.classList.remove('is-invalid');
+        }
+      });
+    }
+    
+    if (passwordInput) {
+      passwordInput.addEventListener('input', function() {
+        if (this.value.trim()) {
+          this.classList.remove('is-invalid');
+        }
+      });
+    }
+  });
+</script>
+{% endblock js %}
