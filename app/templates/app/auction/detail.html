@@ -149,7 +149,19 @@
             </div>
             <div class="modal-body">
                 <p>정말로 이 경매를 취소하시겠습니까?</p>
-                <p class="text-danger">이 작업은 되돌릴 수 없습니다.</p>
+                <p class="text-danger">
+                    {% if auction.bids.exists %}
+                    현재까지의 모든 입찰 금액은 입찰자들에게 환불됩니다.
+                    {% endif %}
+                    이 작업은 되돌릴 수 없습니다.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <form action="{% url 'cancel_auction' auction.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="submit" class="btn btn-danger">경매 취소</button>
+                </form>
             </div>
         </div>
     </div>

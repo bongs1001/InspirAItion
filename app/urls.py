@@ -38,4 +38,5 @@ urlpatterns = [
     ),
     path("auction/list/", views.auction_list, name="auction_list"),
     path('auction/<int:auction_id>/', views.auction_detail, name='auction_detail'),
+    path('auction/<int:auction_id>/cancel/', views.cancel_auction, name='cancel_auction'),
 ]

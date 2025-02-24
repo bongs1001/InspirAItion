@@ -1283,3 +1283,33 @@ def auction_detail(request, auction_id):
     }
 
     return render(request, 'app/auction/detail.html', context)
+
+@login_required
+@require_http_methods(["POST"])
+def cancel_auction(request, auction_id):
+    auction = get_object_or_404(Auction, id=auction_id)
+
+    if request.user != auction.seller:
+        messages.error(request, '경매 취소 권한이 없습니다.')
+        return redirect('auction_detail', auction_id=auction.id)
+
+    try:
+        with transaction.atomic():
+            for bid in auction.bids.all():
+                bid.bidder.profile.balance += bid.amount
+                bid.bidder.profile.save()
+                messages.info(
+                    request,
+                    f'{bid.bidder.profile.nickname}님에게 {bid.amount}원이 환불되었습니다.'
+                )
+
+            auction.status = AuctionStatus.CANCELLED
+            auction.save()
+
+            messages.success(request, '경매가 성공적으로 취소되었습니다.')
+        
+    except Exception as e:
+        logging.error(f"경매 취소 중 오류 발생: {str(e)}")
+        messages.error(request, '경매 취소 처리 중 오류가 발생했습니다.')
+
+    return redirect('auction_detail', auction_id=auction.id)
