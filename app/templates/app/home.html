@@ -19,8 +19,8 @@
     <div class="search-container">
         {% csrf_token %}
         <div class="search-bar">
-            <div class="search-type">AI image</div>
-            <input type="text" id="searchInput" name="prompt" class="search-input" placeholder="A giant cat resting on top of a lit skyscraper, realistic">
+            <div class="search-type">AI 이미지</div>
+            <input type="text" id="searchInput" name="prompt" class="search-input" placeholder="도시의 불빛 속에서, 마천루 꼭대기에 우아하게 앉아있는 검은 고양이">
             <div class="button-group d-flex">
                 {% if user.is_authenticated %}
                 <div class="dropdown">

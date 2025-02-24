@@ -1,39 +1,247 @@
-<!-- Header Start -->
 {% extends "app/common/frame.html" %}
 {% load static %}
 {% load django_bootstrap5 %}
-{% block title %} New Home {% endblock title %}
-{% block header %}
-{% include "app/common/header.html" %}
-{% endblock header %}
-<!-- Header End -->
+{% block title %}로그인 - InspirAItion{% endblock title %}
 
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card mt-5">
-                <div class="card-body">
-                    <h2 class="card-title text-center mb-4">로그인</h2>
-                    <form method="post" novalidate>
-                        {% csrf_token %}
-                        {% bootstrap_form form %}
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">로그인</button>
-                        </div>
-                    </form>
-                    <p class="text-center mt-3">
-                        계정이 없으신가요? <a href="{% url 'signup' %}">회원가입</a>
-                    </p>
-                </div>
-            </div>
-        </div>
+<div class="login-container">
+  <div class="login-card">
+    <div class="text-center mb-4">
+      <span class="logo-text">
+        <span style="color: #737373;">Inspi<span span style="color: #FC4561; font-weight: 900;">AI</span>tion</span>
+      </span>
     </div>
+    
+    <h2 class="text-center mb-4">InspirAItion에 로그인하기</h2>
+    
+    <div class="social-login-buttons">
+      <a href="#" class="social-login-btn google-btn">
+        <img src="{% static 'img/google-icon.svg' %}" alt="Google" class="social-icon">
+        <span>Google로 계속하기</span>
+      </a>
+      
+      <a href="#" class="social-login-btn facebook-btn">
+        <img src="{% static 'img/facebook-icon.svg' %}" alt="Facebook" class="social-icon">
+        <span>Facebook으로 계속하기</span>
+      </a>
+      
+      <a href="#" class="social-login-btn apple-btn">
+        <img src="{% static 'img/apple-icon.svg' %}" alt="Apple" class="social-icon">
+        <span>Apple로 계속하기</span>
+      </a>
+    </div>
+    
+    <div class="divider">
+      <span>또는</span>
+    </div>
+    
+    <form method="post" novalidate>
+      {% csrf_token %}
+      
+      <div class="form-floating mb-3">
+        <input type="text" class="form-control custom-input" id="username" name="username" placeholder="사용자 이름 또는 이메일">
+        <label for="username">사용자 이름 또는 이메일</label>
+      </div>
+      
+      <div class="form-floating mb-4">
+        <input type="password" class="form-control custom-input" id="password" name="password" placeholder="비밀번호">
+        <label for="password">비밀번호</label>
+      </div>
+      
+      <div class="mb-3">
+        <a href="#" class="forgot-password">비밀번호를 잊으셨나요?</a>
+      </div>
+      
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="remember" name="remember">
+          <label class="form-check-label" for="remember">로그인 상태 유지</label>
+        </div>
+        
+        <button type="submit" class="btn login-btn">로그인하기</button>
+      </div>
+    </form>
+    
+    <div class="signup-link text-center">
+      <p>계정이 없으신가요? <a href="{% url 'signup' %}">회원가입</a></p>
+    </div>
+  </div>
 </div>
+
+<style>
+  .login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 152px); /* 헤더와 푸터 높이 고려 */
+    background-color: var(--bg-primary, #121212);
+  }
+  
+  .login-card {
+    width: 100%;
+    max-width: 450px;
+    padding: 2.5rem;
+    background-color: var(--bg-secondary, #1e1e1e);
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  .logo-text {
+    font-size: 2rem;
+    font-weight: bold;
+  }
+  
+  .social-login-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .social-login-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    background-color: transparent;
+    color: var(--text-primary, #ffffff);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  
+  .social-login-btn:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary, #ffffff);
+    transform: translateY(-2px);
+  }
+  
+  .social-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+  }
+  
+  .google-btn {
+    border-color: #4285f4;
+  }
+  
+  .facebook-btn {
+    border-color: #3b5998;
+  }
+  
+  .apple-btn {
+    border-color: #a6b1b7;
+  }
+  
+  .divider {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+  }
+  
+  .divider::before,
+  .divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .divider span {
+    padding: 0 10px;
+    color: var(--text-secondary, #adb5bd);
+    font-size: 14px;
+  }
+  
+  .custom-input {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary, #ffffff);
+  }
+  
+  .custom-input:focus {
+    background-color: rgba(255, 255, 255, 0.07);
+    border-color: #FC4561;
+    box-shadow: 0 0 0 0.25rem rgba(252, 69, 97, 0.25);
+  }
+  
+  .forgot-password {
+    color: var(--text-primary, #ffffff);
+    text-decoration: underline;
+    font-size: 14px;
+  }
+  
+  .login-btn {
+    background-color: #FC4561;
+    color: white;
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-weight: 600;
+    border: none;
+  }
+  
+  .login-btn:hover {
+    background-color: #ff334e;
+    transform: scale(1.05);
+  }
+  
+  .signup-link a {
+    color: #FC4561;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  
+  .signup-link a:hover {
+    text-decoration: underline;
+  }
+  
+  /* 라이트 모드 스타일 */
+  :root[data-theme="light"] .login-container {
+    background-color: var(--bg-primary, #ffffff);
+  }
+  
+  :root[data-theme="light"] .login-card {
+    background-color: var(--bg-secondary, #f8f9fa);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+  
+  :root[data-theme="light"] .social-login-btn {
+    color: var(--text-primary, #212529);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  :root[data-theme="light"] .social-login-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--text-primary, #212529);
+  }
+  
+  :root[data-theme="light"] .divider::before,
+  :root[data-theme="light"] .divider::after {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  :root[data-theme="light"] .divider span {
+    color: var(--text-secondary, #6c757d);
+  }
+  
+  :root[data-theme="light"] .custom-input {
+    background-color: #ffffff;
+    border-color: #dee2e6;
+    color: #212529;
+  }
+  
+  :root[data-theme="light"] .custom-input:focus {
+    background-color: #ffffff;
+  }
+  
+  :root[data-theme="light"] .forgot-password {
+    color: var(--text-primary, #212529);
+  }
+</style>
 {% endblock content %}
 
-<!-- Footer Start -->
 {% block footer %}
 {% include "app/common/footer.html" %}
 {% endblock footer %}
-<!-- Footer End -->
