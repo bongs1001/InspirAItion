@@ -28,7 +28,16 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from .forms import AuctionForm, PostWithAIForm, PostEditForm
-from .models import Auction, AuctionStatus, Bid, Post, AIGeneration, Comment, TagUsage, Like
+from .models import (
+    Auction,
+    AuctionStatus,
+    Bid,
+    Post,
+    AIGeneration,
+    Comment,
+    TagUsage,
+    Like,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -46,6 +55,18 @@ DALLE_CLIENT = AzureOpenAI(
     azure_endpoint=settings.AZURE_DALLE_ENDPOINT,
     api_key=settings.AZURE_DALLE_API_KEY,
     api_version=settings.AZURE_DALLE_API_VERSION,
+)
+
+DALLE_SC_CLIENT = AzureOpenAI(
+    azure_endpoint=settings.AZURE_DALLE_SC_ENDPOINT,
+    api_key=settings.AZURE_DALLE_SC_API_KEY,
+    api_version=settings.AZURE_DALLE_SC_API_VERSION,
+)
+
+DALLE_AE_CLIENT = AzureOpenAI(
+    azure_endpoint=settings.AZURE_DALLE_AE_ENDPOINT,
+    api_key=settings.AZURE_DALLE_AE_API_KEY,
+    api_version=settings.AZURE_DALLE_AE_API_VERSION,
 )
 
 
@@ -355,7 +376,18 @@ def generate_image_with_dalle(prompt):
     try:
         logging.info("DALL-E를 사용해 이미지를 생성합니다...")
 
-        result = DALLE_CLIENT.images.generate(model="dall-e-3", prompt=prompt, n=1)
+        global dalle_call_counter
+        try:
+            dalle_call_counter
+        except NameError:
+            dalle_call_counter = 0
+        clients = [DALLE_CLIENT, DALLE_SC_CLIENT, DALLE_AE_CLIENT]
+        client = clients[dalle_call_counter % len(clients)]
+        print("---------------")
+        print(dalle_call_counter, client)
+        print("---------------")
+        dalle_call_counter += 1
+        result = client.images.generate(model="dall-e-3", prompt=prompt, n=1)
 
         if result and result.data:
             image_url = result.data[0].url
@@ -736,7 +768,7 @@ def create_post(request: HttpRequest) -> HttpResponse:
                 blob_url = save_image_to_blob(
                     generated_image_url, form.cleaned_data["prompt"], request.user.id
                 )
-                if (blob_url):
+                if blob_url:
                     post.image = generated_image_url
 
                     AIGeneration.objects.create(
@@ -978,7 +1010,9 @@ def comment_list_create(request, post_id):
     post = get_object_or_404(Post, id=post_id)
 
     if request.method == "GET":
-        comments = Comment.objects.filter(post=post).select_related("author", "author__profile")
+        comments = Comment.objects.filter(post=post).select_related(
+            "author", "author__profile"
+        )
         data = [
             {
                 "id": comment.id,
@@ -1196,13 +1230,13 @@ def register_auction(request, post_id):
     if request.method == "POST":
         auction = Auction(post=post, seller=request.user)
         form = AuctionForm(request.POST, instance=auction)
-        
+
         if form.is_valid():
             auction = form.save(commit=False)
             auction.current_price = form.cleaned_data["start_price"]
             auction.status = AuctionStatus.ACTIVE
             auction.save()
-            messages.success(request, '경매가 성공적으로 등록되었습니다.')
+            messages.success(request, "경매가 성공적으로 등록되었습니다.")
             return redirect("auction_detail", auction_id=auction.id)
     else:
         auction = Auction(post=post, seller=request.user)
@@ -1210,49 +1244,45 @@ def register_auction(request, post_id):
 
     return render(request, "app/auction/register.html", {"form": form, "post": post})
 
+
 def auction_list(request):
-    sort_by = request.GET.get('sort', 'latest')
+    sort_by = request.GET.get("sort", "latest")
 
     auctions = Auction.objects.filter(
-        status=AuctionStatus.ACTIVE,
-        end_time__gt=timezone.now()
-    ).select_related('post', 'seller', 'post__current_owner')
+        status=AuctionStatus.ACTIVE, end_time__gt=timezone.now()
+    ).select_related("post", "seller", "post__current_owner")
 
-    if sort_by == 'ending_soon':
-        auctions = auctions.order_by('end_time')
-    elif sort_by == 'popular':
-        auctions = auctions.annotate(bid_count=Count('bids')).order_by('-bid_count')
+    if sort_by == "ending_soon":
+        auctions = auctions.order_by("end_time")
+    elif sort_by == "popular":
+        auctions = auctions.annotate(bid_count=Count("bids")).order_by("-bid_count")
     else:
-        auctions = auctions.order_by('-created_at')
+        auctions = auctions.order_by("-created_at")
 
     for auction in auctions:
         auction.time_remaining = auction.end_time - timezone.now()
         auction.bid_count = auction.bids.count()
 
-    context = {
-        'auctions': auctions,
-        'sort_by': sort_by
-    }
+    context = {"auctions": auctions, "sort_by": sort_by}
 
-    return render(request, 'app/auction/list.html', context)
+    return render(request, "app/auction/list.html", context)
+
 
 @login_required
 def auction_detail(request, auction_id):
     auction = get_object_or_404(
         Auction.objects.select_related(
-            'post',
-            'seller__profile',
-            'post__current_owner__profile'
-        ).prefetch_related('bids__bidder__profile'),
-        id=auction_id
+            "post", "seller__profile", "post__current_owner__profile"
+        ).prefetch_related("bids__bidder__profile"),
+        id=auction_id,
     )
 
-    min_bid = auction.current_price + Decimal('1000')
+    min_bid = auction.current_price + Decimal("1000")
 
     if request.method == "POST" and auction.is_active:
         try:
             with transaction.atomic():
-                bid_amount = Decimal(request.POST.get('bid_amount', '0'))
+                bid_amount = Decimal(request.POST.get("bid_amount", "0"))
 
                 success, message = auction.place_bid(request.user, bid_amount)
 
@@ -1263,9 +1293,9 @@ def auction_detail(request, auction_id):
                     messages.error(request, message)
 
         except (ValueError, TypeError):
-            messages.error(request, '유효한 금액을 입력해주세요.')
+            messages.error(request, "유효한 금액을 입력해주세요.")
         except Exception as e:
-            messages.error(request, '입찰 처리 중 오류가 발생했습니다.')
+            messages.error(request, "입찰 처리 중 오류가 발생했습니다.")
             logging.error(f"입찰 처리 중 예외 발생: {str(e)}")
 
     if auction.is_active and auction.end_time <= timezone.now():
@@ -1277,12 +1307,15 @@ def auction_detail(request, auction_id):
         auction.refresh_from_db()
 
     context = {
-        'auction': auction,
-        'min_bid': min_bid,
-        'user_balance': request.user.profile.balance if request.user.is_authenticated else 0,
+        "auction": auction,
+        "min_bid": min_bid,
+        "user_balance": (
+            request.user.profile.balance if request.user.is_authenticated else 0
+        ),
     }
 
-    return render(request, 'app/auction/detail.html', context)
+    return render(request, "app/auction/detail.html", context)
+
 
 @login_required
 @require_http_methods(["POST"])
@@ -1290,8 +1323,8 @@ def cancel_auction(request, auction_id):
     auction = get_object_or_404(Auction, id=auction_id)
 
     if request.user != auction.seller:
-        messages.error(request, '경매 취소 권한이 없습니다.')
-        return redirect('auction_detail', auction_id=auction.id)
+        messages.error(request, "경매 취소 권한이 없습니다.")
+        return redirect("auction_detail", auction_id=auction.id)
 
     try:
         with transaction.atomic():
@@ -1300,16 +1333,16 @@ def cancel_auction(request, auction_id):
                 bid.bidder.profile.save()
                 messages.info(
                     request,
-                    f'{bid.bidder.profile.nickname}님에게 {bid.amount}원이 환불되었습니다.'
+                    f"{bid.bidder.profile.nickname}님에게 {bid.amount}원이 환불되었습니다.",
                 )
 
             auction.status = AuctionStatus.CANCELLED
             auction.save()
 
-            messages.success(request, '경매가 성공적으로 취소되었습니다.')
-        
+            messages.success(request, "경매가 성공적으로 취소되었습니다.")
+
     except Exception as e:
         logging.error(f"경매 취소 중 오류 발생: {str(e)}")
-        messages.error(request, '경매 취소 처리 중 오류가 발생했습니다.')
+        messages.error(request, "경매 취소 처리 중 오류가 발생했습니다.")
 
-    return redirect('auction_detail', auction_id=auction.id)
+    return redirect("auction_detail", auction_id=auction.id)
