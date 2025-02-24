@@ -36,3 +36,12 @@ class ProfileUpdateForm(forms.ModelForm):
                 raise forms.ValidationError("이미지 파일만 업로드할 수 있습니다.")
 
         return image
+
+class ChargeForm(forms.Form):
+    charge_code = forms.CharField(
+        max_length=50,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '충전 코드를 입력하세요'
+        })
+    )

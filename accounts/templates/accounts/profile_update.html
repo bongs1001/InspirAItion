@@ -26,13 +26,24 @@
 
                 <button type="submit" class="btn btn-primary">저장</button>
             </form>
+
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h3>내 잔액: {{ user.profile.balance }}원</h3>
+                    <form method="post" action="{% url 'charge_money' %}" class="mt-3">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="text" name="charge_code" class="form-control" placeholder="충전 코드를 입력하세요">
+                            <button type="submit" class="btn btn-primary">충전하기</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 {% endblock content %}
 
-<!-- Footer Start -->
 {% block footer %}
 {% include "app/common/footer.html" %}
 {% endblock footer %}
-<!-- Footer End -->
