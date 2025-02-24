@@ -1,4 +1,5 @@
 from collections import namedtuple
+from decimal import Decimal
 import os
 import re
 import logging
@@ -24,6 +25,7 @@ from util.common.azure_speech import synthesize_text_to_speech
 from django.views.decorators.http import require_GET
 from django.contrib import messages
 from django.core.exceptions import ValidationError
+from django.db import transaction
 
 from .forms import AuctionForm, PostWithAIForm, PostEditForm
 from .models import Auction, AuctionStatus, Bid, Post, AIGeneration, Comment, TagUsage, Like
@@ -1245,29 +1247,39 @@ def auction_detail(request, auction_id):
         id=auction_id
     )
 
-    min_bid = auction.current_price + 1000
+    min_bid = auction.current_price + Decimal('1000')
 
     if request.method == "POST" and auction.is_active:
         try:
-            bid_amount = int(request.POST.get('bid_amount', 0))
-            if bid_amount <= auction.current_price:
-                messages.error(request, '현재가보다 높은 금액을 입찰해주세요.')
-            elif not auction.can_bid(request.user):
-                messages.error(request, '입찰할 수 없는 상태입니다.')
-            else:
-                Bid.objects.create(
-                    auction=auction,
-                    bidder=request.user,
-                    amount=bid_amount
-                )
-                auction.current_price = bid_amount
-                auction.save()
-                messages.success(request, '입찰이 완료되었습니다.')
-                return redirect('auction_detail', auction_id=auction.id)
-        except ValueError:
-            messages.error(request, '유효한 금액을 입력해주세요.')
+            with transaction.atomic():
+                bid_amount = Decimal(request.POST.get('bid_amount', '0'))
 
-    return render(request, 'app/auction/detail.html', {
+                success, message = auction.place_bid(request.user, bid_amount)
+
+                if success:
+                    messages.success(request, message)
+                    auction.refresh_from_db()
+                else:
+                    messages.error(request, message)
+
+        except (ValueError, TypeError):
+            messages.error(request, '유효한 금액을 입력해주세요.')
+        except Exception as e:
+            messages.error(request, '입찰 처리 중 오류가 발생했습니다.')
+            logging.error(f"입찰 처리 중 예외 발생: {str(e)}")
+
+    if auction.is_active and auction.end_time <= timezone.now():
+        success, message = auction.finalise_auction()
+        if success:
+            messages.success(request, message)
+        else:
+            messages.error(request, message)
+        auction.refresh_from_db()
+
+    context = {
         'auction': auction,
-        'min_bid': min_bid
-    })
+        'min_bid': min_bid,
+        'user_balance': request.user.profile.balance if request.user.is_authenticated else 0,
+    }
+
+    return render(request, 'app/auction/detail.html', context)

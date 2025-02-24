@@ -233,9 +233,57 @@ class Auction(models.Model):
     def finalise_auction(self):
         """경매 종료 및 소유권 이전"""
         if self.status == AuctionStatus.ACTIVE and self.winner:
-            self.status = AuctionStatus.ENDED
-            self.post.transfer_ownership(self.winner, "auction")
+            try:
+                self.seller.profile.balance += self.current_price
+                self.seller.profile.save()
+
+                self.status = AuctionStatus.ENDED
+                self.post.transfer_ownership(self.winner, "auction")
+                self.save()
+
+                return True, "경매가 성공적으로 종료되었습니다."
+
+            except Exception as e:
+                logging.error(f"경매 종료 처리 중 오류 발생: {str(e)}")
+                return False, "경매 종료 처리 중 오류가 발생했습니다."
+
+        return False, "종료할 수 없는 경매입니다."
+
+    def place_bid(self, bidder, amount):
+        if not self.can_bid(bidder):
+            return False, "입찰 권한이 없습니다."
+        
+        if amount <= self.current_price:
+            return False, "현재가보다 높은 금액을 입찰해주세요."
+        
+        if bidder.profile.balance < amount:
+            return False, "잔액이 부족합니다."
+
+        try:
+            if self.bids.exists():
+                last_bid = self.bids.first()
+                last_bidder = last_bid.bidder
+                last_bidder.profile.balance += last_bid.amount
+                last_bidder.profile.save()
+
+            bidder.profile.balance -= amount
+            bidder.profile.save()
+
+            Bid.objects.create(
+                auction=self,
+                bidder=bidder,
+                amount=amount
+            )
+
+            self.current_price = amount
+            self.winner = bidder
             self.save()
+
+            return True, "입찰이 완료되었습니다."
+
+        except Exception as e:
+            logging.error(f"입찰 처리 중 오류 발생: {str(e)}")
+            return False, "입찰 처리 중 오류가 발생했습니다."
 
 
 class Bid(models.Model):

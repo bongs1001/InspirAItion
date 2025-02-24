@@ -44,15 +44,15 @@
                     <div class="alert {% if auction.is_active %}alert-info{% else %}alert-warning{% endif %}">
                         <strong>상태:</strong>
                         {% if auction.is_active %}
-                        진행 중
+                            진행 중
                         {% else %}
-                        {% if auction.status == 'pending' %}
-                        대기 중
-                        {% elif auction.status == 'ended' %}
-                        종료됨
-                        {% else %}
-                        취소됨
-                        {% endif %}
+                            {% if auction.status == 'pending' %}
+                                대기 중
+                            {% elif auction.status == 'ended' %}
+                                종료됨
+                            {% else %}
+                                취소됨
+                            {% endif %}
                         {% endif %}
                     </div>
 
@@ -61,11 +61,11 @@
                     </div>
 
                     <div class="mb-3">
-                        <strong>시작가:</strong> {{ auction.start_price }}원
+                        <strong>시작가:</strong> {{ auction.start_price|floatformat:0 }}원
                     </div>
 
                     <div class="mb-3">
-                        <strong>현재가:</strong> {{ auction.current_price }}원
+                        <strong>현재가:</strong> {{ auction.current_price|floatformat:0 }}원
                     </div>
 
                     <div class="mb-3">
@@ -75,45 +75,61 @@
                         </span>
                     </div>
 
-                    {% if auction.is_active and user.is_authenticated and auction.can_bid|default_if_none:True %}
-                    <form method="post" class="mb-3" id="bidForm">
-                        {% csrf_token %}
-                        <div class="input-group">
-                            <input type="number" class="form-control" name="bid_amount" id="bidAmount"
-                                min="{{ min_bid }}" step="1000" placeholder="입찰가를 입력하세요">
-                            <button type="submit" class="btn btn-primary">입찰하기</button>
-                        </div>
-                        <small class="text-muted">최소 입찰가: {{ min_bid }}원</small>
-                    </form>
-                    {% endif %}
+                    {% if user.is_authenticated %}
+                    <div class="mb-3">
+                        <strong>내 잔액:</strong>
+                        <span class="text-primary">{{ user_balance|floatformat:0 }}원</span>
+                    </div>
 
-                    {% if user == auction.seller %}
+                    {% if auction.is_active and auction.can_bid|default_if_none:True %}
+                        <form method="post" class="mb-3" id="bidForm" onsubmit="return validateBid();">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                <input type="number"
+                                       class="form-control"
+                                       name="bid_amount"
+                                       id="bidAmount"
+                                       min="{{ min_bid }}"
+                                       step="1000"
+                                       placeholder="입찰가를 입력하세요.">
+                                <button type="submit" class="btn btn-primary">입찰하기</button>
+                            </div>
+                            <small class="text-muted d-block">최소 입찰가: {{ min_bid|floatformat:0 }}원</small>
+                            <small class="text-muted d-block">입찰 단위: 1,000원</small>
+                        </div>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-warning">
+                        입찰에 참여하려면 <a href="{% url 'login' %}">로그인</a>이 필요합니다.
+                    </div>
+                {% endif %}
+
+                <div class="mt-4">
+                    <h4>입찰 기록</h4>
+                    <div class="bid-history">
+                        {% for bid in auction.bids.all %}
+                            <div class="bid-item d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <strong>{{ bid.bidder.profile.nickname }}</strong>
+                                    <small class="text-muted d-block">{{ bid.created_at|date:"Y-m-d H:i" }}</small>
+                                </div>
+                                <div class="text-primary">{{ bid.amount|floatformat:0 }}원</div>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted text-center">아직 입찰 기록이 없습니다.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% if user == auction.seller %}
                     <div class="mb-3">
                         <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal"
                             data-bs-target="#cancelModal">
                             경매 취소
                         </button>
                     </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-body">
-                    <h4 class="card-title">입찰 기록</h4>
-                    <div class="bid-history">
-                        {% for bid in auction.bids.all %}
-                        <div class="bid-item d-flex justify-content-between align-items-center mb-2">
-                            <div>
-                                <strong>{{ bid.bidder.profile.nickname }}</strong>
-                                <small class="text-muted d-block">{{ bid.created_at|date:'Y-m-d H:i' }}</small>
-                            </div>
-                            <div class="text-primary">{{ bid.amount }}원</div>
-                        </div>
-                        {% empty %}
-                        <p class="text-muted text-center">아직 입찰 기록이 없습니다.</p>
-                        {% endfor %}
-                    </div>
+                {% endif %}
                 </div>
             </div>
         </div>
@@ -183,6 +199,34 @@
 
     setInterval(updateTimeRemaining, 1000);
     updateTimeRemaining();
+
+    function validateBid() {
+        const bidAmount = parseFloat(document.getElementById('bidAmount').value);
+        const minBid = {{ min_bid }};
+        const userBalance = {{ user_balance }};
+
+        if (isNaN(bidAmount)) {
+            alert('유효한 금액을 입력해주세요.');
+            return false;
+        }
+
+        if (bidAmount < minBid) {
+            alert (`최소 입찰가(${minBid.toLocaleString()}원)보다 높은 금액을 입력해주세요.`);
+            return false;
+        }
+
+        if (bidAmount > userBalance) {
+            alert('잔액이 부족합니다.');
+            return false;
+        }
+
+        if (bidAmount % 1000 !== 0) {
+            alert('입찰 금액은 1,000원 단위로 입력해주세요.');
+            return false;
+        }
+
+        return confirm('입찰하시겠습니까?');
+    }
 </script>
 {% endblock js %}
 
