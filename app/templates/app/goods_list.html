@@ -1,0 +1,80 @@
+{% extends "app/common/frame.html" %}
+{% load static %}
+{% load django_bootstrap5 %}
+
+{% block title %}내 굿즈 목록 - InspirAItion{% endblock title %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/goods.css' %}">
+{% endblock %}
+
+{% block header %}
+{% include "app/common/header.html" %}
+{% endblock header %}
+
+{% block content %}
+<hr class="featurette-divider">
+<div class="container">
+    <h2 class="mb-4">내 굿즈 목록</h2>
+    
+    {% if goods_items %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for item in goods_items %}
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="goods-preview-container">
+                        {% if item.frame_type %}
+                        <div class="frame-preview-container {{ item.frame_type.name|slugify }}">
+                        {% endif %}
+                            <img src="{{ item.post.image }}" class="card-img-top goods-preview" alt="{{ item.post.title }}">
+                        {% if item.frame_type %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <h5 class="card-title mt-3">{{ item.post.title }}</h5>
+                    
+                    <div class="specs mt-2">
+                        <div class="spec-item">
+                            <span class="spec-label">사이즈:</span>
+                            <span class="spec-value">{{ item.size.name }} ({{ item.size.width }}×{{ item.size.height }}cm)</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">프레임:</span>
+                            <span class="spec-value">{{ item.frame_type.name }}</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">마감:</span>
+                            <span class="spec-value">{{ item.finish_type.name }}</span>
+                        </div>
+                        <div class="spec-item price">
+                            <span class="spec-label">가격:</span>
+                            <span class="spec-value fw-bold">{{ item.final_price|floatformat:0 }}원</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a href="{% url 'goods_detail' item.id %}" class="btn btn-primary">상세보기</a>
+                        <a href="#" class="btn btn-success">주문하기</a>
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    생성일: {{ item.created_at|date:"Y-m-d" }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <p>생성된 굿즈 아이템이 없습니다.</p>
+        <p>갤러리에서 작품을 선택하여 굿즈로 제작해보세요!</p>
+        <a href="{% url 'my_gallery' %}" class="btn btn-primary">내 갤러리로 가기</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock content %}
+
+{% block footer %}
+{% include "app/common/footer.html" %}
+{% endblock footer %}

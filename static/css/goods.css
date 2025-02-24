@@ -1,0 +1,110 @@
+.product-display {
+    background-color: #f8f9fa;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.product-image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    min-height: 400px;
+}
+
+.product-image {
+    max-width: 100%;
+    max-height: 500px;
+    transition: all 0.3s ease;
+}
+
+.frame {
+    position: relative;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.frame img {
+    display: block;
+}
+
+.프레임-없음, .no-frame {
+    padding: 0;
+}
+
+.내추럴-우드 {
+    border: 20px solid #d2b48c;
+    box-shadow: inset 0 0 0 2px #a67c52, 0 0 5px rgba(0, 0, 0, 0.2);
+    padding: 5px;
+    background-color: white;
+}
+
+.매트-블랙 {
+    border: 20px solid #2a2a2a;
+    box-shadow: inset 0 0 0 1px #000, 0 0 5px rgba(0, 0, 0, 0.3);
+    padding: 5px;
+    background-color: white;
+}
+
+.실버 {
+    border: 20px solid #c0c0c0;
+    box-shadow: inset 0 0 0 1px #808080, 0 0 5px rgba(0, 0, 0, 0.2);
+    padding: 5px;
+    background-color: white;
+}
+
+.frame-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.frame-option {
+    text-align: center;
+}
+
+.frame-label {
+    display: block;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+    transition: all 0.2s ease;
+}
+
+.frame-label:hover {
+    border-color: #adb5bd;
+}
+
+input[type="radio"]:checked + .frame-label {
+    border-color: #0d6efd;
+    background-color: #e7f1ff;
+}
+
+.frame-preview {
+    width: 100px;
+    height: 80px;
+    margin: 0 auto 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f8f9fa;
+    background-image: url('/static/img/frame-sample.png');
+    background-size: cover;
+    background-position: center;
+}
+
+.frame-preview.프레임-없음, .frame-preview.no-frame {
+    border: 1px dashed #dee2e6;
+}
+
+.frame-preview.내추럴-우드 {
+    border: 15px solid #d2b48c;
+    box-shadow: inset 0 0 0 1px #a67c52;
+}
+
+.frame-preview.매트-블랙 {
+    border: 15px solid #2a2a2a;
+    box-shadow: inset 0 0 0 1px #000;
+}
+
+.frame-preview.실버

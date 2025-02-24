@@ -1,0 +1,109 @@
+{% extends "app/common/frame.html" %}
+{% load static %}
+{% load django_bootstrap5 %}
+
+{% block title %}{{ goods_item.post.title }} - 굿즈 제작{% endblock title %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/goods.css' %}">
+{% endblock %}
+
+{% block header %}
+{% include "app/common/header.html" %}
+{% endblock header %}
+
+{% block content %}
+<hr class="featurette-divider">
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4 product-display">
+                <div class="card-body">
+                    <h2 class="card-title">{{ goods_item.post.title }}</h2>
+                    <div class="product-image-container">
+                        {% if goods_item.frame_type %}
+                        <div class="frame {{ goods_item.frame_type.name|slugify }}">
+                        {% endif %}
+                            <img src="{{ goods_item.post.image }}" alt="{{ goods_item.post.title }}" class="img-fluid product-image">
+                        {% if goods_item.frame_type %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">굿즈 옵션 선택</h3>
+                    
+                    <form method="post" action="{% url 'edit_goods' goods_item.id %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <h5>마감 선택</h5>
+                            <div class="btn-group w-100" role="group">
+                                {% for finish in finish_types %}
+                                <input type="radio" class="btn-check" name="finish_type" id="finish_{{ finish.id }}" value="{{ finish.id }}" {% if goods_item.finish_type.id == finish.id %}checked{% endif %}>
+                                <label class="btn btn-outline-primary" for="finish_{{ finish.id }}">
+                                    {{ finish.name }}
+                                    <small class="d-block">+{{ finish.price_addition|floatformat:0 }}원</small>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5>사이즈 선택</h5>
+                            <div class="btn-group w-100" role="group">
+                                {% for size in sizes %}
+                                <input type="radio" class="btn-check" name="size" id="size_{{ size.id }}" value="{{ size.id }}" {% if goods_item.size.id == size.id %}checked{% endif %}>
+                                <label class="btn btn-outline-primary" for="size_{{ size.id }}">
+                                    {{ size.name }}
+                                    <small class="d-block">{{ size.width }}×{{ size.height }}cm</small>
+                                    <small class="d-block">{{ size.get_price|floatformat:0 }}원</small>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5>프레임 선택</h5>
+                            <div class="frame-options">
+                                {% for frame in frame_types %}
+                                <div class="frame-option">
+                                    <input type="radio" class="btn-check" name="frame_type" id="frame_{{ frame.id }}" value="{{ frame.id }}" {% if goods_item.frame_type.id == frame.id %}checked{% endif %}>
+                                    <label class="frame-label" for="frame_{{ frame.id }}">
+                                        <div class="frame-preview {{ frame.name|slugify }}"></div>
+                                        <div class="frame-name">{{ frame.name }}</div>
+                                        <div class="frame-price">{% if frame.price_addition > 0 %}+{{ frame.price_addition|floatformat:0 }}원{% else %}기본{% endif %}</div>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="price-info mb-4">
+                            <div class="d-flex justify-content-between fs-4">
+                                <span>최종 가격:</span>
+                                <span class="fw-bold text-primary">{{ goods_item.final_price|floatformat:0 }}원</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">옵션 변경하기</button>
+                            <a href="#" class="btn btn-success">주문하기</a>
+                            <a href="{% url 'post_detail' goods_item.post.id %}" class="btn btn-outline-secondary">원본 작품으로 돌아가기</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block footer %}
+{% include "app/common/footer.html" %}
+{% endblock footer %}

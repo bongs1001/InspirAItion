@@ -32,6 +32,17 @@
                     <li class="nav-item">
                         <a class="nav-link text-light" href="{% url 'auction_list' %}"><span style="color: #00A4EF; font-weight: 900;">Auction</span></a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-light" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span style="color: #F25022; font-weight: 900;">Goods</span>
+                        </a>
+                        <ul class="dropdown-menu" style="background-color: var(--dropdown-bg);">
+                            {% if user.is_authenticated %}
+                            <li><a class="dropdown-item" style="color: var(--dropdown-text);" href="{% url 'goods_list' %}">My Goods</a></li>
+                            {% endif %}
+                            <li><a class="dropdown-item" style="color: var(--dropdown-text);" href="{% url 'my_gallery' %}">Create New Goods</a></li>
+                        </ul>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link text-light" href="mailto:inspiraition@gmail.com">Contact</a>
                     </li>
