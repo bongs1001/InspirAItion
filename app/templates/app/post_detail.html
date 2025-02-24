@@ -65,13 +65,19 @@
             </div>
             {% endif %}
 
-            <!-- 기존 제어 버튼 및 좋아요 버튼 부분 수정 -->
             <div class="d-flex justify-content-between align-items-center mt-3">
                 <div class="d-flex flex-wrap gap-2">
                     {% if user.is_authenticated and user == post.user %}
                     <a href="{% url 'edit_post' post.id %}" class="btn btn-primary">수정</a>
                     <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">삭제</button>
                     {% endif %}
+
+                    {% if user.is_authenticated and user == post.current_owner %}
+                    <a href="{% url 'create_goods' post.id %}" class="btn btn-success">
+                        <i class="fas fa-tshirt me-1"></i> 굿즈 제작
+                    </a>
+                    {% endif %}
+                    
                     {% if "artwork" in previous_url %}
                     <button type="button" class="btn btn-secondary" onclick="history.back()">이전</button>
                     {% else %}

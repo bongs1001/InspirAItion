@@ -1,0 +1,226 @@
+.product-display {
+    background-color: #f8f9fa;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.product-image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    min-height: 400px;
+}
+
+.product-image {
+    max-width: 100%;
+    max-height: 500px;
+    transition: all 0.3s ease;
+}
+
+.frame {
+    position: relative;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.frame img {
+    display: block;
+}
+
+.프레임-없음, .no-frame {
+    padding: 0;
+}
+
+.내추럴-우드 {
+    border: 20px solid #d2b48c;
+    box-shadow: inset 0 0 0 2px #a67c52, 0 0 5px rgba(0, 0, 0, 0.2);
+    padding: 5px;
+    background-color: white;
+}
+
+.매트-블랙 {
+    border: 20px solid #2a2a2a;
+    box-shadow: inset 0 0 0 1px #000, 0 0 5px rgba(0, 0, 0, 0.3);
+    padding: 5px;
+    background-color: white;
+}
+
+.실버 {
+    border: 20px solid #c0c0c0;
+    box-shadow: inset 0 0 0 1px #808080, 0 0 5px rgba(0, 0, 0, 0.2);
+    padding: 5px;
+    background-color: white;
+}
+
+.frame-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.frame-option {
+    text-align: center;
+}
+
+.frame-label {
+    display: block;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+    transition: all 0.2s ease;
+}
+
+.frame-label:hover {
+    border-color: #adb5bd;
+}
+
+input[type="radio"]:checked + .frame-label {
+    border-color: #0d6efd;
+    background-color: #e7f1ff;
+}
+
+.frame-preview {
+    width: 100px;
+    height: 80px;
+    margin: 0 auto 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f8f9fa;
+    background-image: url('/static/img/frame-sample.png');
+    background-size: cover;
+    background-position: center;
+}
+
+.frame-preview.프레임-없음, .frame-preview.no-frame {
+    border: 1px dashed #dee2e6;
+}
+
+.frame-preview.내추럴-우드 {
+    border: 15px solid #d2b48c;
+    box-shadow: inset 0 0 0 1px #a67c52;
+}
+
+.frame-preview.매트-블랙 {
+    border: 15px solid #2a2a2a;
+    box-shadow: inset 0 0 0 1px #000;
+}
+
+.frame-preview.실버 {
+    border: 15px solid #c0c0c0;
+    box-shadow: inset 0 0 0 1px #808080;
+}
+
+.frame-name {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.frame-price {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.price-info {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+}
+
+.goods-preview-container {
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.goods-preview {
+    max-width: 100%;
+    max-height: 180px;
+    object-fit: contain;
+}
+
+.frame-preview-container {
+    display: inline-block;
+}
+
+.frame-preview-container.프레임-없음, 
+.frame-preview-container.no-frame {
+    margin: 0;
+}
+
+.frame-preview-container.내추럴-우드 {
+    border: 10px solid #d2b48c;
+    box-shadow: inset 0 0 0 1px #a67c52;
+}
+
+.frame-preview-container.매트-블랙 {
+    border: 10px solid #2a2a2a;
+    box-shadow: inset 0 0 0 1px #000;
+}
+
+.frame-preview-container.실버 {
+    border: 10px solid #c0c0c0;
+    box-shadow: inset 0 0 0 1px #808080;
+}
+
+.specs {
+    margin-top: 1rem;
+}
+
+.spec-item {
+    margin-bottom: 0.5rem;
+}
+
+.spec-label {
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+
+.spec-value {
+    color: #495057;
+}
+
+.price .spec-value {
+    color: #0d6efd;
+    font-size: 1.1rem;
+}
+
+[data-theme="dark"] .product-display {
+    background-color: #2d2d2d;
+}
+
+[data-theme="dark"] .frame-label {
+    border-color: #444;
+    background-color: #333;
+}
+
+[data-theme="dark"] .frame-label:hover {
+    border-color: #555;
+}
+
+[data-theme="dark"] input[type="radio"]:checked + .frame-label {
+    border-color: #0d6efd;
+    background-color: #0d4c8c;
+}
+
+[data-theme="dark"] .frame-price {
+    color: #adb5bd;
+}
+
+[data-theme="dark"] .price-info {
+    background-color: #333;
+    border-color: #444;
+}
+
+[data-theme="dark"] .spec-value {
+    color: #adb5bd;
+}
+
+[data-theme="dark"] .price .spec-value {
+    color: #6ea8fe;
+}

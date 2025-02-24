@@ -1,0 +1,201 @@
+{% extends "app/common/frame.html" %}
+{% load static %}
+{% load django_bootstrap5 %}
+
+{% block title %}{{ goods_item.post.title }} - 굿즈 상세{% endblock title %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/goods.css' %}">
+{% endblock %}
+
+{% block header %}
+{% include "app/common/header.html" %}
+{% endblock header %}
+
+{% block content %}
+<hr class="featurette-divider">
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4 product-display">
+                <div class="card-body">
+                    <h2 class="card-title">{{ goods_item.post.title }}</h2>
+                    <div class="product-image-container">
+                        {% if goods_item.frame_type %}
+                        <div class="frame {{ goods_item.frame_type.name|slugify }}">
+                        {% else %}
+                        <div class="frame no-frame">
+                        {% endif %}
+                            <img src="{{ goods_item.post.image }}" alt="{{ goods_item.post.title }}" class="img-fluid product-image">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">굿즈 정보</h3>
+                    
+                    <div class="specs mb-4">
+                        <h5>현재 옵션</h5>
+                        
+                        <div class="spec-item">
+                            <div class="d-flex justify-content-between">
+                                <span class="spec-label">사이즈:</span>
+                                <span class="spec-value">{{ goods_item.size.name }} ({{ goods_item.size.width }}×{{ goods_item.size.height }}cm)</span>
+                            </div>
+                        </div>
+                        
+                        <div class="spec-item">
+                            <div class="d-flex justify-content-between">
+                                <span class="spec-label">프레임:</span>
+                                <span class="spec-value">{{ goods_item.frame_type.name }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="spec-item">
+                            <div class="d-flex justify-content-between">
+                                <span class="spec-label">마감:</span>
+                                <span class="spec-value">{{ goods_item.finish_type.name }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="spec-item price mt-3">
+                            <div class="d-flex justify-content-between">
+                                <span class="spec-label">최종 가격:</span>
+                                <span class="spec-value">{{ goods_item.final_price|floatformat:0 }}원</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="post" action="{% url 'edit_goods' goods_item.id %}">
+                        {% csrf_token %}
+                        
+                        <h5>옵션 변경</h5>
+                        
+                        <div class="mb-4">
+                            <h6>마감 선택</h6>
+                            <div class="btn-group w-100" role="group">
+                                {% for finish in finish_types %}
+                                <input type="radio" class="btn-check" name="finish_type" id="finish_{{ finish.id }}" value="{{ finish.id }}" {% if goods_item.finish_type.id == finish.id %}checked{% endif %}>
+                                <label class="btn btn-outline-primary" for="finish_{{ finish.id }}">
+                                    {{ finish.name }}
+                                    <small class="d-block">+{{ finish.price_addition|floatformat:0 }}원</small>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6>사이즈 선택</h6>
+                            <div class="btn-group w-100" role="group">
+                                {% for size in sizes %}
+                                <input type="radio" class="btn-check" name="size" id="size_{{ size.id }}" value="{{ size.id }}" {% if goods_item.size.id == size.id %}checked{% endif %}>
+                                <label class="btn btn-outline-primary" for="size_{{ size.id }}">
+                                    {{ size.name }}
+                                    <small class="d-block">{{ size.width }}×{{ size.height }}cm</small>
+                                    <small class="d-block">{{ size.get_price|floatformat:0 }}원</small>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6>프레임 선택</h6>
+                            <div class="frame-options">
+                                {% for frame in frame_types %}
+                                <div class="frame-option">
+                                    <input type="radio" class="btn-check" name="frame_type" id="frame_{{ frame.id }}" value="{{ frame.id }}" {% if goods_item.frame_type.id == frame.id %}checked{% endif %}>
+                                    <label class="frame-label" for="frame_{{ frame.id }}">
+                                        <div class="frame-preview {{ frame.name|slugify }}"></div>
+                                        <div class="frame-name">{{ frame.name }}</div>
+                                        <div class="frame-price">{% if frame.price_addition > 0 %}+{{ frame.price_addition|floatformat:0 }}원{% else %}기본{% endif %}</div>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="price-info mb-4">
+                            <div class="d-flex justify-content-between fs-4">
+                                <span>변경 후 예상 가격:</span>
+                                <span class="fw-bold text-primary" id="estimated-price">{{ goods_item.final_price|floatformat:0 }}원</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">옵션 변경하기</button>
+                            <a href="#" class="btn btn-success">주문하기</a>
+                            <a href="{% url 'post_detail' goods_item.post.id %}" class="btn btn-outline-secondary">원본 작품으로 돌아가기</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function updateEstimatedPrice() {
+            const selectedSize = document.querySelector('input[name="size"]:checked');
+            const selectedFrame = document.querySelector('input[name="frame_type"]:checked');
+            const selectedFinish = document.querySelector('input[name="finish_type"]:checked');
+            
+            const sizePrice = {
+                {% for size in sizes %}
+                "{{ size.id }}": {{ size.get_price }},
+                {% endfor %}
+            };
+            
+            const framePrice = {
+                {% for frame in frame_types %}
+                "{{ frame.id }}": {{ frame.price_addition }},
+                {% endfor %}
+            };
+            
+            const finishPrice = {
+                {% for finish in finish_types %}
+                "{{ finish.id }}": {{ finish.price_addition }},
+                {% endfor %}
+            };
+            
+            let totalPrice = 0;
+            if (selectedSize) totalPrice += sizePrice[selectedSize.value];
+            if (selectedFrame) totalPrice += framePrice[selectedFrame.value];
+            if (selectedFinish) totalPrice += finishPrice[selectedFinish.value];
+            
+            document.getElementById('estimated-price').textContent = totalPrice.toLocaleString() + '원';
+            
+            updateFramePreview();
+        }
+        
+        function updateFramePreview() {
+            const selectedFrame = document.querySelector('input[name="frame_type"]:checked');
+            const frameLabel = selectedFrame ? selectedFrame.nextElementSibling.querySelector('.frame-preview').className.split(' ')[1] : 'no-frame';
+            
+            const imageContainer = document.querySelector('.product-image-container');
+            const frameDiv = imageContainer.querySelector('.frame');
+            
+            frameDiv.className = 'frame';
+            
+            frameDiv.classList.add(frameLabel);
+        }
+        
+        const optionInputs = document.querySelectorAll('input[type="radio"]');
+        optionInputs.forEach(input => {
+            input.addEventListener('change', updateEstimatedPrice);
+        });
+        
+        updateEstimatedPrice();
+    });
+</script>
+{% endblock %}
+
+{% block footer %}
+{% include "app/common/footer.html" %}
+{% endblock footer %}

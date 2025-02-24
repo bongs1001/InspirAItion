@@ -20,6 +20,9 @@
             <a href="{% url 'register_auction' post.id %}" class="btn btn-sm btn-primary">
                 <i class="fas fa-gavel"></i> 경매 등록
             </a>
+            <a href="{% url 'create_goods' post.id %}" class="btn btn-sm btn-success">
+                <i class="fas fa-tshirt"></i> 굿즈 제작
+            </a>
             {% elif post.is_on_auction %}
             <span class="badge bg-info">경매 진행중</span>
             {% endif %}

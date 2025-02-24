@@ -32,9 +32,13 @@ from .models import (
     Auction,
     AuctionStatus,
     Bid,
+    FinishType,
+    FrameType,
+    GoodsItem,
     Post,
     AIGeneration,
     Comment,
+    ProductSize,
     TagUsage,
     Like,
 )
@@ -1346,3 +1350,114 @@ def cancel_auction(request, auction_id):
         messages.error(request, "경매 취소 처리 중 오류가 발생했습니다.")
 
     return redirect("auction_detail", auction_id=auction.id)
+
+@login_required
+def create_goods(request, post_id):
+    post = get_object_or_404(Post, id=post_id, current_owner=request.user)
+    
+    if request.method == "POST":
+        frame_type_id = request.POST.get('frame_type')
+        size_id = request.POST.get('size')
+        finish_type_id = request.POST.get('finish_type')
+        
+        try:
+            frame_type = FrameType.objects.get(id=frame_type_id) if frame_type_id else None
+            size = ProductSize.objects.get(id=size_id) if size_id else None
+            finish_type = FinishType.objects.get(id=finish_type_id) if finish_type_id else None
+            
+            goods_item = GoodsItem.objects.create(
+                post=post,
+                frame_type=frame_type,
+                size=size,
+                finish_type=finish_type
+            )
+            
+            return redirect('goods_detail', goods_id=goods_item.id)
+        
+        except Exception as e:
+            messages.error(request, f"상품 생성 중 오류가 발생했습니다: {str(e)}")
+            return redirect('post_detail', pk=post_id)
+    
+    frame_types = FrameType.objects.filter(is_active=True)
+    sizes = ProductSize.objects.filter(is_active=True)
+    finish_types = FinishType.objects.filter(is_active=True)
+    
+    context = {
+        'post': post,
+        'frame_types': frame_types,
+        'sizes': sizes,
+        'finish_types': finish_types,
+    }
+    
+    return render(request, 'app/create_goods.html', context)
+
+@login_required
+def goods_detail(request, goods_id):
+    goods_item = get_object_or_404(GoodsItem, id=goods_id)
+    
+    if goods_item.post.current_owner != request.user:
+        messages.error(request, "접근 권한이 없습니다.")
+        return redirect('my_gallery')
+    
+    frame_types = FrameType.objects.filter(is_active=True)
+    sizes = ProductSize.objects.filter(is_active=True)
+    finish_types = FinishType.objects.filter(is_active=True)
+    
+    context = {
+        'goods_item': goods_item,
+        'frame_types': frame_types,
+        'sizes': sizes,
+        'finish_types': finish_types,
+    }
+    
+    return render(request, 'app/goods_detail.html', context)
+
+@login_required
+def edit_goods(request, goods_id):
+    goods_item = get_object_or_404(GoodsItem, id=goods_id)
+    
+    if goods_item.post.current_owner != request.user:
+        messages.error(request, "접근 권한이 없습니다.")
+        return redirect('my_gallery')
+    
+    if request.method == "POST":
+        frame_type_id = request.POST.get('frame_type')
+        size_id = request.POST.get('size')
+        finish_type_id = request.POST.get('finish_type')
+        
+        try:
+            goods_item.frame_type = FrameType.objects.get(id=frame_type_id) if frame_type_id else None
+            goods_item.size = ProductSize.objects.get(id=size_id) if size_id else None
+            goods_item.finish_type = FinishType.objects.get(id=finish_type_id) if finish_type_id else None
+            
+            goods_item.save()
+            
+            messages.success(request, "상품 옵션이 성공적으로 수정되었습니다.")
+            return redirect('goods_detail', goods_id=goods_item.id)
+        
+        except Exception as e:
+            messages.error(request, f"상품 수정 중 오류가 발생했습니다: {str(e)}")
+    
+    frame_types = FrameType.objects.filter(is_active=True)
+    sizes = ProductSize.objects.filter(is_active=True)
+    finish_types = FinishType.objects.filter(is_active=True)
+    
+    context = {
+        'goods_item': goods_item,
+        'frame_types': frame_types,
+        'sizes': sizes,
+        'finish_types': finish_types,
+    }
+    
+    return render(request, 'app/edit_goods.html', context)
+
+@login_required
+def goods_list(request):
+    user_posts = Post.objects.filter(current_owner=request.user).values_list('id', flat=True)
+    goods_items = GoodsItem.objects.filter(post_id__in=user_posts).order_by('-created_at')
+    
+    context = {
+        'goods_items': goods_items
+    }
+    
+    return render(request, 'app/goods_list.html', context)
