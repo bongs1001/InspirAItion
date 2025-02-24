@@ -64,6 +64,8 @@ class AuctionForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        if not self.instance.post_id:
+            return cleaned_data
         start_time = cleaned_data.get("start_time")
         end_time = cleaned_data.get("end_time")
 
