@@ -129,12 +129,31 @@
                         </button>
                     </li>
                 </ul>
-                <button type="submit" class="btn btn-primary mt-2">댓글 작성</button>
-                <button type="button" id="evaluateCommentBtn" class="btn btn-secondary mt-2">댓글 평가</button>
+                <button type="button" id="commentSubmitBtn" class="btn btn-primary mt-2">댓글 작성</button>
             </div>
         </form>
         {% endif %}
         <div id="commentList"></div>
+    </div>
+</div>
+
+<!-- 댓글 옵션 선택 모달 -->
+<div class="modal fade" id="commentOptionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">댓글 옵션 선택</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                댓글을 작성할 옵션을 선택하세요.
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="normalCommentBtn" class="btn btn-primary">일반 댓글</button>
+                <button type="button" id="aiCommentBtn" class="btn btn-info">AI 평가 포함</button>
+                <button type="button" id="cancelCommentBtn" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -163,16 +182,16 @@
 <!-- 로딩 모달 추가 -->
 <div id="loadingModal" style="position: fixed;top: 0;left: 0;width: 100%;height: 100%;background: rgba(0,0,0,0.5);display: none;z-index: 1050;">
     <div style="position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);color: #fff;font-size: 1.5rem;">
-        로딩중...
+        데이터 처리중...
     </div>
 </div>
-
+{% endblock content %}
 
 {% block js %}
 <script src="{% static 'js/script.js' %}"></script>
-{% endblock js %}
-
 <script>
+    // 전역 변수에 현재 사용자 username 저장
+    const currentUser = "{{ user.username }}";
     // 추가: postId 변수 선언 (댓글 처리에 사용)
     const postId = {{ post.id }};
     // 댓글 기능 스크립트 수정: 버튼 클릭 효과 및 로딩 표시 추가
@@ -185,17 +204,50 @@
             .then(response => response.json())
             .then(data => {
                 const commentList = document.getElementById('commentList');
-                commentList.innerHTML = data.comments.map(comment => `
-                <div class="card mb-2">
-                    <div class="card-body">
-                        <p class="card-text">${comment.message}</p>
-                        <small class="text-muted">
-                            작성자: ${comment.author} | 
-                            작성일: ${new Date(comment.created_at).toLocaleString()}
-                        </small>
-                    </div>
-                </div>
-            `).join('');
+                commentList.innerHTML = data.comments.map(comment => {
+                    // 댓글 삭제 버튼: 현재 사용자가 작성한 댓글에만 추가 (nickname 대신 username으로 검사)
+                    let deleteBtn = "";
+                    if (currentUser && comment.author_username === currentUser) {
+                        deleteBtn = `<button class="btn btn-sm btn-danger delete-comment-btn" data-comment-id="${comment.id}">삭제</button>`;
+                    }
+                    return `
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <p class="card-text">${comment.message}</p>
+                                <small class="text-muted">
+                                    작성자: ${comment.author} | 
+                                    작성일: ${new Date(comment.created_at).toLocaleString()}
+                                </small>
+                                ${deleteBtn}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                // 삭제 버튼 이벤트 할당
+                document.querySelectorAll('.delete-comment-btn').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const commentId = this.getAttribute('data-comment-id');
+                        if (!confirm("정말로 이 댓글을 삭제하시겠습니까?")) return;
+                        showLoadingModal();
+                        fetch(`/comments/${commentId}/`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                            }
+                        })
+                            .then(response => response.json())
+                            .then(result => {
+                                loadComments();
+                            })
+                            .catch(error => {
+                                console.error('댓글 삭제 오류:', error);
+                                alert('댓글 삭제에 실패했습니다.');
+                            })
+                            .finally(() => {
+                                hideLoadingModal();
+                            });
+                    });
+                });
             });
     }
 
@@ -497,8 +549,101 @@
             document.getElementById('speechRecognitionModal').style.display = 'none';
         }
     }
+
+    // 새 "댓글 작성" 버튼 클릭 시 댓글 옵션 모달을 표시
+    document.getElementById('commentSubmitBtn')?.addEventListener('click', function () {
+        var commentOptionModal = new bootstrap.Modal(document.getElementById('commentOptionModal'));
+        commentOptionModal.show();
+    });
+
+    // "일반 댓글" 버튼: 입력된 댓글을 바로 제출
+    document.getElementById('normalCommentBtn')?.addEventListener('click', function () {
+        var modalEl = document.getElementById('commentOptionModal');
+        var modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) { modal.hide(); }
+
+        const message = document.getElementById('commentMessage').value;
+        // 추가: 댓글 내용이 비어있는지 확인
+        if (!message.trim()) {
+            alert('댓글 내용을 입력해주세요.');
+            return;
+        }
+
+        showLoadingModal();
+        fetch(`/posts/${postId}/comments/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ message })
+        })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('commentMessage').value = '';
+                loadComments();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('댓글 작성에 실패했습니다.');
+            })
+            .finally(() => { hideLoadingModal(); });
+    });
+
+    // "AI 평가 포함" 버튼: AI 평가 후, 평가 결과와 함께 댓글 제출
+    document.getElementById('aiCommentBtn')?.addEventListener('click', function () {
+        // 먼저 댓글 옵션 모달 닫기
+        var modalEl = document.getElementById('commentOptionModal');
+        var modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) { modal.hide(); }
+
+        showLoadingModal();
+        const commentText = document.getElementById('commentMessage').value;
+        const curationStyle = document.getElementById('curationStyleSelect').value;
+        if (!commentText) {
+            alert('댓글 내용을 입력해주세요.');
+            hideLoadingModal();
+            return;
+        }
+        const curationUrl = `{% url 'evaluate_curation' post.id %}`;
+        fetch(curationUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            body: JSON.stringify({
+                style: curationStyle,
+                comment: commentText
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('curationText').innerHTML = `<small class="text-muted">큐레이션: ${data.curation_text}</small>`;
+                const combinedComment = `<p>* 사용자 감상 : ${commentText}</p><hr><p>* AI 큐레이터의[${curationStyle}] 감상평가 : ${data.evaluation_feedback}</p>`;
+                return fetch(`/posts/${postId}/comments/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({ message: combinedComment })
+                });
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('commentMessage').value = '';
+                loadComments();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('댓글 작성에 실패했습니다.');
+            })
+            .finally(() => { hideLoadingModal(); });
+    });
 </script>
-{% endblock content %}
+{% endblock js %}
+
 
 {% block footer %}
 {% include "app/common/footer.html" %}

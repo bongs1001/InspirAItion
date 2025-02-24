@@ -734,7 +734,7 @@ def create_post(request: HttpRequest) -> HttpResponse:
                 blob_url = save_image_to_blob(
                     generated_image_url, form.cleaned_data["prompt"], request.user.id
                 )
-                if blob_url:
+                if (blob_url):
                     post.image = generated_image_url
 
                     AIGeneration.objects.create(
@@ -976,14 +976,13 @@ def comment_list_create(request, post_id):
     post = get_object_or_404(Post, id=post_id)
 
     if request.method == "GET":
-        comments = Comment.objects.filter(post=post).select_related(
-            "author", "author__profile"
-        )
+        comments = Comment.objects.filter(post=post).select_related("author", "author__profile")
         data = [
             {
                 "id": comment.id,
                 "message": comment.message,
                 "author": comment.author_nickname if comment.author else "Anonymous",
+                "author_username": comment.author.username if comment.author else "",
                 "created_at": comment.created_at.isoformat(),
             }
             for comment in comments
