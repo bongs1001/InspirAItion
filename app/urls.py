@@ -24,7 +24,7 @@ urlpatterns = [
         name="generate_curation",
     ),
     path(
-        "posts/<int:pk>/ealuate/",
+        "posts/<int:pk>/evaluate/",
         views.evaluate_curation,
         name="evaluate_curation",
     ),
@@ -36,4 +36,5 @@ urlpatterns = [
         views.register_auction,
         name="register_auction",
     ),
+    path("auction/list/", views.auction_list, name="auction_list"),
 ]

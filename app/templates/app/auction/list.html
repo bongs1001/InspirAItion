@@ -1,0 +1,105 @@
+{% extends "app/common/frame.html" %}
+{% load static %}
+{% load django_bootstrap5 %}
+
+{% block title %}경매 목록 - InspirAItion{% endblock title %}
+
+{% block header %}
+{% include "app/common/header.html" %}
+{% endblock header %}
+
+{% block content %}
+<hr class="featurette-divider">
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>진행 중인 경매</h2>
+        <div class="btn-group">
+            <a href="?sort=latest" class="btn btn-outline-primary {% if sort_by == 'latest' %}active{% endif %}">최신순</a>
+            <a href="?sort=ending_soon" class="btn btn-outline-primary {% if sort_by == 'ending_soon' %}active{% endif %}">마감임박순</a>
+            <a href="?sort=popular" class="btn btn-outline-primary {% if sort_by == 'popular' %}active{% endif %}">인기순</a>
+        </div>
+    </div>
+
+    {% if auctions %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for auction in auctions %}
+        <div class="col">
+            <div class="card h-100">
+                {% if auction.post.image %}
+                <img src="{{ auction.post.image }}" class="card-img-top" alt="{{ auction.post.title }}" style="height: 200px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ auction.post.title }}</h5>
+                    <p class="card-text">{{ auction.post.content|truncatechars:100 }}</p>
+
+                    <div class="mb-2">
+                        <small class="text-muted">판매자: {{ auction.seller.profile.nickname }}</small>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>시작가:</strong> {{ auction.start_price }}원
+                        </div>
+                        <div>
+                            <strong>현재가:</strong> {{ auction.current_price }}원
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <i class="fas fa-gavel"></i> 입찰 {{ auction.bid_count }}회
+                        </div>
+                        <div class="text-danger">
+                            <i class="fas fa-clock"></i> <span data-end-time="{{ auction.end_time|date:'c' }}">시간 계산중...</span>
+                        </div>
+                    </div>
+
+                    <a href="{% url 'post_detail' auction.post.id %}" class="btn btn-primary w-100">상세보기</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <p class="h5">현재 진행 중인 경매가 없습니다.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock content %}
+
+{% block footer %}
+{% include "app/common/footer.html" %}
+{% endblock footer %}
+
+{% block js %}
+<script>
+    function updateTimeRemaining() {
+        const timeElements = document.querySelectorAll('[date-end-time]');
+        timeElements.forEach(element => {
+            const endTime = new Date(element.dataset.endTime);
+            const now = new Date();
+            const diff = endTime - now;
+
+            if (diff <= 0) {
+                element.textContent = '경매 종료';
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            let timeText = '';
+            if (days > 0) timeText += `${days}일 `;
+            if (hours > 0) timeText += `${hours}시간 `;
+            timeText += `${minutes}붐`;
+
+            element.textContent = timeText;
+        });
+    }
+
+    setInterval(updateTimeRemaining, 60000);
+    updateTimeRemaining();
+</script>
+{% endblock js %}
