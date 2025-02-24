@@ -65,7 +65,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "widget_tweaks",
     # third party apps
     "django_bootstrap5",
     "corsheaders",
@@ -79,6 +78,7 @@ INSTALLED_APPS = [
     "config",
     "email_app",
     "util",
+    # "widget_tweaks",
 ]
 
 MIDDLEWARE = [
