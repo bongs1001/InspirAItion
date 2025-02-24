@@ -12,7 +12,7 @@ def create_user_profile(sender, instance, created, **kwargs):
             Profile.objects.create(
                 user=instance, 
                 nickname=instance.username,
-                balance=10000
+                balance=0
             )
         except OperationalError as e:
             import logging

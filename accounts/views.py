@@ -4,8 +4,9 @@ from django.contrib.auth.decorators import login_required
 from azure.storage.blob import BlobServiceClient
 from django.conf import settings
 from .forms import SignUpForm, ProfileUpdateForm
-from .models import Profile
+from .models import ChargeCode, ChargeCodeUsage, Profile
 from django.contrib import messages
+from django.utils import timezone
 
 
 def signup(request):
@@ -68,3 +69,29 @@ def profile_update(request):
         form = ProfileUpdateForm(instance=request.user.profile)
 
     return render(request, "accounts/profile_update.html", {"form": form})
+
+@login_required
+def charge_money(request):
+    if request.method == "POST":
+        code = request.POST.get('charge_code')
+        try:
+            charge_code = ChargeCode.objects.get(code=code)
+            
+            if ChargeCodeUsage.objects.filter(charge_code=charge_code, user=request.user).exists():
+                messages.error(request, '이미 사용한 충전 코드입니다.')
+                return redirect('profile_update')
+            
+            profile = request.user.profile
+            profile.balance += charge_code.amount
+            profile.save()
+            
+            ChargeCodeUsage.objects.create(
+                charge_code=charge_code,
+                user=request.user
+            )
+            
+            messages.success(request, f'충전이 완료되었습니다. {charge_code.amount}원이 추가되었습니다.')
+        except ChargeCode.DoesNotExist:
+            messages.error(request, '유효하지 않은 충전 코드입니다.')
+        
+        return redirect('profile_update')
