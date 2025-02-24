@@ -1,0 +1,98 @@
+[
+    {
+      "model": "app.frametype",
+      "pk": 1,
+      "fields": {
+        "name": "프레임 없음",
+        "description": "프레임이 없는 기본형",
+        "price_addition": 0,
+        "is_active": true
+      }
+    },
+    {
+      "model": "app.frametype",
+      "pk": 2,
+      "fields": {
+        "name": "내추럴 우드",
+        "description": "자연스러운 나무 프레임",
+        "price_addition": 5000,
+        "is_active": true
+      }
+    },
+    {
+      "model": "app.frametype",
+      "pk": 3,
+      "fields": {
+        "name": "매트 블랙",
+        "description": "모던한 블랙 프레임",
+        "price_addition": 5000,
+        "is_active": true
+      }
+    },
+    {
+      "model": "app.frametype",
+      "pk": 4,
+      "fields": {
+        "name": "실버",
+        "description": "세련된 실버 프레임",
+        "price_addition": 6000,
+        "is_active": true
+      }
+    },
+    {
+      "model": "app.productsize",
+      "pk": 1,
+      "fields": {
+        "name": "M",
+        "width": 45,
+        "height": 32,
+        "base_price": 29000,
+        "price_multiplier": 1.00,
+        "is_active": true
+      }
+    },
+    {
+      "model": "app.productsize",
+      "pk": 2,
+      "fields": {
+        "name": "L",
+        "width": 60,
+        "height": 42,
+        "base_price": 29000,
+        "price_multiplier": 1.5,
+        "is_active": true
+      }
+    },
+    {
+      "model": "app.productsize",
+      "pk": 3,
+      "fields": {
+        "name": "XL",
+        "width": 75,
+        "height": 52,
+        "base_price": 29000,
+        "price_multiplier": 2.0,
+        "is_active": true
+      }
+    },
+    {
+      "model": "app.finishtype",
+      "pk": 1,
+      "fields": {
+        "name": "Matte",
+        "description": "빛 반사가 적은 무광 마감",
+        "price_addition": 3000,
+        "is_active": true
+      }
+    },
+    {
+      "model": "app.finishtype",
+      "pk": 2,
+      "fields": {
+        "name": "Gloss",
+        "description": "선명한 광택 마감",
+        "price_addition": 3000,
+        "is_active": true
+      }
+    }
+  ]

@@ -304,3 +304,60 @@ class Bid(models.Model):
             self.auction.current_price = self.amount
             self.auction.save()
             super().save(*args, **kwargs)
+
+class FrameType(models.Model):
+    name = models.CharField(max_length=50)
+    description = models.TextField(blank=True)
+    price_addition = models.DecimalField(max_digits=10, decimal_places=0, default=5000) # 기본 프레임 추가 5,000원
+    image_url = models.URLField(blank=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+    
+class ProductSize(models.Model):
+    name = models.CharField(max_length=20)
+    width = models.IntegerField()
+    height = models.IntegerField()
+    price_multiplier = models.DecimalField(max_digits=4, decimal_places=2, default=1.00)
+    base_price = models.DecimalField(max_digits=10, decimal_places=0, default=29000) # M 사이즈 기준 29,000원
+    is_active = models.BooleanField(default=True)
+
+    def get_price(self):
+        return self.base_price * self.price_multiplier
+
+    def __str__(self):
+        return f"{self.name} ({self.width}x{self.height}cm)"
+    
+class FinishType(models.Model):
+    name = models.CharField(max_length=50)
+    description = models.TextField(blank=True)
+    price_addition = models.DecimalField(max_digits=10, decimal_places=0, default=3000) # 기본 마감 추가 3,000원
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+    
+class GoodsItem(models.Model):
+    post = models.ForeignKey('Post', on_delete=models.CASCADE)
+    frame_type = models.ForeignKey(FrameType, on_delete=models.SET_NULL, null=True)
+    size = models.ForeignKey(ProductSize, on_delete=models.SET_NULL, null=True)
+    finish_type = models.ForeignKey(FinishType, on_delete=models.SET_NULL, null=True)
+    base_price = models.DecimalField(max_digits=10, decimal_places=2, default=49.00)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def final_price(self):
+        if not self.size:
+            return 0
+        
+        price = self.size.get_price()
+        if self.frame_type:
+            price += self.frame_type.price_addition
+        if self.finish_type:
+            price += self.finish_type.price_addition
+        return price
+    
+    def __str__(self):
+        return f"Goods for {self.post.title}"
