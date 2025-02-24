@@ -218,9 +218,10 @@ class Auction(models.Model):
         )
 
     def can_bid(self, user):
+        now = timezone.now()
         return (
             user != self.seller
-            and self.is_active
+            and self.start_time <= now <= self.end_time
             and self.status == AuctionStatus.ACTIVE
         )
 
