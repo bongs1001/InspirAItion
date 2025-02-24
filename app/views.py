@@ -22,9 +22,11 @@ from django.db.models import Q
 from util.common.azure_computer_vision import get_image_caption_and_tags
 from util.common.azure_speech import synthesize_text_to_speech
 from django.views.decorators.http import require_GET
+from django.contrib import messages
+from django.core.exceptions import ValidationError
 
 from .forms import AuctionForm, PostWithAIForm, PostEditForm
-from .models import Auction, AuctionStatus, Post, AIGeneration, Comment, TagUsage, Like
+from .models import Auction, AuctionStatus, Bid, Post, AIGeneration, Comment, TagUsage, Like
 
 logging.basicConfig(
     level=logging.INFO,
@@ -1185,21 +1187,24 @@ def gpt4o_stt_api(request):
 
 
 @login_required
+@login_required
 def register_auction(request, post_id):
     post = get_object_or_404(Post, id=post_id, current_owner=request.user)
 
     if request.method == "POST":
-        form = AuctionForm(request.POST)
+        auction = Auction(post=post, seller=request.user)
+        form = AuctionForm(request.POST, instance=auction)
+        
         if form.is_valid():
             auction = form.save(commit=False)
-            auction.post = post
-            auction.seller = request.user
             auction.current_price = form.cleaned_data["start_price"]
             auction.status = AuctionStatus.ACTIVE
             auction.save()
+            messages.success(request, '경매가 성공적으로 등록되었습니다.')
             return redirect("auction_detail", auction_id=auction.id)
     else:
-        form = AuctionForm()
+        auction = Auction(post=post, seller=request.user)
+        form = AuctionForm(instance=auction)
 
     return render(request, "app/auction/register.html", {"form": form, "post": post})
 
@@ -1228,3 +1233,41 @@ def auction_list(request):
     }
 
     return render(request, 'app/auction/list.html', context)
+
+@login_required
+def auction_detail(request, auction_id):
+    auction = get_object_or_404(
+        Auction.objects.select_related(
+            'post',
+            'seller__profile',
+            'post__current_owner__profile'
+        ).prefetch_related('bids__bidder__profile'),
+        id=auction_id
+    )
+
+    min_bid = auction.current_price + 1000
+
+    if request.method == "POST" and auction.is_active:
+        try:
+            bid_amount = int(request.POST.get('bid_amount', 0))
+            if bid_amount <= auction.current_price:
+                messages.error(request, '현재가보다 높은 금액을 입찰해주세요.')
+            elif not auction.can_bid(request.user):
+                messages.error(request, '입찰할 수 없는 상태입니다.')
+            else:
+                Bid.objects.create(
+                    auction=auction,
+                    bidder=request.user,
+                    amount=bid_amount
+                )
+                auction.current_price = bid_amount
+                auction.save()
+                messages.success(request, '입찰이 완료되었습니다.')
+                return redirect('auction_detail', auction_id=auction.id)
+        except ValueError:
+            messages.error(request, '유효한 금액을 입력해주세요.')
+
+    return render(request, 'app/auction/detail.html', {
+        'auction': auction,
+        'min_bid': min_bid
+    })

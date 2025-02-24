@@ -44,9 +44,10 @@ class Post(models.Model):
     @property
     def is_on_auction(self):
         """현재 경매 중인지 확인"""
-        return self.auction.history.filter(
-            status=AuctionStatus.ACTIVE, end_time__gt=timezone.now()
-        ).exists()
+        try:
+            return self.auction is not None and self.auction.status == AuctionStatus.ACTIVE and self.auction.end_time > timezone.now()
+        except Auction.DoesNotExist:
+            return False
 
     def __str__(self):
         return self.title

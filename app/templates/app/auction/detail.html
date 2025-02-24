@@ -1,0 +1,191 @@
+{% extends "app/common/frame.html" %}
+{% load static %}
+{% load django_bootstrap5 %}
+
+{% block title %}{{ auction.post.title }} - 경매 - InspirAItion{% endblock title %}
+
+{% block header %}
+{% include "app/common/header.html" %}
+{% endblock header %}
+
+{% block content %}
+<hr class="featurette-divider">
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="card-title">{{ auction.post.title }}</h2>
+                    {% if auction.post.image %}
+                    <img src="{{ auction.post.image }}" alt="{{ auction.post.title }}" class="img-fluid mb-3">
+                    {% endif %}
+                    <div class="mb-3">
+                        <h5>작품 설명</h5>
+                        <p>{{ auction.post.content }}</p>
+                    </div>
+                    {% if auction.post.tags %}
+                    <div class="mb-3">
+                        <h5>태그</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for tag in auction.post.tags %}
+                            <span class="badge bg-secondary">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">경매 정보</h3>
+                    <div class="alert {% if auction.is_active %}alert-info{% else %}alert-warning{% endif %}">
+                        <strong>상태:</strong>
+                        {% if auction.is_active %}
+                        진행 중
+                        {% else %}
+                        {% if auction.status == 'pending' %}
+                        대기 중
+                        {% elif auction.status == 'ended' %}
+                        종료됨
+                        {% else %}
+                        취소됨
+                        {% endif %}
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>판매자:</strong> {{ auction.seller.profile.nickname }}
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>시작가:</strong> {{ auction.start_price }}원
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>현재가:</strong> {{ auction.current_price }}원
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>남은 시간:</strong>
+                        <span id="timeRemaining" data-end-time="{{ auction.end_time|date:'c' }}">
+                            계산 중...
+                        </span>
+                    </div>
+
+                    {% if auction.is_active and user.is_authenticated and auction.can_bid|default_if_none:True %}
+                    <form method="post" class="mb-3" id="bidForm">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="number" class="form-control" name="bid_amount" id="bidAmount"
+                                min="{{ min_bid }}" step="1000" placeholder="입찰가를 입력하세요">
+                            <button type="submit" class="btn btn-primary">입찰하기</button>
+                        </div>
+                        <small class="text-muted">최소 입찰가: {{ min_bid }}원</small>
+                    </form>
+                    {% endif %}
+
+                    {% if user == auction.seller %}
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal"
+                            data-bs-target="#cancelModal">
+                            경매 취소
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">입찰 기록</h4>
+                    <div class="bid-history">
+                        {% for bid in auction.bids.all %}
+                        <div class="bid-item d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <strong>{{ bid.bidder.profile.nickname }}</strong>
+                                <small class="text-muted d-block">{{ bid.created_at|date:'Y-m-d H:i' }}</small>
+                            </div>
+                            <div class="text-primary">{{ bid.amount }}원</div>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted text-center">아직 입찰 기록이 없습니다.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">경매 취소</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>정말로 이 경매를 취소하시겠습니까?</p>
+                <p class="text-danger">이 작업은 되돌릴 수 없습니다.</p>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block js %}
+<script>
+    function updateTimeRemaining() {
+        const element = document.getElementById('timeRemaining');
+        const endTime = new Date(element.dataset.endTime);
+        const now = new Date();
+        const diff = endTime - now;
+
+        if (diff <= 0) {
+            element.textContent = '경매 종료';
+            location.reload();
+            return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        let timeText = '';
+        if (days > 0) timeText += `${days}일 `;
+        timeText += `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+        element.textContent = timeText;
+    }
+
+    document.getElementById('bidForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const amount = parseInt(document.getElementById('bidAmount').value);
+        const mindBid = parseInt(this.querySelector('input[name="bid_amount"]').min);
+
+        if (isNaN(amount)) {
+            alert('유효한 금액을 입력해주세요.');
+            return;
+        }
+
+        if (amount < minBid) {
+            alert(`최소 입찰가(${minBid}원)보다 높은 금액을 입력해주세요.`);
+            return;
+        }
+
+        this.submit();
+    });
+
+    setInterval(updateTimeRemaining, 1000);
+    updateTimeRemaining();
+</script>
+{% endblock js %}
+
+{% block footer %}
+{% include "app/common/footer.html" %}
+{% endblock footer %}
