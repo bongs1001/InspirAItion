@@ -9,10 +9,13 @@ from .models import Profile
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         try:
-            Profile.objects.create(user=instance, nickname=instance.username)
+            Profile.objects.create(
+                user=instance, 
+                nickname=instance.username,
+                balance=10000
+            )
         except OperationalError as e:
             import logging
-
             logging.error(f"Could not create user profile: {e}")
 
 
@@ -23,5 +26,4 @@ def save_user_profile(sender, instance, created, **kwargs):
             instance.profile.save()
     except Exception as e:
         import logging
-
         logging.error(f"Could not save user profile: {e}")
