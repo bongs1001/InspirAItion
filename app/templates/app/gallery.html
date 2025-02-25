@@ -62,11 +62,9 @@
             </button>
 
             <div class="tag-navigation">
-                <!-- 전체보기 버튼 -->
-                <button type="button" class="tag-item {% if not selected_tag %}active{% endif %}" onclick="window.location.href='?{% if search_query %}search={{ search_query }}{% endif %}'">
+                <button type="button" class="tag-item {% if not selected_tag %}active{% endif %}" onclick="window.location.href='{% if gallery_type == 'personal' %}{% url 'my_gallery' %}{% else %}{% url 'public_gallery' %}{% endif %}'">
                     전체보기
                 </button>
-                <!-- 태그 버튼들 -->
                 {% for tag in top_tags %}
                 <button type="button" class="tag-item {% if tag.tag == selected_tag %}active{% endif %}" onclick="window.location.href='?tag={{ tag.tag }}{% if search_query %}&search={{ search_query }}{% endif %}'">
                     {{ tag.tag }}

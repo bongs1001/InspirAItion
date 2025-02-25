@@ -366,6 +366,12 @@
     background-color: #3d3d3d;
 }
 
+[data-theme="dark"] .tag-item.active {
+    background-color: #0d6efd;
+    color: #ffffff;
+    border-color: #0d6efd;
+}
+
 [data-theme="dark"] .scroll-left,
 [data-theme="dark"] .scroll-right {
     background-color: var(--bg-secondary, #2d2d2d);
