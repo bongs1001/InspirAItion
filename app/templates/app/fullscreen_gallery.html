@@ -1,28 +1,33 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gallery - InspirAItion</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body, html {
+        body,
+        html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
             overflow: hidden;
         }
+
         .fullscreen-gallery {
             width: 100vw;
             height: 100vh;
             background-color: black;
         }
+
         .carousel-item img {
             width: 100vw;
             height: 100vh;
             object-fit: contain;
         }
+
         .exit-button {
             position: fixed;
             top: 20px;
@@ -30,12 +35,14 @@
             z-index: 1050;
             transition: opacity 0.3s;
         }
+
         .carousel-caption {
             background: rgba(0, 0, 0, 0.5);
             border-radius: 10px;
             padding: 15px;
             transition: opacity 0.3s;
         }
+
         .fullscreen-button {
             position: fixed;
             top: 20px;
@@ -45,9 +52,16 @@
         }
     </style>
 </head>
+
 <body class="bg-black">
+    {% load static %}
+    <audio id="backgroundMusic" loop>
+        <source src="{% static 'music/background.mp3' %}" type="audio/mp3">
+        브라우저가 오디오 태그를 지원하지 않습니다.
+    </audio>
+
     {% if posts %}
-    <div id="galleryCarousel" class="carousel slide carousel-fade fullscreen-gallery" data-bs-ride="carousel" data-bs-interval="10000">
+    <div id="galleryCarousel" class="carousel slide carousel-fade fullscreen-gallery" data-bs-ride="carousel">
         <div class="carousel-inner">
             {% for post in posts %}
             <div class="carousel-item {% if forloop.first %}active{% endif %}">
@@ -59,7 +73,7 @@
             </div>
             {% endfor %}
         </div>
-        
+
         <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Previous</span>
@@ -80,53 +94,76 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        let timeout;
-        const controls = document.querySelectorAll('.carousel-control-prev, .carousel-control-next');
-        const captions = document.querySelectorAll('.carousel-caption');
-        const buttons = document.querySelectorAll('.exit-button, .fullscreen-button');
-        
-        function hideElements() {
-            controls.forEach(control => control.style.opacity = '0');
-            captions.forEach(caption => caption.style.opacity = '0');
-            buttons.forEach(button => button.style.opacity = '0');
-        }
-        
-        function showElements() {
-            controls.forEach(control => control.style.opacity = '1');
-            captions.forEach(caption => caption.style.opacity = '1');
-            buttons.forEach(button => button.style.opacity = '1');
-        }
+        document.addEventListener('DOMContentLoaded', function () {
+            let audio = document.getElementById('backgroundMusic');
+            let galleryCarousel = document.getElementById('galleryCarousel');
 
-        document.addEventListener('mousemove', function() {
-            showElements();
-            clearTimeout(timeout);
+            let carousel = new bootstrap.Carousel(galleryCarousel, {
+                interval: 10000,
+                ride: 'carousel'
+            });
+
+            setInterval(() => {
+                carousel.next();
+            }, 10000);
+
+            function playMusicOnKeyPress(event) {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    audio.play().catch(err => console.warn("자동 재생이 차단됨:", err));
+                    document.removeEventListener('keydown', playMusicOnKeyPress);
+                }
+            }
+
+            document.addEventListener('keydown', playMusicOnKeyPress);
+
+            let timeout;
+            const controls = document.querySelectorAll('.carousel-control-prev, .carousel-control-next');
+            const captions = document.querySelectorAll('.carousel-caption');
+            const buttons = document.querySelectorAll('.exit-button, .fullscreen-button');
+
+            function hideElements() {
+                controls.forEach(control => control.style.opacity = '0');
+                captions.forEach(caption => caption.style.opacity = '0');
+                buttons.forEach(button => button.style.opacity = '0');
+            }
+
+            function showElements() {
+                controls.forEach(control => control.style.opacity = '1');
+                captions.forEach(caption => caption.style.opacity = '1');
+                buttons.forEach(button => button.style.opacity = '1');
+            }
+
+            document.addEventListener('mousemove', function () {
+                showElements();
+                clearTimeout(timeout);
+                timeout = setTimeout(hideElements, 3000);
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                    } else {
+                        window.location.href = '/';
+                    }
+                }
+            });
+
             timeout = setTimeout(hideElements, 3000);
         });
 
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                if (document.fullscreenElement) {
-                    document.exitFullscreen();
-                } else {
-                    window.location.href = '/';
-                }
+        function toggleFullScreen() {
+            const gallery = document.querySelector('.fullscreen-gallery');
+            if (!document.fullscreenElement) {
+                gallery.requestFullscreen().catch(err => {
+                    alert(`전체화면 모드를 시작할 수 없습니다: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
             }
-        });
-
-        timeout = setTimeout(hideElements, 3000);
-    });
-
-    function toggleFullScreen() {
-        const gallery = document.querySelector('.fullscreen-gallery');
-        if (!document.fullscreenElement) {
-            gallery.requestFullscreen().catch(err => {
-                alert(`전체화면 모드를 시작할 수 없습니다: ${err.message}`);
-            });
-        } else {
-            document.exitFullscreen();
         }
-    }
     </script>
+
 </body>
+
 </html>
