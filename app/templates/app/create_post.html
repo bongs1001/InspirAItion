@@ -52,7 +52,8 @@
                     </ul>
                     <!-- <button type="button" id="generateSttBtn" class="btn btn-info" onclick="detect_language_and_transcribe()">음성 입력</button> -->
                     <!-- <button type="button" id="generateSttBtnAI" class="btn btn-info" onclick="detect_language_and_transcribe_with_ai()">AI 음성 입력</button> -->
-                    <button type="button" id="generateImageBtn" class="btn btn-info" onclick="generateImage()">AI 이미지 생성</button>
+                    <button type="button" id="generateImageBtn" class="btn btn-success" onclick="generateImage()">AI 이미지 생성</button>
+                    <button type="button" id="upscaleImageBtn" class="btn btn-warning" onclick="upscaleImage()">이미지 업스케일</button>
                     <button type="submit" class="btn btn-primary">저장</button>
                     <a href="{% url 'home' %}" class="btn btn-secondary">취소</a>
                 </div>
@@ -135,6 +136,50 @@
 
             if (!response.ok) {
                 throw new Error('이미지 생성에 실패했습니다.');
+            }
+
+            const data = await response.json();
+            document.getElementById('generatedImage').src = data.image_url;
+            document.getElementById('generatedImageUrl').value = data.image_url;
+            document.getElementById('generatedPrompt').value = data.generated_prompt;
+            document.getElementById('imagePreview').style.display = 'block';
+        } catch (error) {
+            alert(error.message);
+            console.error('Error:', error);
+        } finally {
+            hideLoadingModal();
+        }
+    }
+
+    async function upscaleImage() {
+        const imageUrl = document.getElementById('generatedImageUrl').value.trim();
+        console.log(imageUrl);
+        if (!imageUrl) {
+            alert('먼저 이미지를 생성해주세요.');
+            return;
+        } else {
+            const confirmMessage = '이미지를 업스케일 하시겠습니까?';
+            if (!confirm(confirmMessage)) {
+                alert('업스케일을 취소했습니다.');
+                return;
+            }
+            alert("추후 이 코드를 제거하고 이미지 업스케일 기능을 추가할 예정입니다.");
+            return;
+        }
+
+        showLoadingModal();
+        try {
+            const response = await fetch('/app/ai/generate/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
+                },
+                body: `prompt=${encodeURIComponent("고양이")}`
+            });
+
+            if (!response.ok) {
+                throw new Error('이미지 업스케일에 실패했습니다.');
             }
 
             const data = await response.json();
