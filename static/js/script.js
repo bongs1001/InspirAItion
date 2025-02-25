@@ -216,7 +216,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const prompt = searchInput.value.trim();
 
         if (!prompt) {
-            window.location.href = "/app/create/";
+            alert("프롬프트를 입력해주세요.");
             return;
         }
 
