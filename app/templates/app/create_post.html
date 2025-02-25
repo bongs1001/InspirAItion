@@ -52,11 +52,14 @@
         justify-content: center;
         align-items: center;
         border: 1px dashed var(--border-color);
+        text-align: center;
+        width: 100%;
     }
     
     .image-preview {
-        max-width: 100%;
-        max-height: 400px;
+        width: 100%;
+        height: 100%;
+        max-height: 500px;
         object-fit: contain;
     }
     
@@ -74,6 +77,7 @@
         flex-wrap: wrap;
         gap: 0.5rem;
         margin-bottom: 1.5rem;
+        justify-content: center;
     }
     
     .feature-button {
@@ -115,6 +119,16 @@
         color: #856404;
     }
     
+    [data-theme="dark"] .ai-warning {
+        background-color: rgba(255, 193, 7, 0.2);
+        border-left: 5px solid #ffc107;
+        color: #e0e0e0;
+    }
+    
+    [data-theme="dark"] .ai-warning strong {
+        color: #ffd54f;
+    }
+    
     .loading-modal {
         position: fixed;
         top: 0;
@@ -140,6 +154,22 @@
         width: 3rem;
         height: 3rem;
         margin-bottom: 1rem;
+    }
+    
+    .cancel-btn {
+        margin-top: 1rem;
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 8px 16px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .cancel-btn:hover {
+        background-color: #c82333;
+        transform: scale(1.05);
     }
     
     .image-controls {
@@ -187,18 +217,18 @@
     </div>
 
     <div class="row">
-        <div class="col-lg-7">
+        <div class="col-lg-8">
             <div class="form-section">
                 <h3 class="form-section-title">
                     <i class="fas fa-image me-2"></i>이미지 생성
                 </h3>
                 
                 <div id="imagePreview" class="image-preview-container">
-                    <div id="noPreviewContent" style="text-align: center;">
+                    <div id="noPreviewContent" style="text-align: center; width: 100%;">
                         <i class="fas fa-cloud-upload-alt no-preview-icon"></i>
                         <p class="no-preview-text">AI 이미지를 생성해주세요</p>
                     </div>
-                    <img id="generatedImage" src="" alt="" class="image-preview" style="display: none;">
+                    <img id="generatedImage" src="" alt="" class="image-preview" style="display: none; padding: 10px;">
                 </div>
                 
                 <div class="control-buttons">
@@ -232,7 +262,12 @@
                     
                     <button type="button" id="upscaleImageBtn" class="btn btn-warning feature-button" disabled>
                         <i class="fas fa-expand-arrows-alt"></i>
-                        이미지 업스케일
+                        업스케일
+                    </button>
+                    
+                    <button type="button" id="outpaintImageBtn" class="btn btn-info feature-button" disabled>
+                        <i class="fas fa-paint-brush"></i>
+                        아웃페인팅
                     </button>
                 </div>
                 
@@ -251,7 +286,7 @@
             </div>
         </div>
         
-        <div class="col-lg-5">
+        <div class="col-lg-4">
             <div class="form-section">
                 <h3 class="form-section-title">
                     <i class="fas fa-edit me-2"></i>작품 정보
@@ -302,6 +337,7 @@
         </div>
         <h4 id="loadingText">AI 이미지 생성 중...</h4>
         <p class="text-muted">잠시만 기다려주세요</p>
+        <button id="cancelOperationBtn" class="cancel-btn" style="display: none;">작업 취소</button>
     </div>
 </div>
 
@@ -335,6 +371,7 @@
         const promptInput = document.getElementById('promptInput');
         const generateImageBtn = document.getElementById('generateImageBtn');
         const upscaleImageBtn = document.getElementById('upscaleImageBtn');
+        const outpaintImageBtn = document.getElementById('outpaintImageBtn');
         const generatedImage = document.getElementById('generatedImage');
         const noPreviewContent = document.getElementById('noPreviewContent');
         const generatedImageUrl = document.getElementById('generatedImageUrl');
@@ -379,7 +416,7 @@
             
             generateImageBtn.disabled = true;
             loadingText.innerText = 'AI 이미지 생성 중...';
-            showLoadingModal();
+            showLoadingModal(); 
             
             try {
                 const response = await fetch('/app/ai/generate/', {
@@ -400,6 +437,16 @@
                 generatedImage.src = data.image_url;
                 generatedImage.style.display = 'block';
                 noPreviewContent.style.display = 'none';
+                
+                upscaleImageBtn.disabled = false;
+                outpaintImageBtn.disabled = false;
+                
+                generatedImage.onload = function() {
+                    const imagePreview = document.getElementById('imagePreview');
+                    if (this.naturalHeight > 0) {
+                        imagePreview.style.height = Math.min(500, this.naturalHeight) + 'px';
+                    }
+                };
                 
                 generatedImageUrl.value = data.image_url;
                 generatedPrompt.value = data.generated_prompt;
@@ -436,7 +483,18 @@
             
             upscaleImageBtn.disabled = true;
             loadingText.innerText = 'ComfyUI로 이미지 업스케일 중...\n(이 작업은 시간이 소요됩니다.)';
-            showLoadingModal();
+            showLoadingModal(true); 
+            
+            let isCancelled = false;
+            
+            const cancelBtn = document.getElementById('cancelOperationBtn');
+            cancelBtn.onclick = function() {
+                if (confirm('정말로 업스케일 작업을 취소하시겠습니까?')) {
+                    isCancelled = true;
+                    hideLoadingModal();
+                    upscaleImageBtn.disabled = false;
+                }
+            };
             
             try {
                 const response = await fetch('/app/ai/upscale/', {
@@ -447,6 +505,10 @@
                     },
                     body: `image_url=${encodeURIComponent(imageUrl)}&prompt=${encodeURIComponent(prompt)}`
                 });
+                
+                if (isCancelled) {
+                    return; 
+                }
                 
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -460,16 +522,22 @@
                 
                 alert('이미지 업스케일 완료!\n고품질 이미지로 변환되었습니다.');
             } catch (error) {
-                alert(error.message);
-                console.error('Error:', error);
+                if (!isCancelled) {
+                    alert(error.message);
+                    console.error('Error:', error);
+                }
             } finally {
-                upscaleImageBtn.disabled = false;
-                hideLoadingModal();
+                if (!isCancelled) {
+                    upscaleImageBtn.disabled = false;
+                    hideLoadingModal();
+                }
             }
         }
         
-        function showLoadingModal() {
+        function showLoadingModal(showCancelButton = false) {
             loadingModal.style.display = 'flex';
+            const cancelBtn = document.getElementById('cancelOperationBtn');
+            cancelBtn.style.display = showCancelButton ? 'block' : 'none';
         }
         
         function hideLoadingModal() {
@@ -478,6 +546,9 @@
         
         generateImageBtn.addEventListener('click', generateImage);
         upscaleImageBtn.addEventListener('click', upscaleImage);
+        outpaintImageBtn.addEventListener('click', function() {
+            alert('아웃페인팅 기능은 준비 중입니다.');
+        });
         
         promptInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && e.ctrlKey) {
@@ -500,6 +571,7 @@
             generatedPrompt.value = generatedPromptValue;
             
             upscaleImageBtn.disabled = false;
+            outpaintImageBtn.disabled = false;
             
             if (originalPrompt) {
                 promptInput.value = originalPrompt;
