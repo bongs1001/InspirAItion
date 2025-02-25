@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -6,164 +7,686 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gallery - InspirAItion</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    
     <style>
-        body,
-        html {
+        body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
             overflow: hidden;
+            background-color: #000;
+            font-family: 'IBM Plex Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
 
         .fullscreen-gallery {
             width: 100vw;
             height: 100vh;
-            background-color: black;
+            background-color: #000;
+            position: relative;
+        }
+
+        .carousel-item {
+            width: 100vw;
+            height: 100vh;
         }
 
         .carousel-item img {
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             object-fit: contain;
+            transition: transform 0.5s ease-in-out;
         }
 
-        .exit-button {
+        .gallery-controls {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1050;
-            transition: opacity 0.3s;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
-        .carousel-caption {
-            background: rgba(0, 0, 0, 0.5);
+        .hidden {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+        }
+
+        .image-info {
+            flex: 1;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+        }
+
+        .image-title {
+            font-size: 1.5rem;
+            color: #fff;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .image-author {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .image-likes {
+            margin-left: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .image-likes i.fa-heart {
+            color: #ff4757;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .control-btn {
+            background-color: rgba(255, 255, 255, 0.15);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .control-btn.active {
+            background-color: #FC4561;
+        }
+
+        .top-controls {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(rgba(0, 0, 0, 0.8), transparent);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .logo {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo span {
+            color: #FC4561;
+        }
+
+        .nav-controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .navigation-thumbs {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
             border-radius: 10px;
-            padding: 15px;
-            transition: opacity 0.3s;
+            transition: opacity 0.3s ease;
+            z-index: 100;
+            max-width: 90%;
+            overflow-x: auto;
         }
 
-        .fullscreen-button {
+        .thumb {
+            width: 60px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .thumb.active {
+            border-color: #FC4561;
+            transform: scale(1.1);
+        }
+
+        .thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 3px;
+            background-color: rgba(255, 255, 255, 0.2);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #FC4561;
+            width: 0;
+            transition: width 0.1s linear;
+        }
+
+        .volume-container {
+            position: relative;
+        }
+
+        .volume-slider {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-90deg);
+            width: 100px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .volume-container:hover .volume-slider {
+            display: block;
+        }
+
+        .help-popup {
             position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1050;
-            transition: opacity 0.3s;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 30px;
+            color: white;
+            z-index: 200;
+            width: 90%;
+            max-width: 500px;
+            display: none;
+        }
+
+        .help-popup h3 {
+            color: #FC4561;
+            margin-bottom: 20px;
+        }
+
+        .shortcut-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .shortcut-list li {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .key {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #FC4561;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .carousel-fade .carousel-item {
+            opacity: 0;
+            transition-property: opacity;
+            transition-duration: 0.5s;
+        }
+
+        .carousel-fade .carousel-item.active {
+            opacity: 1;
         }
     </style>
 </head>
 
-<body class="bg-black">
-    {% load static %}
+<body>
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loader"></div>
+        <p class="text-white">갤러리 로딩 중...</p>
+    </div>
+
     <audio id="backgroundMusic" loop>
         <source src="{% static 'music/background.mp3' %}" type="audio/mp3">
         브라우저가 오디오 태그를 지원하지 않습니다.
     </audio>
 
     {% if posts %}
-    <div id="galleryCarousel" class="carousel slide carousel-fade fullscreen-gallery" data-bs-ride="carousel">
+    <div id="galleryCarousel" class="carousel slide carousel-fade fullscreen-gallery">
         <div class="carousel-inner">
             {% for post in posts %}
-            <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                <img src="{{ post.image }}" alt="{{ post.title }}">
-                <div class="carousel-caption">
-                    <h5>{{ post.title }}</h5>
-                    <p>by {{ post.author_nickname }}</p>
-                </div>
+            <div class="carousel-item {% if forloop.first %}active{% endif %}" data-id="{{ post.id }}" data-title="{{ post.title }}" data-author="{{ post.author_nickname }}" data-likes="{{ post.likes_count }}">
+                <img src="{{ post.image }}" alt="{{ post.title }}" class="gallery-image">
             </div>
             {% endfor %}
         </div>
 
-        <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </button>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+    </div>
+
+    <div class="top-controls">
+        <a href="{% url 'home' %}" class="logo">
+            Inspi<span>AI</span>tion
+        </a>
+        <div class="nav-controls">
+            <button class="control-btn" id="helpBtn" title="도움말">
+                <i class="fas fa-question"></i>
+            </button>
+            <button class="control-btn" id="fullscreenBtn" title="전체화면">
+                <i class="fas fa-expand"></i>
+            </button>
+            <button class="control-btn" id="exitBtn" title="나가기">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="gallery-controls">
+        <div class="image-info">
+            <h2 class="image-title" id="imageTitle"></h2>
+            <p class="image-author" id="imageAuthor"></p>
+            <span class="image-likes">
+                <i class="fas fa-heart"></i>
+                <span id="imageLikes"></span>
+            </span>
+        </div>
+        <div class="control-buttons">
+            <button class="control-btn" id="prevBtn" title="이전 이미지">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="control-btn" id="playPauseBtn" title="재생/일시정지">
+                <i class="fas fa-pause"></i>
+            </button>
+            <button class="control-btn" id="nextBtn" title="다음 이미지">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            <div class="volume-container">
+                <button class="control-btn" id="volumeBtn" title="볼륨">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+                <div class="volume-slider">
+                    <input type="range" min="0" max="100" value="50" id="volumeSlider">
+                </div>
+            </div>
+            <button class="control-btn" id="thumbnailsBtn" title="썸네일">
+                <i class="fas fa-th"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="navigation-thumbs hidden" id="navigationThumbs">
+        {% for post in posts %}
+        <img src="{{ post.image }}" alt="{{ post.title }}" class="thumb {% if forloop.first %}active{% endif %}" data-slide-to="{{ forloop.counter0 }}">
+        {% endfor %}
+    </div>
+
+    <div class="help-popup" id="helpPopup">
+        <h3>갤러리 단축키</h3>
+        <ul class="shortcut-list">
+            <li>
+                <span>이전/다음 이미지</span>
+                <span><span class="key">←</span> / <span class="key">→</span></span>
+            </li>
+            <li>
+                <span>재생/일시정지</span>
+                <span><span class="key">Space</span></span>
+            </li>
+            <li>
+                <span>전체화면</span>
+                <span><span class="key">F</span></span>
+            </li>
+            <li>
+                <span>썸네일 보기</span>
+                <span><span class="key">T</span></span>
+            </li>
+            <li>
+                <span>음소거/음소거 해제</span>
+                <span><span class="key">M</span></span>
+            </li>
+            <li>
+                <span>나가기</span>
+                <span><span class="key">Esc</span></span>
+            </li>
+        </ul>
+        <button class="btn btn-primary mt-4 w-100" onclick="document.getElementById('helpPopup').style.display = 'none'">닫기</button>
     </div>
     {% else %}
     <div class="fullscreen-gallery d-flex align-items-center justify-content-center">
-        <p class="text-white">전시할 이미지가 없습니다.</p>
+        <div class="text-center">
+            <i class="fas fa-image fa-5x mb-4" style="color: #444;"></i>
+            <h3 class="text-white">전시할 이미지가 없습니다.</h3>
+            <a href="{% url 'public_gallery' %}" class="btn btn-outline-light mt-4">갤러리로 돌아가기</a>
+        </div>
     </div>
     {% endif %}
-
-    <button class="btn btn-outline-light fullscreen-button" onclick="toggleFullScreen()">전체화면</button>
-    <a href="{% url 'home' %}" class="btn btn-outline-light exit-button">나가기</a>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            let audio = document.getElementById('backgroundMusic');
-            let galleryCarousel = document.getElementById('galleryCarousel');
-
-            let carousel = new bootstrap.Carousel(galleryCarousel, {
-                interval: 10000,
+            const loadingScreen = document.getElementById('loadingScreen');
+            const audio = document.getElementById('backgroundMusic');
+            const galleryCarousel = document.getElementById('galleryCarousel');
+            const topControls = document.querySelector('.top-controls');
+            const galleryControls = document.querySelector('.gallery-controls');
+            const navigationThumbs = document.getElementById('navigationThumbs');
+            const helpPopup = document.getElementById('helpPopup');
+            const progressBar = document.getElementById('progressBar');
+            
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const prevBtn = document.getElementById('prevBtn');
+            const exitBtn = document.getElementById('exitBtn');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const volumeBtn = document.getElementById('volumeBtn');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const thumbnailsBtn = document.getElementById('thumbnailsBtn');
+            const helpBtn = document.getElementById('helpBtn');
+            
+            const imageTitle = document.getElementById('imageTitle');
+            const imageAuthor = document.getElementById('imageAuthor');
+            const imageLikes = document.getElementById('imageLikes');
+            
+            const carousel = new bootstrap.Carousel(galleryCarousel, {
+                interval: 8000,
+                keyboard: true,
+                pause: 'hover',
                 ride: 'carousel'
             });
-
-            setInterval(() => {
-                carousel.next();
-            }, 10000);
-
-            function playMusicOnKeyPress(event) {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    audio.play().catch(err => console.warn("자동 재생이 차단됨:", err));
-                    document.removeEventListener('keydown', playMusicOnKeyPress);
-                }
-            }
-
-            document.addEventListener('keydown', playMusicOnKeyPress);
-
-            let timeout;
-            const controls = document.querySelectorAll('.carousel-control-prev, .carousel-control-next');
-            const captions = document.querySelectorAll('.carousel-caption');
-            const buttons = document.querySelectorAll('.exit-button, .fullscreen-button');
-
-            function hideElements() {
-                controls.forEach(control => control.style.opacity = '0');
-                captions.forEach(caption => caption.style.opacity = '0');
-                buttons.forEach(button => button.style.opacity = '0');
-            }
-
-            function showElements() {
-                controls.forEach(control => control.style.opacity = '1');
-                captions.forEach(caption => caption.style.opacity = '1');
-                buttons.forEach(button => button.style.opacity = '1');
-            }
-
-            document.addEventListener('mousemove', function () {
-                showElements();
-                clearTimeout(timeout);
-                timeout = setTimeout(hideElements, 3000);
+            
+            let autoSlideInterval;
+            let autoPlaying = true;
+            let mouseIdle = null;
+            let progress = 0;
+            let progressInterval;
+            
+            window.addEventListener('load', function() {
+                setTimeout(() => {
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 500);
+                }, 1000);
+                
+                updateCarouselInfo();
+                startProgress();
+                startAutoSlide();
             });
-
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') {
-                    if (document.fullscreenElement) {
-                        document.exitFullscreen();
-                    } else {
-                        window.location.href = '/';
+            
+            function updateCarouselInfo() {
+                const activeItem = document.querySelector('.carousel-item.active');
+                if (activeItem) {
+                    imageTitle.textContent = activeItem.dataset.title || 'Untitled';
+                    imageAuthor.textContent = `by ${activeItem.dataset.author || 'Unknown'}`;
+                    imageLikes.textContent = activeItem.dataset.likes || '0';
+                    
+                    const thumbs = document.querySelectorAll('.thumb');
+                    thumbs.forEach(thumb => thumb.classList.remove('active'));
+                    const activeIndex = Array.from(document.querySelectorAll('.carousel-item')).indexOf(activeItem);
+                    if (thumbs[activeIndex]) {
+                        thumbs[activeIndex].classList.add('active');
                     }
                 }
-            });
-
-            timeout = setTimeout(hideElements, 3000);
-        });
-
-        function toggleFullScreen() {
-            const gallery = document.querySelector('.fullscreen-gallery');
-            if (!document.fullscreenElement) {
-                gallery.requestFullscreen().catch(err => {
-                    alert(`전체화면 모드를 시작할 수 없습니다: ${err.message}`);
-                });
-            } else {
-                document.exitFullscreen();
             }
-        }
+            
+            function startProgress() {
+                clearInterval(progressInterval);
+                progress = 0;
+                progressBar.style.width = '0%';
+                
+                if (autoPlaying) {
+                    progressInterval = setInterval(() => {
+                        progress += 0.025;
+                        progressBar.style.width = `${progress}%`;
+                        
+                        if (progress >= 100) {
+                            clearInterval(progressInterval);
+                        }
+                    }, 2);
+                }
+            }
+            
+            function startAutoSlide() {
+                clearInterval(autoSlideInterval);
+                if (autoPlaying) {
+                    autoSlideInterval = setInterval(() => {
+                        carousel.next();
+                    }, 8000);
+                }
+            }
+            
+            galleryCarousel.addEventListener('slid.bs.carousel', function () {
+                updateCarouselInfo();
+                startProgress();
+            });
+            
+            playPauseBtn.addEventListener('click', function() {
+                if (autoPlaying) {
+                    clearInterval(autoSlideInterval);
+                    clearInterval(progressInterval);
+                    playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    autoPlaying = false;
+                } else {
+                    startProgress();
+                    startAutoSlide();
+                    playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                    autoPlaying = true;
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                carousel.next();
+            });
+            
+            prevBtn.addEventListener('click', function() {
+                carousel.prev();
+            });
+            
+            exitBtn.addEventListener('click', function() {
+                window.location.href = '{% url "public_gallery" %}';
+            });
+            
+            fullscreenBtn.addEventListener('click', toggleFullScreen);
+            
+            function toggleFullScreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.error(`Error attempting to enable fullscreen: ${err.message}`);
+                    });
+                    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                    }
+                }
+            }
+            
+            volumeBtn.addEventListener('click', function() {
+                if (audio.muted) {
+                    audio.muted = false;
+                    volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                } else {
+                    audio.muted = true;
+                    volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                }
+            });
+            
+            volumeSlider.addEventListener('input', function() {
+                audio.volume = this.value / 100;
+                if (this.value > 0) {
+                    audio.muted = false;
+                    if (this.value > 50) {
+                        volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    } else {
+                        volumeBtn.innerHTML = '<i class="fas fa-volume-down"></i>';
+                    }
+                } else {
+                    volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                }
+            });
+            
+            thumbnailsBtn.addEventListener('click', function() {
+                navigationThumbs.classList.toggle('hidden');
+                thumbnailsBtn.classList.toggle('active');
+            });
+            
+            helpBtn.addEventListener('click', function() {
+                helpPopup.style.display = 'block';
+            });
+            
+            const thumbs = document.querySelectorAll('.thumb');
+            thumbs.forEach(thumb => {
+                thumb.addEventListener('click', function() {
+                    const slideIndex = parseInt(this.dataset.slideTo);
+                    carousel.to(slideIndex);
+                });
+            });
+            
+            function resetMouseTimer() {
+                showControls();
+                clearTimeout(mouseIdle);
+                mouseIdle = setTimeout(hideControls, 3000);
+            }
+            
+            function showControls() {
+                topControls.classList.remove('hidden');
+                galleryControls.classList.remove('hidden');
+                if (!thumbnailsBtn.classList.contains('active')) {
+                    navigationThumbs.classList.add('hidden');
+                }
+            }
+            
+            function hideControls() {
+                if (helpPopup.style.display !== 'block') {
+                    topControls.classList.add('hidden');
+                    galleryControls.classList.add('hidden');
+                    navigationThumbs.classList.add('hidden');
+                }
+            }
+            
+            document.addEventListener('mousemove', resetMouseTimer);
+            document.addEventListener('mousedown', resetMouseTimer);
+            
+            document.addEventListener('keydown', function(e) {
+                if (helpPopup.style.display === 'block' && e.key !== 'Escape') {
+                    return;
+                }
+                
+                switch(e.key) {
+                    case 'ArrowRight':
+                        carousel.next();
+                        break;
+                    case 'ArrowLeft':
+                        carousel.prev();
+                        break;
+                    case ' ':
+                        e.preventDefault();
+                        playPauseBtn.click();
+                        break;
+                    case 'f':
+                    case 'F':
+                        toggleFullScreen();
+                        break;
+                    case 't':
+                    case 'T':
+                        thumbnailsBtn.click();
+                        break;
+                    case 'm':
+                    case 'M':
+                        volumeBtn.click();
+                        break;
+                    case 'Escape':
+                        if (helpPopup.style.display === 'block') {
+                            helpPopup.style.display = 'none';
+                        } else if (document.fullscreenElement) {
+                            document.exitFullscreen();
+                        } else {
+                            window.location.href = '{% url "public_gallery" %}';
+                        }
+                        break;
+                    case 'h':
+                    case 'H':
+                    case '?':
+                        helpPopup.style.display = helpPopup.style.display === 'block' ? 'none' : 'block';
+                        break;
+                }
+            });
+            
+            document.addEventListener('click', function playMusicOnInteraction() {
+                audio.volume = volumeSlider.value / 100;
+                audio.play().catch(err => console.warn("자동 재생이 차단됨:", err));
+                document.removeEventListener('click', playMusicOnInteraction);
+            }, { once: true });
+            
+            resetMouseTimer();
+        });
     </script>
-
 </body>
 
 </html>
