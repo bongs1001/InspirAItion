@@ -76,4 +76,18 @@ document.addEventListener('DOMContentLoaded', () => {
         rightBtn.style.display = 
             tagNav.scrollWidth > tagNav.clientWidth ? 'block' : 'none';
     }
+    
+    const activeTag = document.querySelector('.tag-item.active');
+    if (activeTag && tagNav) {
+        setTimeout(() => {
+            const activeTagLeft = activeTag.offsetLeft;
+            const navWidth = tagNav.clientWidth;
+            const scrollTo = activeTagLeft - (navWidth / 2) + (activeTag.offsetWidth / 2);
+            
+            tagNav.scrollTo({
+                left: Math.max(0, scrollTo),
+                behavior: 'smooth'
+            });
+        }, 100);
+    }
 });
