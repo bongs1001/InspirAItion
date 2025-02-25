@@ -1454,7 +1454,7 @@ def upscale_image(request):
     try:
         logging.info(f"이미지 업스케일 요청: {image_url}")
 
-        comfyui_image_url = process_upscaling_with_comfyui(image_url)
+        comfyui_image_url = process_upscaling_with_comfyui(request, image_url)
 
         if not comfyui_image_url:
             return JsonResponse({"error": "업스케일 처리에 실패했습니다."}, status=500)
@@ -1529,20 +1529,25 @@ def check_workflow_status(prompt_id, COMFYUI_API_URL):
         return False
 
 
-def process_upscaling_with_comfyui(image_url):
+def process_upscaling_with_comfyui(request, image_url):
 
+    global comfyui_call_counter
     try:
-        global comfyui_call_counter
-        try:
-            comfyui_call_counter
-        except NameError:
-            comfyui_call_counter = 0
+        if hasattr(request, "user") and request.user.is_authenticated:
+            user_id = request.user.id
+        else:
+            user_id = 0
+        print(f"사용자 ID: {user_id}")
+        COMFYUI_API_URL = settings.COMFYUI_API_URL[
+            user_id % (len(settings.COMFYUI_API_URL) - 1)
+        ]
+    except (AttributeError, IndexError, TypeError) as e:
+        logging.error("ComfyUI API URL 설정 중 오류 발생: %s", str(e))
+        COMFYUI_API_URL = settings.COMFYUI_API_URL[0]  # Fallback to first URL
+    try:
+        comfyui_call_counter
     except NameError:
         comfyui_call_counter = 0
-
-    COMFYUI_API_URL = settings.COMFYUI_API_URL[
-        comfyui_call_counter % (len(settings.COMFYUI_API_URL) - 1)
-    ]
     comfyui_call_counter += 1
 
     print(f"COMFYUI_API_URL: {COMFYUI_API_URL}")
