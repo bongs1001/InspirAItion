@@ -11,6 +11,7 @@ urlpatterns = [
     path("artwork/my/", views.my_gallery, name="my_gallery"),
     path("artwork/public/", views.public_gallery, name="public_gallery"),
     path("artwork/fullscreen/", views.fullscreen_gallery, name="fullscreen_gallery"),
+    path("artwork/my/fullscreen/", views.my_fullscreen_gallery, name="my_fullscreen_gallery"),
     path("posts/<int:pk>/", views.post_detail, name="post_detail"),
     path("posts/<int:pk>/edit/", views.edit_post, name="edit_post"),
     path("posts/<int:pk>/delete/", views.delete_post, name="delete_post"),

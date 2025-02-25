@@ -852,16 +852,14 @@ def my_gallery(request):
         )
     ][:10]
 
-    posts_qs = Post.objects.filter(current_owner=request.user).annotate(
-        like_count=Count("likes")
-    )
-
     if ownership_filter == "created":
         posts_qs = Post.objects.filter(original_creator=request.user)
     elif ownership_filter == "all":
         posts_qs = Post.objects.filter(
             Q(current_owner=request.user) | Q(original_creator=request.user)
         )
+    
+    posts_qs = posts_qs.annotate(like_count=Count("likes"))
 
     if search_query:
         posts_qs = posts_qs.filter(title__icontains=search_query)
@@ -1735,3 +1733,14 @@ def process_outpainting_with_comfyui(image_url):
     else:
         logging.error("이미지 정보를 가져올 수 없습니다.")
         return None
+    
+@login_required
+def my_fullscreen_gallery(request):
+    posts = (
+        Post.objects.filter(current_owner=request.user)
+        .exclude(image__isnull=True)
+        .exclude(image__exact="")
+        .order_by("-date_posted")
+    )
+
+    return render(request, "app/fullscreen_gallery.html", {"posts": posts})
