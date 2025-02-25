@@ -1735,3 +1735,14 @@ def process_outpainting_with_comfyui(image_url):
     else:
         logging.error("이미지 정보를 가져올 수 없습니다.")
         return None
+    
+@login_required
+def my_fullscreen_gallery(request):
+    posts = (
+        Post.objects.filter(current_owner=request.user)
+        .exclude(image__isnull=True)
+        .exclude(image__exact="")
+        .order_by("-date_posted")
+    )
+
+    return render(request, "app/fullscreen_gallery.html", {"posts": posts})
