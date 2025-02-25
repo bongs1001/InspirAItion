@@ -1,72 +1,80 @@
-<!-- Header Start -->
 {% extends "app/common/frame.html" %}
 {% load static %}
-{% block title %} New Home {% endblock title %}
+{% block title %} About - InspirAItion {% endblock title %}
 {% block header %}
 {% include "app/common/header.html" %}
 {% endblock header %}
-<!-- Header End -->
 
 {% block content %}
 <hr class="featurette-divider">
 
-<!-- START THE FEATURETTES -->
 <div class="container marketing">
-    <h1 class="fw-bolder" style="display: inline-block; border-bottom: 1px solid black; padding-bottom: 8px; margin-left: 20px; margin-bottom: 20px;">
+    <h1 class="fw-bolder"
+        style="display: inline-block; border-bottom: 1px solid black; padding-bottom: 8px; margin-left: 20px; margin-bottom: 20px;">
         Services
     </h1>
-    <!-- Three columns of text below the carousel -->
     <div class="row">
-        <div class="col-lg-4">
-            <img class="bd-placeholder-img rounded-circle mb-2" width="140" height="140" src="{% static 'img/placeholder_1.jpg' %}" alt="Image Generation">
+        <div class="col-lg-4 service-column">
+            <img class="bd-placeholder-img rounded-circle mb-2" width="140" height="140"
+                src="{% static 'img/placeholder_1.jpg' %}" alt="Image Generation">
             <h2 class="fw-bolder">이미지 생성</h2>
-            <p>당신의 순간의 영감을 예술작품으로 쉽게 만들고 갤러리에 전시하세요!</p>
-            <br>
-            <p class="text-end">
-                <a class="btn btn-primary me-4" href="{% url 'create_post' %}"> Trial &raquo;</a>
-            </p>
-        </div><!-- /.col-lg-4 -->
-
-        <div class="col-lg-4">
-            <img class="bd-placeholder-img rounded-circle mb-2" width="140" height="140" src="{% static 'img/placeholder_2.jpg' %}" alt="Virtual Gallery Exhibition">
-            <h2 class="fw-bolder">가상 갤러리</h2>
-            <p>만든 이미지들은 테마별로 분류됩니다. 전체화면으로 자신의 작품을 감상하세요!</p>
-            <br>
-            <p class="text-end">
-                <a class="btn btn-primary me-4" href="{% url 'fullscreen_gallery' %}"> Enter Exhibition &raquo;</a>
-            </p>
+            <div class="service-description">
+                <p>당신의 순간의 영감을 예술작품으로 쉽게 만들고 갤러리에 전시하세요!</p>
+            </div>
+            <div class="service-btn-container">
+                <a class="btn btn-primary service-btn" href="{% url 'create_post' %}">체험하기 <i
+                        class="fas fa-arrow-right"></i></a>
+            </div>
         </div>
 
-        <div class="col-lg-4">
-            <img class="bd-placeholder-img rounded-circle mb-2" width="140" height="140" src="{% static 'img/placeholder_3.jpg' %}" alt="Community Feature">
-            <h2 class="fw-bolder">예술 커뮤니티</h2>
-            <p>갤러리에서 서로 반응하고 작품을 거래하며 유저들과 소통하며 창작 활동을 즐기세요!</p>
-            <p class="text-end">
-                <a class="btn btn-primary me-4" href="#" onclick="alert('아직 준비중입니다!')"> get together &raquo;</a>
-            </p>
-        </div><!-- /.col-lg-4 -->
+        <div class="col-lg-4 service-column">
+            <img class="bd-placeholder-img rounded-circle mb-2" width="140" height="140"
+                src="{% static 'img/placeholder_2.jpg' %}" alt="Virtual Gallery Exhibition">
+            <h2 class="fw-bolder">가상 갤러리</h2>
+            <div class="service-description">
+                <p>만든 이미지들은 테마별로 분류됩니다. 전체화면으로 자신의 작품을 감상하세요!</p>
+            </div>
+            <div class="service-btn-container">
+                <a class="btn btn-primary service-btn" href="{% url 'fullscreen_gallery' %}">전시회 입장 <i
+                        class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
 
-    </div><!-- /.row -->
+        <div class="col-lg-4 service-column">
+            <img class="bd-placeholder-img rounded-circle mb-2" width="140" height="140"
+                src="{% static 'img/placeholder_3.jpg' %}" alt="Community Feature">
+            <h2 class="fw-bolder">예술 커뮤니티</h2>
+            <div class="service-description">
+                <p>갤러리에서 서로 반응하고 작품을 거래하며 유저들과 소통하며 창작 활동을 즐기세요!</p>
+            </div>
+            <div class="service-btn-container">
+                <a class="btn btn-primary service-btn" href="{% url 'public_gallery' %}">함께하기 <i
+                        class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+
+    </div>
 
     <hr class="featurette-divider">
 
-    <h1 class="fw-bolder" style="display: inline-block; border-bottom: 1px solid black; padding-bottom: 8px; margin-left: 20px; margin-bottom: 20px;">
+    <h1 class="fw-bolder"
+        style="display: inline-block; border-bottom: 1px solid black; padding-bottom: 8px; margin-left: 20px; margin-bottom: 20px;">
         Our Team
     </h1>
 
 
     <div class="container-team">
         <div class="container-team">
-            <!-- 팀원 소개 섹션 -->
             <div class="row mb-2">
-                <!-- Leader -->
                 <div class="col-md-6">
-                    <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+                    <div
+                        class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
                         <div class="col p-4 d-flex flex-column position-static">
                             <strong class="d-inline-block mb-2 text-primary-emphasis">Leader</strong>
                             <h3 class="mb-0">Steve YOON</h3>
                             <div class="mb-1 text-body-secondary">team_6</div>
-                            <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content.</p>
+                            <p class="card-text">This is a wider card with supporting text below as a natural lead-in to
+                                additional content.</p>
                         </div>
                         <div class="col-auto d-none d-lg-block">
                             <img src="{% static 'img/person_1.jpg' %}" width="200" height="250" alt="경록님">
@@ -74,14 +82,15 @@
                     </div>
                 </div>
 
-                <!-- PL_1 -->
                 <div class="col-md-6">
-                    <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+                    <div
+                        class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
                         <div class="col p-4 d-flex flex-column position-static">
                             <strong class="d-inline-block mb-2 text-success-emphasis">PL_1</strong>
                             <h3 class="mb-0">DG Lim</h3>
                             <div class="mb-1 text-body-secondary">team_6</div>
-                            <p class="card-text">A reliable leader who always prepares infrastructure in advance and maintains a positive attitude.</p>
+                            <p class="card-text">A reliable leader who always prepares infrastructure in advance and
+                                maintains a positive attitude.</p>
                         </div>
                         <div class="col-auto d-none d-lg-block">
                             <img src="{% static 'img/person_3.jpg' %}" width="200" height="250" alt="대건님">
@@ -90,15 +99,16 @@
                 </div>
             </div>
 
-            <!-- BE & FE -->
             <div class="row mb-2">
                 <div class="col-md-6">
-                    <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+                    <div
+                        class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
                         <div class="col p-4 d-flex flex-column position-static">
                             <strong class="d-inline-block mb-2 text-primary-emphasis">BE</strong>
                             <h3 class="mb-0">SM Kim</h3>
                             <div class="mb-1 text-body-secondary">team_6</div>
-                            <p class="card-text">An outstanding talent with excellent development skills and dedication!</p>
+                            <p class="card-text">An outstanding talent with excellent development skills and dedication!
+                            </p>
                         </div>
                         <div class="col-auto d-none d-lg-block">
                             <img src="{% static 'img/person_4.jpg' %}" width="200" height="250" alt="수민님">
@@ -107,12 +117,14 @@
                 </div>
 
                 <div class="col-md-6">
-                    <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+                    <div
+                        class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
                         <div class="col p-4 d-flex flex-column position-static">
                             <strong class="d-inline-block mb-2 text-primary-emphasis">FE</strong>
                             <h3 class="mb-0">Jay Lee</h3>
                             <div class="mb-1 text-body-secondary">team_6</div>
-                            <p class="card-text">A passionate person who constantly challenges himself and strives for improvement.</p>
+                            <p class="card-text">A passionate person who constantly challenges himself and strives for
+                                improvement.</p>
                         </div>
                         <div class="col-auto d-none d-lg-block">
                             <img src="{% static 'img/person_2.jpg' %}" width="200" height="250" alt="재이님">
@@ -121,15 +133,16 @@
                 </div>
             </div>
 
-            <!-- PL_2 & AI Team -->
             <div class="row mb-2">
                 <div class="col-md-6">
-                    <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+                    <div
+                        class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
                         <div class="col p-4 d-flex flex-column position-static">
                             <strong class="d-inline-block mb-2 text-primary-emphasis">PL_2</strong>
                             <h3 class="mb-0">SM Lee</h3>
                             <div class="mb-1 text-body-secondary">team_6</div>
-                            <p class="card-text">A technical leader who combines sharp, objective analytical skills with a warm perspective and considerate approach.</p>
+                            <p class="card-text">A technical leader who combines sharp, objective analytical skills with
+                                a warm perspective and considerate approach.</p>
                         </div>
                         <div class="col-auto d-none d-lg-block">
                             <img src="{% static 'img/person_5.jpg' %}" width="200" height="250" alt="상민님">
@@ -138,12 +151,14 @@
                 </div>
 
                 <div class="col-md-6">
-                    <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+                    <div
+                        class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
                         <div class="col p-4 d-flex flex-column position-static">
                             <strong class="d-inline-block mb-2 text-primary-emphasis">AI_team</strong>
                             <h3 class="mb-0">BH Yoon</h3>
                             <div class="mb-1 text-body-secondary">team_6</div>
-                            <p class="card-text">A technical leader who combines sharp, objective analytical skills with a warm perspective and considerate approach.</p>
+                            <p class="card-text">A technical leader who combines sharp, objective analytical skills with
+                                a warm perspective and considerate approach.</p>
                         </div>
                         <div class="col-auto d-none d-lg-block">
                             <img src="{% static 'img/person_6.jpg' %}" width="200" height="250" alt="봉현님">
@@ -152,15 +167,17 @@
                 </div>
             </div>
 
-            <!-- AI Team -->
             <div class="row mb-2">
                 <div class="col-md-6">
-                    <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+                    <div
+                        class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
                         <div class="col p-4 d-flex flex-column position-static">
                             <strong class="d-inline-block mb-2 text-primary-emphasis">AI_team</strong>
                             <h3 class="mb-0">TH Choi</h3>
                             <div class="mb-1 text-body-secondary">team_6</div>
-                            <p class="card-text mb-auto">An AI team member who actively leverages their strengths, addresses their weaknesses, and seeks continuous improvement through objective self-assessment.</p>
+                            <p class="card-text mb-auto">An AI team member who actively leverages their strengths,
+                                addresses their weaknesses, and seeks continuous improvement through objective
+                                self-assessment.</p>
                         </div>
                         <div class="col-auto d-none d-lg-block">
                             <img src="{% static 'img/person_7.jpg' %}" width="200" height="250" alt="태환님">
@@ -169,12 +186,14 @@
                 </div>
 
                 <div class="col-md-6">
-                    <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+                    <div
+                        class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
                         <div class="col p-4 d-flex flex-column position-static">
                             <strong class="d-inline-block mb-2 text-primary-emphasis">AI_team</strong>
                             <h3 class="mb-0">UH Lee</h3>
                             <div class="mb-1 text-body-secondary">team_6</div>
-                            <p class="card-text mb-auto">An AI team member who diligently completes their tasks quietly and demonstrates a strong willingness to learn and improve in areas where they lack.</p>
+                            <p class="card-text mb-auto">An AI team member who diligently completes their tasks quietly
+                                and demonstrates a strong willingness to learn and improve in areas where they lack.</p>
                         </div>
                         <div class="col-auto d-none d-lg-block">
                             <img src="{% static 'img/person_8.jpg' %}" width="200" height="250" alt="의현님">
@@ -184,12 +203,9 @@
             </div>
         </div>
     </div>
-    <!-- 팀원 소개 끝 -->
 </div>
 {% endblock content %}
 
-<!-- Footer Start -->
 {% block footer %}
 {% include "app/common/footer.html" %}
 {% endblock footer %}
-<!-- Footer End -->
