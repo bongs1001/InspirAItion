@@ -10,29 +10,28 @@
         </div>
         <div class="gallery-info">
             <h5 class="gallery-title">{{ post.title }}</h5>
-            <p class="gallery-text">{{ post.content|truncatechars:100 }}</p>
             <p class="gallery-author">by {{ post.author_nickname }}</p>
         </div>
-    </a>
-    <div class="d-flex justify-content-between align-items-center p-2">
-        <div class="likes-badge">
+        
+        <div class="likes-badge-overlay">
             <i class="fas fa-heart {% if post.is_popular %}text-danger{% endif %}"></i>
             <span>{{ post.likes_count }}</span>
             {% if post.is_popular %}
             <span class="badge bg-warning text-dark ms-1">인기</span>
             {% endif %}
         </div>
-        <div class="d-flex gap-1">
-            {% if user == post.current_owner and not post.is_on_auction %}
-                <a href="{% url 'register_auction' post.id %}" class="btn btn-sm btn-outline-primary">
-                    <i class="fas fa-gavel"></i>
-                </a>
-                <a href="{% url 'create_goods' post.id %}" class="btn btn-sm btn-outline-success">
-                    <i class="fas fa-tshirt"></i>
-                </a>
-            {% endif %}
+        
+        {% if user == post.current_owner and not post.is_on_auction %}
+        <div class="owner-buttons">
+            <a href="{% url 'register_auction' post.id %}" class="btn btn-sm btn-outline-light">
+                <i class="fas fa-gavel"></i>
+            </a>
+            <a href="{% url 'create_goods' post.id %}" class="btn btn-sm btn-outline-light">
+                <i class="fas fa-tshirt"></i>
+            </a>
         </div>
-    </div>
+        {% endif %}
+    </a>
 </div>
 {% empty %}
 <div class="col-12 text-center py-5">
