@@ -829,7 +829,7 @@ def delete_post(request: HttpRequest, pk: int) -> HttpResponse:
 
 from django.template.loader import render_to_string
 
-
+@login_required
 def my_gallery(request):
     search_query = request.GET.get("search", "")
     tag_filter = request.GET.get("tag", "")

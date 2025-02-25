@@ -83,7 +83,7 @@
                 <h2 class="m-0">{% if gallery_type == 'personal' %}내 갤러리{% else %}공개 갤러리{% endif %}</h2>
                 
                 <div class="ms-3 d-flex align-items-center">
-                    <a href="{% if gallery_type == 'personal' %}{% url 'personal_exhibition' %}{% else %}{% url 'fullscreen_gallery' %}{% endif %}" class="btn btn-sm exhibition-btn">
+                    <a href="{% if gallery_type == 'personal' %}{% url 'fullscreen_gallery' %}{% else %}{% url 'fullscreen_gallery' %}{% endif %}" class="btn btn-sm exhibition-btn">
                         <i class="fas fa-photo-video me-1"></i> 
                         {% if gallery_type == 'personal' %}내 전시관{% else %}전시관 입장{% endif %}
                     </a>
