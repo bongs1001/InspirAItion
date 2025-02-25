@@ -25,7 +25,6 @@
                                 <img src="{{ post.thumb }}" class="top-post-image" alt="{{ post.title }}">
                                 <div class="top-post-info">
                                     <h4>{{ post.title }}</h4>
-                                    <p class="mb-2">{{ post.content|truncatechars:100 }}</p>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span>by {{ post.author_nickname }}</span>
                                         <div>
@@ -106,7 +105,11 @@
         </div>
         {% else %}
         <div class="no-posts-message">
-            게시물이 없습니다.
+            <i class="fas fa-image fa-3x mb-3 text-muted"></i>
+            <p class="h5">게시물이 없습니다.</p>
+            {% if gallery_type == 'personal' %}
+            <a href="{% url 'create_post' %}" class="btn btn-primary mt-3">작품 만들기</a>
+            {% endif %}
         </div>
         {% endif %}
 
