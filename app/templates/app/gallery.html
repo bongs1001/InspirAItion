@@ -81,6 +81,13 @@
         <div class="gallery-header d-flex flex-wrap justify-content-between align-items-center mb-4">
             <div class="d-flex gap-3 mb-3 mb-md-0">
                 <h2 class="m-0">{% if gallery_type == 'personal' %}내 갤러리{% else %}공개 갤러리{% endif %}</h2>
+                
+                <div class="ms-3 d-flex align-items-center">
+                    <a href="{% if gallery_type == 'personal' %}{% url 'fullscreen_gallery' %}{% else %}{% url 'fullscreen_gallery' %}{% endif %}" class="btn btn-sm exhibition-btn">
+                        <i class="fas fa-photo-video me-1"></i> 
+                        {% if gallery_type == 'personal' %}내 전시관{% else %}전시관 입장{% endif %}
+                    </a>
+                </div>
             </div>
             <div class="d-flex gap-3 flex-grow-1 flex-md-grow-0">
                 <form method="get" class="d-flex gap-2 flex-grow-1">

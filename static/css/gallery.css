@@ -446,3 +446,41 @@
         font-size: 0.8rem;
     }
 }
+
+/* 전시관 버튼 스타일 수정 */
+.exhibition-btn {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    border: 1px solid rgba(108, 92, 231, 0.5);
+    background-color: rgba(108, 92, 231, 0.1);
+    color: #6c5ce7;
+    margin-left: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.exhibition-btn:hover {
+    background-color: rgba(108, 92, 231, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    color: #5f3dc4;
+}
+
+.exhibition-btn i {
+    font-size: 0.8rem;
+}
+
+[data-theme="dark"] .exhibition-btn {
+    background-color: rgba(108, 92, 231, 0.2);
+    border-color: rgba(108, 92, 231, 0.6);
+    color: #a29bfe;
+}
+
+[data-theme="dark"] .exhibition-btn:hover {
+    background-color: rgba(108, 92, 231, 0.3);
+    color: #c0b9ff;
+}

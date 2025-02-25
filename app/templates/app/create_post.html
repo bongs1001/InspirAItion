@@ -2,204 +2,509 @@
 {% load static %}
 {% load django_bootstrap5 %}
 
-{% block title %} New Home {% endblock title %}
+{% block title %}작품 만들기 - InspirAItion{% endblock title %}
+
+{% block css %}
+<style>
+    .create-post-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .create-post-header {
+        background-color: var(--bg-secondary);
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        text-align: center;
+        border-radius: 10px;
+    }
+    
+    .create-post-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+    
+    .create-post-subtitle {
+        color: var(--text-secondary);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    
+    .form-section {
+        background-color: var(--card-bg);
+        border-radius: 10px;
+        padding: 2rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        border: 1px solid var(--border-color);
+    }
+    
+    .image-preview-container {
+        position: relative;
+        min-height: 300px;
+        background-color: var(--bg-secondary);
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 1px dashed var(--border-color);
+    }
+    
+    .image-preview {
+        max-width: 100%;
+        max-height: 400px;
+        object-fit: contain;
+    }
+    
+    .form-section-title {
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 0.75rem;
+    }
+    
+    .control-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .feature-button {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-radius: 30px;
+        padding: 0.7rem 1.2rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    
+    .feature-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .submit-button {
+        border-radius: 30px;
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    
+    .submit-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+    
+    .ai-warning {
+        background-color: #fff3cd;
+        border-left: 5px solid #ffc107;
+        padding: 1rem;
+        border-radius: 5px;
+    }
+    
+    .ai-warning strong {
+        color: #856404;
+    }
+    
+    .loading-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1050;
+    }
+    
+    .loading-content {
+        background-color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .loading-spinner {
+        width: 3rem;
+        height: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .image-controls {
+        margin-top: 1rem;
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+    
+    .no-preview-text {
+        color: var(--text-secondary);
+        font-size: 1.2rem;
+    }
+    
+    .no-preview-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: var(--text-secondary);
+    }
+    
+    .form-floating label {
+        color: var(--text-secondary);
+    }
+    
+    .voice-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .voice-dropdown-menu {
+        min-width: 200px;
+    }
+</style>
+{% endblock css %}
 
 {% block header %}
 {% include "app/common/header.html" %}
 {% endblock header %}
 
 {% block content %}
-<hr class="featurette-divider">
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <h2 class="mb-4">새 글 작성</h2>
-            <form method="post" id="postForm">
-                {% csrf_token %}
+<div class="container create-post-container py-4">
+    <div class="create-post-header">
+        <h1 class="create-post-title">새로운 작품 만들기</h1>
+        <p class="create-post-subtitle">AI의 도움을 받아 당신만의 창작물을 만들고 공유해보세요.</p>
+    </div>
 
-
-                <div id="imagePreview" style="display: none;" class="my-3">
-                    <img id="generatedImage" src="" alt="" class="img-fluid">
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="form-section">
+                <h3 class="form-section-title">
+                    <i class="fas fa-image me-2"></i>이미지 생성
+                </h3>
+                
+                <div id="imagePreview" class="image-preview-container">
+                    <div id="noPreviewContent" style="text-align: center;">
+                        <i class="fas fa-cloud-upload-alt no-preview-icon"></i>
+                        <p class="no-preview-text">AI 이미지를 생성해주세요</p>
+                    </div>
+                    <img id="generatedImage" src="" alt="" class="image-preview" style="display: none;">
+                </div>
+                
+                <div class="control-buttons">
+                    <div class="voice-dropdown">
+                        <button type="button" class="btn btn-outline-secondary feature-button dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-microphone"></i>
+                            음성 입력
+                        </button>
+                        <ul class="dropdown-menu voice-dropdown-menu">
+                            <li>
+                                <button class="dropdown-item" type="button" id="voiceInputBtn">
+                                    <i class="fas fa-microphone me-2"></i>일반 음성 입력
+                                </button>
+                            </li>
+                            <li>
+                                <button class="dropdown-item" type="button" id="aiVoiceInputBtn" data-user-style="{{ user.profile.user_style }}">
+                                    <span class="ai-mic-icon me-2">
+                                        <i class="fas fa-microphone"></i>
+                                        <i class="fas fa-star ai-icon-overlay"></i>
+                                    </span>
+                                    AI 음성 입력
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <button type="button" id="generateImageBtn" class="btn btn-primary feature-button">
+                        <i class="fas fa-magic"></i>
+                        AI 이미지 생성
+                    </button>
+                    
+                    <button type="button" id="upscaleImageBtn" class="btn btn-warning feature-button" disabled>
+                        <i class="fas fa-expand-arrows-alt"></i>
+                        이미지 업스케일
+                    </button>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="form-floating">
+                        <textarea class="form-control" id="promptInput" name="prompt" style="height: 120px;" placeholder="프롬프트를 입력하세요"></textarea>
+                        <label for="promptInput">이미지 생성을 위한 프롬프트 입력</label>
+                    </div>
+                    <small class="text-muted">원하는 이미지에 대한 자세한 설명을 입력해주세요. 예: "별이 빛나는 고요한 밤하늘과 큰 산, 호수가 있는 풍경"</small>
+                </div>
+                
+                <div class="ai-warning mt-4">
+                    <strong>⚠ 이미지 생성 제한 안내 ⚠</strong>
+                    <p class="mb-0">AI 이미지 생성 시스템은 특정 인물(예: 연예인, 정치인 등)이나 저작권 보호 대상이 포함된 프롬프트에 대해 이미지를 생성할 수 없습니다. 이러한 요청은 자동으로 거부될 수 있으며, 가이드라인을 준수해 주세요.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-5">
+            <div class="form-section">
+                <h3 class="form-section-title">
+                    <i class="fas fa-edit me-2"></i>작품 정보
+                </h3>
+                
+                <form method="post" id="postForm">
+                    {% csrf_token %}
                     <input type="hidden" name="generated_image_url" id="generatedImageUrl">
                     <input type="hidden" name="generated_prompt" id="generatedPrompt">
-                    <!-- <div class="mt-2">
-                        <button type="button" class="btn btn-secondary" onclick="cancelImage()">이미지 취소</button>
-                    </div> -->
-                </div>
-
-                <div class="d-flex gap-2">
-                    <button type="button" class="voice-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="음성 입력">
-                        <span class="ai-mic-icon">
-                            <i class="fas fa-microphone"></i>
-                            <i class="fas fa-star ai-icon-overlay"></i>
-                        </span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <button class="dropdown-item" type="button" id="voiceInputBtn">
-                                <i class="fas fa-microphone me-2"></i>일반 음성 입력
-                            </button>
-                        </li>
-                        <li>
-                            <button class="dropdown-item" type="button" id="aiVoiceInputBtn" data-user-style="{{ user.profile.user_style }}"">
-                                <span class=" ai-mic-icon me-2">
-                                <i class="fas fa-microphone"></i>
-                                <i class="fas fa-star ai-icon-overlay"></i>
-                                </span>
-                                AI 음성 입력
-                            </button>
-                        </li>
-                    </ul>
-                    <!-- <button type="button" id="generateSttBtn" class="btn btn-info" onclick="detect_language_and_transcribe()">음성 입력</button> -->
-                    <!-- <button type="button" id="generateSttBtnAI" class="btn btn-info" onclick="detect_language_and_transcribe_with_ai()">AI 음성 입력</button> -->
-                    <button type="button" id="generateImageBtn" class="btn btn-success" onclick="generateImage()">AI 이미지 생성</button>
-                    <button type="button" id="upscaleImageBtn" class="btn btn-warning" onclick="upscaleImage()">이미지 업스케일</button>
-                    <button type="submit" class="btn btn-primary">저장</button>
-                    <a href="{% url 'home' %}" class="btn btn-secondary">취소</a>
-                </div>
-                {% bootstrap_form form %}
-                <div class="alert alert-warning mt-3" role="alert">
-                    <strong>⚠ 이미지 생성 제한 안내 ⚠</strong>
-                    <p>AI 이미지 생성 시스템은 특정 인물(예: 연예인, 정치인 등)이나 저작권 보호 대상이 포함된 프롬프트에 대해 이미지를 생성할 수 없습니다. 이러한 요청은 자동으로 거부될 수 있으며, 가이드라인을 준수해 주세요.</p>
-                </div>
-            </form>
+                    
+                    <div class="mb-3">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="titleInput" name="title" placeholder="제목을 입력하세요" required>
+                            <label for="titleInput">작품 제목</label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-floating">
+                            <textarea class="form-control" id="contentInput" name="content" style="height: 180px;" placeholder="내용을 입력하세요" required></textarea>
+                            <label for="contentInput">작품 설명</label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="isPublicCheck" name="is_public">
+                            <label class="form-check-label" for="isPublicCheck">공개 갤러리에 공유하기</label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary submit-button">
+                            <i class="fas fa-save me-2"></i>작품 저장하기
+                        </button>
+                        <a href="{% url 'my_gallery' %}" class="btn btn-outline-secondary">취소</a>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 
-<div id="loadingModal" style="position: fixed;top: 0;left: 0;width: 100%;height: 100%;background: rgba(0,0,0,0.5);display: none;z-index: 1050;">
-    <div style="position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);color: #fff;font-size: 1.5rem;">
-        AI 이미지 생성중...
+<div id="loadingModal" class="loading-modal" style="display: none;">
+    <div class="loading-content">
+        <div class="spinner-border loading-spinner text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <h4 id="loadingText">AI 이미지 생성 중...</h4>
+        <p class="text-muted">잠시만 기다려주세요</p>
     </div>
 </div>
 
+<div id="speechRecognitionModal" class="recognition-modal">
+    <div class="recognition-content">
+        <div class="recognition-text">음성 인식중...</div>
+        <div class="wave-animation">
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+        </div>
+    </div>
+</div>
 
-{% block js %}
-<script src="{% static 'js/script.js' %}"></script>
-{% endblock js %}
-
-<script>
-    function validateForm() {
-        const title = document.querySelector('[name="title"]').value.trim();
-        const content = document.querySelector('[name="content"]').value.trim();
-        const imageUrl = document.getElementById('generatedImageUrl').value.trim();
-
-        let errorMessage = '';
-
-        if (!title) {
-            errorMessage = '제목을 입력해주세요.';
-        } else if (!content) {
-            errorMessage = '내용을 입력해주세요.';
-        } else if (!imageUrl) {
-            errorMessage = 'AI 이미지를 생성해주세요.';
-        }
-
-        if (errorMessage) {
-            alert(errorMessage);
-            return false;
-        }
-        return true;
-    }
-
-    function cancelImage() {
-        document.getElementById('imagePreview').style.display = 'none';
-        document.getElementById('generatedImage').src = '';
-        document.getElementById('generatedImageUrl').value = '';
-        document.getElementById('generatedPrompt').value = '';
-    }
-
-    function showLoadingModal() {
-        document.getElementById('loadingModal').style.display = 'block';
-    }
-
-    function hideLoadingModal() {
-        document.getElementById('loadingModal').style.display = 'none';
-    }
-
-    async function generateImage() {
-        const promptInput = document.querySelector('[name="prompt"]');
-        if (!promptInput || !promptInput.value.trim()) {
-            alert('프롬프트를 입력해주세요.');
-            return;
-        }
-
-        showLoadingModal();
-        try {
-            const response = await fetch('/app/ai/generate/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
-                },
-                body: `prompt=${encodeURIComponent(promptInput.value)}`
-            });
-
-            if (!response.ok) {
-                throw new Error('이미지 생성에 실패했습니다.');
-            }
-
-            const data = await response.json();
-            document.getElementById('generatedImage').src = data.image_url;
-            document.getElementById('generatedImageUrl').value = data.image_url;
-            document.getElementById('generatedPrompt').value = data.generated_prompt;
-            document.getElementById('imagePreview').style.display = 'block';
-        } catch (error) {
-            alert(error.message);
-            console.error('Error:', error);
-        } finally {
-            hideLoadingModal();
-        }
-    }
-
-    async function upscaleImage() {
-        const imageUrl = document.getElementById('generatedImageUrl').value.trim();
-        const prompt = document.querySelector('[name="prompt"]').value.trim();
-
-        if (!imageUrl) {
-            alert('먼저 이미지를 생성해주세요.');
-            return;
-
-        }
-
-        const confirmMessage = '이미지를 업스케일 하시겠습니까?\n(처리에 5~10분 정도 소요될 수 있습니다)';
-        if (!confirm(confirmMessage)) {
-            return;
-        }
-
-        showLoadingModal();
-        document.querySelector('#loadingModal div').innerText = 'ComfyUI로 이미지 업스케일 중...\n(이 작업은 시간이 소요됩니다.)';
-
-        try {
-            const response = await fetch('/app/ai/upscale/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
-                },
-                body: `image_url=${encodeURIComponent(imageUrl)}&prompt=${encodeURIComponent(prompt)}`
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || '이미지 업스케일에 실패했습니다.');
-            }
-
-            const data = await response.json();
-            document.getElementById('generatedImage').src = data.image_url;
-            document.getElementById('generatedImageUrl').value = data.image_url;
-            
-            alert('이미지 업스케일 완료!\n고품질 이미지로 변환되었습니다.');
-
-        } catch (error) {
-            alert(error.message);
-            console.error('Error:', error);
-        } finally {
-            hideLoadingModal();
-        }
-    }
-</script>
+<div id="aiProcessingModal" class="recognition-modal">
+    <div class="recognition-content">
+        <div class="recognition-text">인식된 음성을 AI가 개선하는 중...</div>
+        <div class="spinner"></div>
+    </div>
+</div>
 {% endblock content %}
 
 {% block footer %}
 {% include "app/common/footer.html" %}
 {% endblock footer %}
+
+{% block js %}
+<script src="{% static 'js/script.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const promptInput = document.getElementById('promptInput');
+        const generateImageBtn = document.getElementById('generateImageBtn');
+        const upscaleImageBtn = document.getElementById('upscaleImageBtn');
+        const generatedImage = document.getElementById('generatedImage');
+        const noPreviewContent = document.getElementById('noPreviewContent');
+        const generatedImageUrl = document.getElementById('generatedImageUrl');
+        const generatedPrompt = document.getElementById('generatedPrompt');
+        const loadingModal = document.getElementById('loadingModal');
+        const loadingText = document.getElementById('loadingText');
+        const postForm = document.getElementById('postForm');
+        
+        postForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const title = document.getElementById('titleInput').value.trim();
+            const content = document.getElementById('contentInput').value.trim();
+            const imageUrl = generatedImageUrl.value.trim();
+            
+            let errorMessage = '';
+            
+            if (!title) {
+                errorMessage = '제목을 입력해주세요.';
+            } else if (!content) {
+                errorMessage = '내용을 입력해주세요.';
+            } else if (!imageUrl) {
+                errorMessage = 'AI 이미지를 생성해주세요.';
+            }
+            
+            if (errorMessage) {
+                alert(errorMessage);
+                return;
+            }
+            
+            loadingText.innerText = '저장 중...';
+            showLoadingModal();
+            this.submit();
+        });
+        
+        async function generateImage() {
+            const prompt = promptInput.value.trim();
+            if (!prompt) {
+                alert('프롬프트를 입력해주세요.');
+                return;
+            }
+            
+            generateImageBtn.disabled = true;
+            loadingText.innerText = 'AI 이미지 생성 중...';
+            showLoadingModal();
+            
+            try {
+                const response = await fetch('/app/ai/generate/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
+                    },
+                    body: `prompt=${encodeURIComponent(prompt)}`
+                });
+                
+                if (!response.ok) {
+                    throw new Error('이미지 생성에 실패했습니다.');
+                }
+                
+                const data = await response.json();
+                
+                generatedImage.src = data.image_url;
+                generatedImage.style.display = 'block';
+                noPreviewContent.style.display = 'none';
+                
+                generatedImageUrl.value = data.image_url;
+                generatedPrompt.value = data.generated_prompt;
+                
+                upscaleImageBtn.disabled = false;
+                
+                const titleInput = document.getElementById('titleInput');
+                if (!titleInput.value.trim()) {
+                    const title = prompt.split('.')[0].substring(0, 30);
+                    titleInput.value = title;
+                }
+            } catch (error) {
+                alert(error.message);
+                console.error('Error:', error);
+            } finally {
+                generateImageBtn.disabled = false;
+                hideLoadingModal();
+            }
+        }
+        
+        async function upscaleImage() {
+            const imageUrl = generatedImageUrl.value.trim();
+            const prompt = promptInput.value.trim();
+            
+            if (!imageUrl) {
+                alert('먼저 이미지를 생성해주세요.');
+                return;
+            }
+            
+            const confirmMessage = '이미지를 업스케일 하시겠습니까?\n(처리에 5~10분 정도 소요될 수 있습니다)';
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+            
+            upscaleImageBtn.disabled = true;
+            loadingText.innerText = 'ComfyUI로 이미지 업스케일 중...\n(이 작업은 시간이 소요됩니다.)';
+            showLoadingModal();
+            
+            try {
+                const response = await fetch('/app/ai/upscale/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
+                    },
+                    body: `image_url=${encodeURIComponent(imageUrl)}&prompt=${encodeURIComponent(prompt)}`
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || '이미지 업스케일에 실패했습니다.');
+                }
+                
+                const data = await response.json();
+                
+                generatedImage.src = data.image_url;
+                generatedImageUrl.value = data.image_url;
+                
+                alert('이미지 업스케일 완료!\n고품질 이미지로 변환되었습니다.');
+            } catch (error) {
+                alert(error.message);
+                console.error('Error:', error);
+            } finally {
+                upscaleImageBtn.disabled = false;
+                hideLoadingModal();
+            }
+        }
+        
+        function showLoadingModal() {
+            loadingModal.style.display = 'flex';
+        }
+        
+        function hideLoadingModal() {
+            loadingModal.style.display = 'none';
+        }
+        
+        generateImageBtn.addEventListener('click', generateImage);
+        upscaleImageBtn.addEventListener('click', upscaleImage);
+        
+        promptInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                e.preventDefault();
+                generateImage();
+            }
+        });
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const imageUrl = urlParams.get('image_url');
+        const generatedPromptValue = urlParams.get('generated_prompt');
+        const originalPrompt = urlParams.get('original_prompt');
+        
+        if (imageUrl && generatedPromptValue) {
+            generatedImage.src = imageUrl;
+            generatedImage.style.display = 'block';
+            noPreviewContent.style.display = 'none';
+            
+            generatedImageUrl.value = imageUrl;
+            generatedPrompt.value = generatedPromptValue;
+            
+            upscaleImageBtn.disabled = false;
+            
+            if (originalPrompt) {
+                promptInput.value = originalPrompt;
+            }
+        }
+    });
+</script>
+{% endblock js %}
