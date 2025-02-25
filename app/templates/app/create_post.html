@@ -153,40 +153,43 @@
 
     async function upscaleImage() {
         const imageUrl = document.getElementById('generatedImageUrl').value.trim();
-        console.log(imageUrl);
+        const prompt = document.querySelector('[name="prompt"]').value.trim();
+
         if (!imageUrl) {
             alert('먼저 이미지를 생성해주세요.');
             return;
-        } else {
-            const confirmMessage = '이미지를 업스케일 하시겠습니까?';
-            if (!confirm(confirmMessage)) {
-                alert('업스케일을 취소했습니다.');
-                return;
-            }
-            alert("추후 이 코드를 제거하고 이미지 업스케일 기능을 추가할 예정입니다.");
+
+        }
+
+        const confirmMessage = '이미지를 업스케일 하시겠습니까?\n(처리에 5~10분 정도 소요될 수 있습니다)';
+        if (!confirm(confirmMessage)) {
             return;
         }
 
         showLoadingModal();
+        document.querySelector('#loadingModal div').innerText = 'ComfyUI로 이미지 업스케일 중...\n(이 작업은 시간이 소요됩니다.)';
+
         try {
-            const response = await fetch('/app/ai/generate/', {
+            const response = await fetch('/app/ai/upscale/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
                 },
-                body: `prompt=${encodeURIComponent("고양이")}`
+                body: `image_url=${encodeURIComponent(imageUrl)}&prompt=${encodeURIComponent(prompt)}`
             });
 
             if (!response.ok) {
-                throw new Error('이미지 업스케일에 실패했습니다.');
+                const errorData = await response.json();
+                throw new Error(errorData.error || '이미지 업스케일에 실패했습니다.');
             }
 
             const data = await response.json();
             document.getElementById('generatedImage').src = data.image_url;
             document.getElementById('generatedImageUrl').value = data.image_url;
-            document.getElementById('generatedPrompt').value = data.generated_prompt;
-            document.getElementById('imagePreview').style.display = 'block';
+            
+            alert('이미지 업스케일 완료!\n고품질 이미지로 변환되었습니다.');
+
         } catch (error) {
             alert(error.message);
             console.error('Error:', error);
