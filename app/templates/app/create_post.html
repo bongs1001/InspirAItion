@@ -366,6 +366,7 @@
 
 {% block js %}
 <script src="{% static 'js/script.js' %}"></script>
+<script src="{% static 'js/outpainting.js' %}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const promptInput = document.getElementById('promptInput');
@@ -451,8 +452,6 @@
                 generatedImageUrl.value = data.image_url;
                 generatedPrompt.value = data.generated_prompt;
                 
-                upscaleImageBtn.disabled = false;
-                
                 const titleInput = document.getElementById('titleInput');
                 if (!titleInput.value.trim()) {
                     const title = prompt.split('.')[0].substring(0, 30);
@@ -534,6 +533,73 @@
             }
         }
         
+        async function outpaintImage() {
+            const imageUrl = generatedImageUrl.value.trim();
+            const prompt = promptInput.value.trim();
+            
+            if (!imageUrl) {
+                alert('먼저 이미지를 생성해주세요.');
+                return;
+            }
+            
+            const confirmMessage = '이미지 아웃페인팅을 진행하시겠습니까?\n(처리에 5~10분 정도 소요될 수 있습니다)';
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+            
+            outpaintImageBtn.disabled = true;
+            loadingText.innerText = 'ComfyUI로 이미지 아웃페인팅 중...\n(이 작업은 시간이 소요됩니다.)';
+            showLoadingModal(true); 
+            
+            let isCancelled = false;
+            
+            const cancelBtn = document.getElementById('cancelOperationBtn');
+            cancelBtn.onclick = function() {
+                if (confirm('정말로 아웃페인팅 작업을 취소하시겠습니까?')) {
+                    isCancelled = true;
+                    hideLoadingModal();
+                    outpaintImageBtn.disabled = false;
+                }
+            };
+            
+            try {
+                const response = await fetch('/app/ai/outpaint/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
+                    },
+                    body: `image_url=${encodeURIComponent(imageUrl)}&prompt=${encodeURIComponent(prompt)}`
+                });
+                
+                if (isCancelled) {
+                    return; 
+                }
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || '이미지 아웃페인팅에 실패했습니다.');
+                }
+                
+                const data = await response.json();
+                
+                generatedImage.src = data.image_url;
+                generatedImageUrl.value = data.image_url;
+                
+                alert('이미지 아웃페인팅 완료!\n이미지가 성공적으로 확장되었습니다.');
+            } catch (error) {
+                if (!isCancelled) {
+                    alert(error.message);
+                    console.error('Error:', error);
+                }
+            } finally {
+                if (!isCancelled) {
+                    outpaintImageBtn.disabled = false;
+                    hideLoadingModal();
+                }
+            }
+        }
+        
         function showLoadingModal(showCancelButton = false) {
             loadingModal.style.display = 'flex';
             const cancelBtn = document.getElementById('cancelOperationBtn');
@@ -546,9 +612,7 @@
         
         generateImageBtn.addEventListener('click', generateImage);
         upscaleImageBtn.addEventListener('click', upscaleImage);
-        outpaintImageBtn.addEventListener('click', function() {
-            alert('아웃페인팅 기능은 준비 중입니다.');
-        });
+        outpaintImageBtn.addEventListener('click', outpaintImage);
         
         promptInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && e.ctrlKey) {

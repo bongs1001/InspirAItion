@@ -1638,3 +1638,100 @@ def save_image_to_blob_storage(image_url, gpt_prompt=None, image_type="dalle", p
     except Exception as e:
         logging.error(f"Azure Blob Storage에 이미지 저장 중 오류 발생: {e}")
         return None
+    
+@login_required
+def outpaint_image(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST method required"}, status=405)
+
+    image_url = request.POST.get("image_url", "").strip()
+    if not image_url:
+        return JsonResponse({"error": "이미지 URL을 제공해주세요."}, status=400)
+    
+    try:
+        logging.info(f"이미지 아웃페인팅 요청: {image_url}")
+
+        comfyui_image_url = process_outpainting_with_comfyui(image_url)
+
+        if not comfyui_image_url:
+            return JsonResponse({"error": "아웃페인팅 처리에 실패했습니다."}, status=500)
+
+        prompt = request.POST.get("prompt", "Outpainted image")
+
+        return JsonResponse({
+            "image_url": comfyui_image_url,
+            "generated_prompt": prompt,
+            "message": "이미지가 성공적으로 아웃페인팅되었습니다."
+        })
+    
+    except Exception as e:
+        logging.error(f"이미지 아웃페인팅 중 오류 발생: {str(e)}", exc_info=True)
+        return JsonResponse({"error": str(e)}, status=500)
+
+def load_outpainting_workflow():
+    workflow_path = os.path.join("static", "workflows", "Outpainting_Final.json")
+    try:
+        with open(workflow_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        logging.error(f"아웃페인팅 워크플로우 파일을 찾을 수 없습니다: {workflow_path}")
+        return None
+    
+def process_outpainting_with_comfyui(image_url):
+    logging.info("아웃페인팅 workflow를 불러옵니다.")
+    workflow = load_outpainting_workflow()
+    if not workflow:
+        logging.error("아웃페인팅 워크플로우를 로드할 수 없습니다.")
+        return None
+
+    if "17" in workflow and "inputs" in workflow["17"]:
+        workflow["17"]["inputs"]["url_or_path"] = image_url
+    else:
+        logging.error("워크플로우에서 LoadImageFromUrlOrPath 노드를 찾을 수 없습니다.")
+        return None
+
+    result = queue_prompt(workflow)
+
+    if result is None:
+        logging.error("ComfyUI 아웃페인팅 처리에 실패했습니다.")
+        return None
+    
+    prompt_id = result.get("prompt_id")
+    if not prompt_id:
+        logging.error("ComfyUI 응답에서 prompt_id를 찾을 수 없습니다.")
+        return None
+
+    
+    max_wait_time = 600
+    wait_interval = 2
+    total_waited = 0
+
+    while not check_workflow_status(prompt_id):
+        time.sleep(wait_interval)
+        total_waited += wait_interval
+        if total_waited >= max_wait_time:
+            logging.error(f"워크플로우 실행 제한 시간({max_wait_time}초) 초과")
+            return None
+        
+    image_info = get_image_info(prompt_id)
+    if image_info:
+        try:
+            file_name = image_info[prompt_id]["outputs"]["14"]["images"][0]["filename"]
+            comfyui_image_url = f"{settings.COMFYUI_API_URL}/view?filename={file_name}&type=output&subfolder="
+            logging.info(f"ComfyUI 아웃페인팅 이미지 URL: {comfyui_image_url}")
+
+            saved_image_url = save_image_to_blob_storage(comfyui_image_url, None, "outpainting", prompt_id)
+            if saved_image_url:
+                logging.info(f"아웃페인팅 이미지 저장 완료: {saved_image_url}")
+                return saved_image_url
+            else:
+                return comfyui_image_url
+            
+        except KeyError as e:
+            logging.error(f"이미지 정보에서 파일 이름을 찾을 수 없습니다: {str(e)}")
+            logging.debug(f"이미지 정보: {image_info}")
+            return None
+        
+    else:
+        logging.error("이미지 정보를 가져올 수 없습니다.")
+        return None

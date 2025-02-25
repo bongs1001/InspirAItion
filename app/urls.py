@@ -7,6 +7,7 @@ urlpatterns = [
     path("create/", views.create_post, name="create_post"),
     path("ai/generate/", views.generate_image, name="generate_image"),
     path("ai/upscale/", views.upscale_image, name="upscale_image"), 
+    path("ai/outpaint/", views.outpaint_image, name="outpaint_image"),
     path("artwork/my/", views.my_gallery, name="my_gallery"),
     path("artwork/public/", views.public_gallery, name="public_gallery"),
     path("artwork/fullscreen/", views.fullscreen_gallery, name="fullscreen_gallery"),
