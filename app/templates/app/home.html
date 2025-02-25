@@ -47,7 +47,7 @@
                         </li>
                     </ul>
                 </div>
-
+            
                 <button type="button" id="generateImageBtn" class="generate-btn">
                     <i class="fas fa-wand-magic-sparkles"></i>
                     생성하기
@@ -82,6 +82,34 @@
         window.location.href = "{% url 'login' %}";
         return false;
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const generateBtn = document.getElementById('generateImageBtn');
+        
+        if (generateBtn) {
+            generateBtn.addEventListener('click', function() {
+                {% if user.is_authenticated %}
+                window.location.href = "{% url 'create_post' %}";
+                {% else %}
+                doLogin();
+                {% endif %}
+            });
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    {% if user.is_authenticated %}
+                    window.location.href = "{% url 'create_post' %}";
+                    {% else %}
+                    doLogin();
+                    {% endif %}
+                }
+            });
+        }
+    });
 </script>
 <script src="{% static 'js/script.js' %}"></script>
 {% endblock %}
