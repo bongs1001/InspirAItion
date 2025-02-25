@@ -1,178 +1,669 @@
-<!-- Header Start -->
 {% extends "app/common/frame.html" %}
 {% load static %}
 {% load django_bootstrap5 %}
-{% block title %} New Home {% endblock title %}
+{% block title %}{{ post.title }} - InspirAItion{% endblock title %}
 {% block header %}
 {% include "app/common/header.html" %}
 {% endblock header %}
-<!-- Header End -->
+
+{% block css %}
+<style>
+    .artwork-container {
+        background-color: var(--bg-secondary);
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .artwork-image-container {
+        text-align: center;
+        background-color: #000;
+        position: relative;
+        overflow: hidden;
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .artwork-image {
+        max-width: 100%;
+        max-height: 70vh;
+        transition: transform 0.3s ease;
+    }
+    
+    .artwork-image:hover {
+        transform: scale(1.02);
+    }
+    
+    .artwork-info {
+        padding: 2rem;
+        background-color: var(--card-bg);
+    }
+    
+    .artwork-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+    
+    .artwork-meta {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .artwork-author {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--text-secondary);
+    }
+    
+    .author-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .artwork-date {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    .artwork-content {
+        margin-bottom: 1.5rem;
+        color: var(--text-primary);
+        line-height: 1.7;
+    }
+    
+    .artwork-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .tag-badge {
+        background-color: var(--tag-bg);
+        color: var(--tag-text);
+        border-radius: 20px;
+        padding: 0.3rem 1rem;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .tag-badge:hover {
+        background-color: var(--hover-bg);
+        transform: translateY(-2px);
+    }
+    
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .btn-with-icon {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 30px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-with-icon:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .like-button {
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+    
+    .like-button.liked {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        border-color: rgba(220, 53, 69, 0.3);
+    }
+    
+    .like-button.liked i {
+        color: #dc3545;
+    }
+    
+    .popular-badge {
+        display: inline-block;
+        background-color: #ffc107;
+        color: #212529;
+        border-radius: 20px;
+        padding: 0.2rem 0.75rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+        vertical-align: middle;
+    }
+    
+    .curation-section {
+        background-color: var(--bg-secondary);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        border-left: 4px solid #6c5ce7;
+    }
+    
+    .curation-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .curation-content {
+        color: var(--text-secondary);
+        font-style: italic;
+        line-height: 1.7;
+    }
+    
+    .curation-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+    }
+    
+    .style-select {
+        flex-grow: 1;
+        max-width: 300px;
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        padding: 0.5rem 1rem;
+        background-color: var(--card-bg);
+        color: var(--text-primary);
+    }
+    
+    .controls-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .audio-controls {
+        display: none;
+    }
+    
+    .audio-controls.active {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .comments-section {
+        background-color: var(--card-bg);
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .comments-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: var(--text-primary);
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 1rem;
+    }
+    
+    .comment-form {
+        margin-bottom: 2rem;
+    }
+    
+    .comment-textarea {
+        border-radius: 10px;
+        resize: none;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .comment-textarea:focus {
+        border-color: #6c5ce7;
+        box-shadow: 0 0 0 0.25rem rgba(108, 92, 231, 0.25);
+    }
+    
+    .comment-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+    }
+    
+    .voice-btn-dropdown {
+        position: relative;
+    }
+    
+    .voice-input-btn {
+        background: none;
+        border: none;
+        color: #6c5ce7;
+        padding: 0.5rem;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1.25rem;
+        transition: all 0.2s ease;
+    }
+    
+    .voice-input-btn:hover {
+        background-color: rgba(108, 92, 231, 0.1);
+        color: #5f3dc4;
+    }
+    
+    .comment-submit {
+        border-radius: 30px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 500;
+    }
+    
+    .comment-list {
+        margin-top: 2rem;
+    }
+    
+    .comment-card {
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        overflow: hidden;
+        transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+    
+    .comment-card:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .comment-body {
+        padding: 1.5rem;
+        color: var(--text-primary);
+    }
+    
+    .comment-text {
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+    
+    .comment-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        border-top: 1px solid var(--border-color);
+        padding-top: 1rem;
+    }
+    
+    .comment-author {
+        font-weight: 500;
+    }
+    
+    .comment-date {
+        color: var(--text-secondary);
+    }
+    
+    .delete-comment {
+        background: none;
+        border: none;
+        color: #dc3545;
+        cursor: pointer;
+        font-size: 0.9rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 5px;
+        transition: all 0.2s ease;
+    }
+    
+    .delete-comment:hover {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+    
+    .modal-title {
+        color: var(--text-primary);
+    }
+    
+    .modal-body {
+        color: var(--text-primary);
+    }
+    
+    .voice-input-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .ai-mic-icon {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .ai-icon-overlay {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        font-size: 0.6em;
+        color: #ffd700;
+    }
+
+    .breadcrumb-item.active {
+        color: var(--text-primary);
+    }
+    
+    [data-theme="dark"] .breadcrumb-item.active {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    @media (max-width: 768px) {
+        .artwork-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .action-buttons {
+            flex-wrap: wrap;
+        }
+        
+        .artwork-info {
+            padding: 1.5rem;
+        }
+        
+        .artwork-title {
+            font-size: 1.5rem;
+        }
+        
+        .curation-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .style-select {
+            max-width: 100%;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<hr class="featurette-divider">
-<div class="container">
-    <div class="card">
-        <div class="card-body">
-            <h1 class="card-title">{{ post.title }}</h1>
-            <p class="text-muted">
-                작성자: {{ post.author_nickname }} |
-                작성일: {{ post.date_posted|date:"Y-m-d H:i" }}
-            </p>
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">홈</a></li>
+            <li class="breadcrumb-item">
+                <a href="{% if post.is_public %}{% url 'public_gallery' %}{% else %}{% url 'my_gallery' %}{% endif %}">
+                    {% if post.is_public %}공개 갤러리{% else %}내 갤러리{% endif %}
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">{{ post.title }}</li>
+        </ol>
+    </nav>
 
-            <div class="mb-4">{{ post.content }}</div>
-
+    <div class="artwork-container">
+        <div class="artwork-image-container">
             {% if post.image %}
-            <div class="mb-3">
-                <div class="text-center">
-                    <img src="{{ post.image }}" alt="{{ post.title }}" class="img-fluid">
+            <img src="{{ post.image }}" alt="{{ post.title }}" class="artwork-image">
+            {% else %}
+            <div class="d-flex flex-column align-items-center justify-content-center py-5">
+                <i class="fas fa-image fa-5x mb-3 text-muted"></i>
+                <p class="text-muted">이미지가 없습니다</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="artwork-info">
+            <h1 class="artwork-title">{{ post.title }}</h1>
+            
+            <div class="artwork-meta">
+                <div class="artwork-author">
+                    {% if post.user.profile.profile_image %}
+                    <img src="{{ post.user.profile.profile_image }}" alt="{{ post.author_nickname }}" class="author-avatar">
+                    {% else %}
+                    <div class="author-avatar d-flex align-items-center justify-content-center bg-secondary">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <div>{{ post.author_nickname }}</div>
+                        <div class="artwork-date">{{ post.date_posted|date:"Y년 m월 d일" }}</div>
+                    </div>
                 </div>
-                {% if post.caption %}
-                <p class="mt-2">{{ post.caption }}</p>
+                
+                <div class="d-flex align-items-center">
+                    {% if user.is_authenticated %}
+                    <button id="likeButton" class="btn btn-with-icon like-button {% if user_liked %}liked{% endif %}" data-post-id="{{ post.id }}">
+                        <i class="fas fa-heart {% if user_liked %}text-danger{% endif %}"></i>
+                        <span id="likeCount">{{ post.likes_count }}</span>
+                    </button>
+                    {% else %}
+                    <button class="btn btn-with-icon like-button" disabled>
+                        <i class="fas fa-heart"></i>
+                        {{ post.likes_count }}
+                    </button>
+                    {% endif %}
+                    
+                    {% if post.is_popular %}
+                    <span class="popular-badge">
+                        <i class="fas fa-fire-alt me-1"></i>인기
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="artwork-content">
+                {{ post.content|linebreaks }}
+            </div>
+            
+            {% if post.tags %}
+            <div class="artwork-tags">
+                {% for tag in post.tags %}
+                <a href="/app/artwork/public/?tag={{ tag }}" class="tag-badge">
+                    <i class="fas fa-tag me-1"></i>{{ tag }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <div class="action-buttons">
+                {% if user.is_authenticated and user == post.user %}
+                <a href="{% url 'edit_post' post.id %}" class="btn btn-primary btn-with-icon">
+                    <i class="fas fa-edit"></i>
+                    수정
+                </a>
+                <button type="button" class="btn btn-danger btn-with-icon" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                    <i class="fas fa-trash-alt"></i>
+                    삭제
+                </button>
                 {% endif %}
-                {% if post.tags %}
-                <p class="mt-2">
-                    <small class="text-muted">태그:
-                        {% for tag in post.tags %}
-                        <a href="/app/artwork/public/?tag={{ tag }}" class="tag-link"><span class="badge bg-secondary">{{ tag }}</span></a>
-                        {% endfor %}
-                    </small>
+                
+                {% if user.is_authenticated and user == post.current_owner %}
+                <a href="{% url 'create_goods' post.id %}" class="btn btn-success btn-with-icon">
+                    <i class="fas fa-tshirt"></i>
+                    굿즈 제작
+                </a>
+                
+                {% if not post.is_on_auction %}
+                <a href="{% url 'register_auction' post.id %}" class="btn btn-warning btn-with-icon">
+                    <i class="fas fa-gavel"></i>
+                    경매 등록
+                </a>
+                {% endif %}
+                {% endif %}
+                
+                <a href="{% if "artwork" in previous_url %}javascript:history.back(){% else %}{% if post.is_public %}{% url 'public_gallery' %}{% else %}{% url 'my_gallery' %}{% endif %}{% endif %}" class="btn btn-secondary btn-with-icon">
+                    <i class="fas fa-arrow-left"></i>
+                    {% if "artwork" in previous_url %}이전{% else %}목록{% endif %}
+                </a>
+            </div>
+            
+            {% if post.image %}
+            <div class="curation-section">
+                <h3 class="curation-title">
+                    <i class="fas fa-quote-left"></i>
+                    AI 큐레이션
+                </h3>
+                <p id="curationText" class="curation-content">
+                    {% if curation_text %}
+                    {{ curation_text }}
+                    {% else %}
+                    AI의 시선으로 바라본 작품 해석을 생성하려면 아래에서 스타일을 선택하고 생성 버튼을 클릭하세요.
+                    {% endif %}
                 </p>
-                {% endif %}
-                {% if curation_text %}
-                <p id="curationText" class="mt-2"><small class="text-muted">큐레이션: {{ curation_text }}</small></p>
-                {% else %}
-                <p id="curationText" class="mt-2"><small class="text-muted"></small></p>
-                {% endif %}
-                <!-- Modified: 큐레이션 스타일 라벨, select, 생성 및 음성 듣기 버튼을 한 줄에 배치 (모바일 대응: flex-wrap 추가) -->
-                <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
-                    <label for="curationStyleSelect" class="mb-0">스타일:</label>
-                    <select id="curationStyleSelect" class="form-select form-select-sm" style="width: auto;">
-                        <option value="Emotional">Emotional</option>
-                        <option value="Interpretive">Interpretive</option>
-                        <option value="Historical">Historical</option>
-                        <option value="Critical">Critical</option>
-                        <option value="Narrative">Narrative</option>
-                        <option value="Trend">Trend</option>
-                        <option value="Money">Money</option>
-                        <option value="Praise">Praise</option>
-                        <option value="Blind">Blind</option>
+                
+                <div class="curation-controls">
+                    <select id="curationStyleSelect" class="form-select style-select">
+                        <option value="Emotional">감성적 분석</option>
+                        <option value="Interpretive">해석적 분석</option>
+                        <option value="Historical">역사적 분석</option>
+                        <option value="Critical">비평적 분석</option>
+                        <option value="Narrative">서술적 분석</option>
+                        <option value="Trend">트렌드 분석</option>
+                        <option value="Money">가치 평가</option>
+                        <option value="Praise">극찬</option>
+                        <option value="Blind">시각장애인용 설명</option>
                     </select>
-                    <button id="generateCurationBtn" class="btn btn-secondary btn-sm">생성</button>
-                    <button id="playCaptionBtn" class="btn btn-info btn-sm">AI음성</button>
-                    <button id="pauseAudioBtn" class="btn btn-warning btn-sm" style="display:none;">⏸</button>
-                    <button id="resumeAudioBtn" class="btn btn-success btn-sm" style="display:none;">▶</button>
+                    
+                    <div class="controls-buttons">
+                        <button id="generateCurationBtn" class="btn btn-primary btn-with-icon">
+                            <i class="fas fa-magic"></i>
+                            생성
+                        </button>
+                        
+                        <button id="playCaptionBtn" class="btn btn-info btn-with-icon" {% if not curation_text %}style="display:none"{% endif %}>
+                            <i class="fas fa-volume-up"></i>
+                            음성으로 듣기
+                        </button>
+                        
+                        <div class="audio-controls">
+                            <button id="pauseAudioBtn" class="btn btn-warning btn-with-icon" style="display:none">
+                                <i class="fas fa-pause"></i>
+                            </button>
+                            <button id="resumeAudioBtn" class="btn btn-success btn-with-icon" style="display:none">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
             {% endif %}
-
-            <div class="d-flex justify-content-between align-items-center mt-3">
-                <div class="d-flex flex-wrap gap-2">
-                    {% if user.is_authenticated and user == post.user %}
-                    <a href="{% url 'edit_post' post.id %}" class="btn btn-primary">수정</a>
-                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">삭제</button>
-                    {% endif %}
-
-                    {% if user.is_authenticated and user == post.current_owner %}
-                    <a href="{% url 'create_goods' post.id %}" class="btn btn-success">
-                        <i class="fas fa-tshirt me-1"></i> 굿즈 제작
-                    </a>
-                    {% endif %}
-
-                    {% if "artwork" in previous_url %}
-                    <button type="button" class="btn btn-secondary" onclick="history.back()">이전</button>
-                    {% else %}
-                    <a href="{% if post.is_public %}{% url 'public_gallery' %}{% else %}{% url 'my_gallery' %}{% endif %}" class="btn btn-secondary">목록</a>
-                    {% endif %}
-                </div>
-                <div class="d-flex align-items-center">
-                    {% if user.is_authenticated %}
-                    <button id="likeButton" class="btn btn-outline-primary me-2" data-post-id="{{ post.id }}">
-                        <i class="fas fa-heart {% if user_liked %}text-danger{% endif %}"></i>
-                        좋아요 <span id="likeCount">{{ post.likes_count }}</span>
-                    </button>
-                    {% else %}
-                    <button class="btn btn-outline-secondary me-2" disabled>
-                        <i class="fas fa-heart"></i>
-                        좋아요 {{ post.likes_count }}
-                    </button>
-                    {% endif %}
-                    {% if post.is_popular %}
-                    <span class="badge bg-warning text-dark">인기</span>
-                    {% endif %}
-                </div>
-            </div>
         </div>
     </div>
-
-    <div class="mt-4">
-        <h3>댓글</h3>
+    
+    <div class="comments-section">
+        <h3 class="comments-title">
+            <i class="fas fa-comments me-2"></i>댓글
+        </h3>
+        
         {% if user.is_authenticated %}
-        <form id="commentForm" class="mb-3">
-            {% csrf_token %}
-            <div class="form-group">
-                <textarea class="form-control" id="commentMessage" rows="3" required></textarea>
-            </div>
-            <div class="d-flex align-items-center gap-2 mb-2">
-                <button type="button" class="voice-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="음성 입력">
-                    <span class="ai-mic-icon">
-                        <i class="fas fa-microphone"></i>
-                        <i class="fas fa-star ai-icon-overlay"></i>
-                    </span>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <button class="dropdown-item" type="button" id="voiceInputBtn">
-                            <i class="fas fa-microphone me-2"></i>일반 음성 입력
-                        </button>
-                    </li>
-                    <li>
-                        <button class="dropdown-item" type="button" id="aiVoiceInputBtn" data-user-style="{{ user.profile.user_style }}"">
-                            <span class=" ai-mic-icon me-2">
-                            <i class="fas fa-microphone"></i>
-                            <i class="fas fa-star ai-icon-overlay"></i>
+        <div class="comment-form">
+            <form id="commentForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <textarea id="commentMessage" class="form-control comment-textarea" rows="3" placeholder="댓글을 작성해보세요..."></textarea>
+                </div>
+                
+                <div class="comment-actions">
+                    <div class="voice-btn-dropdown">
+                        <button type="button" class="btn dropdown-toggle voice-input-btn" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="ai-mic-icon">
+                                <i class="fas fa-microphone"></i>
+                                <i class="fas fa-star ai-icon-overlay"></i>
                             </span>
-                            AI 음성 입력
                         </button>
-                    </li>
-                </ul>
-                <button type="button" id="commentSubmitBtn" class="btn btn-primary mt-2">댓글 작성</button>
-            </div>
-        </form>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <button class="dropdown-item" type="button" id="voiceInputBtn">
+                                    <i class="fas fa-microphone me-2"></i>일반 음성 입력
+                                </button>
+                            </li>
+                            <li>
+                                <button class="dropdown-item" type="button" id="aiVoiceInputBtn" data-user-style="{{ user.profile.user_style }}">
+                                    <span class="ai-mic-icon me-2">
+                                        <i class="fas fa-microphone"></i>
+                                        <i class="fas fa-star ai-icon-overlay"></i>
+                                    </span>
+                                    AI 음성 입력
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <button type="button" id="commentSubmitBtn" class="btn btn-primary comment-submit">
+                        <i class="fas fa-paper-plane me-1"></i>
+                        댓글 작성
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            댓글을 작성하려면 <a href="{% url 'login' %}" class="alert-link">로그인</a>이 필요합니다.
+        </div>
         {% endif %}
-        <div id="commentList"></div>
+        
+        <div id="commentList" class="comment-list">
+        </div>
     </div>
 </div>
 
-<!-- 댓글 옵션 선택 모달 -->
-<div class="modal fade" id="commentOptionModal" tabindex="-1">
+<div class="modal fade" id="commentOptionModal" tabindex="-1" aria-labelledby="commentOptionModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">댓글 옵션 선택</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title" id="commentOptionModalLabel">댓글 옵션 선택</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                댓글을 작성할 옵션을 선택하세요.
+                <p>댓글을 작성할 옵션을 선택하세요.</p>
+                <div class="d-flex flex-column gap-3 mt-3">
+                    <button type="button" id="normalCommentBtn" class="btn btn-outline-primary">
+                        <i class="fas fa-comment me-2"></i>
+                        일반 댓글
+                    </button>
+                    <button type="button" id="aiCommentBtn" class="btn btn-outline-info">
+                        <i class="fas fa-robot me-2"></i>
+                        AI 멘토링 포함
+                    </button>
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" id="normalCommentBtn" class="btn btn-primary">일반 댓글</button>
-                <button type="button" id="aiCommentBtn" class="btn btn-info">멘토링</button>
                 <button type="button" id="cancelCommentBtn" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- 삭제 확인 모달 -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">게시글 삭제</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title" id="deleteModalLabel">게시글 삭제</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                정말로 이 게시글을 삭제하시겠습니까?
+                <p>정말로 이 게시글을 삭제하시겠습니까?</p>
+                <p class="text-danger"><small>이 작업은 되돌릴 수 없습니다.</small></p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
@@ -185,10 +676,35 @@
     </div>
 </div>
 
-<!-- 로딩 모달 추가 -->
-<div id="loadingModal" style="position: fixed;top: 0;left: 0;width: 100%;height: 100%;background: rgba(0,0,0,0.5);display: none;z-index: 1050;">
-    <div style="position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);color: #fff;font-size: 1.5rem;">
-        데이터 처리중...
+<div id="loadingModal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <div id="loadingText" class="h5">데이터 처리중...</div>
+                <p class="text-muted">잠시만 기다려주세요</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="speechRecognitionModal" class="recognition-modal">
+    <div class="recognition-content">
+        <div class="recognition-text">음성 인식중...</div>
+        <div class="wave-animation">
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+        </div>
+    </div>
+</div>
+
+<div id="aiProcessingModal" class="recognition-modal">
+    <div class="recognition-content">
+        <div class="recognition-text">인식된 음성을 AI가 개선하는 중...</div>
+        <div class="spinner"></div>
     </div>
 </div>
 {% endblock content %}
@@ -196,13 +712,66 @@
 {% block js %}
 <script src="{% static 'js/script.js' %}"></script>
 <script>
-    // 전역 변수에 현재 사용자 username 저장
     const currentUser = "{{ user.username }}";
-    // 추가: postId 변수 선언 (댓글 처리에 사용)
     const postId = {{ post.id }};
-    // 댓글 기능 스크립트 수정: 버튼 클릭 효과 및 로딩 표시 추가
+    
+    function showLoadingModal(message) {
+        if (message) {
+            document.getElementById('loadingText').innerText = message;
+        }
+        const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+        loadingModal.show();
+    }
+    
+    function hideLoadingModal() {
+        const loadingModalEl = document.getElementById('loadingModal');
+        const loadingModal = bootstrap.Modal.getInstance(loadingModalEl);
+        if (loadingModal) {
+            loadingModal.hide();
+        }
+    }
+    
     document.addEventListener('DOMContentLoaded', function () {
         loadComments();
+        
+        document.getElementById('likeButton')?.addEventListener('click', function () {
+            const postId = this.dataset.postId;
+            const button = this;
+            const icon = button.querySelector('i');
+            const countSpan = document.getElementById('likeCount');
+
+            fetch(`/app/posts/${postId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    countSpan.textContent = data.likes_count;
+                    if (data.liked) {
+                        button.classList.add('liked');
+                        icon.classList.add('text-danger');
+                    } else {
+                        button.classList.remove('liked');
+                        icon.classList.remove('text-danger');
+                    }
+
+                    const existingBadge = document.querySelector('.popular-badge');
+                    if (data.is_popular && !existingBadge) {
+                        const badge = document.createElement('span');
+                        badge.className = 'popular-badge';
+                        badge.innerHTML = '<i class="fas fa-fire-alt me-1"></i>인기';
+                        button.parentNode.appendChild(badge);
+                    } else if (!data.is_popular && existingBadge) {
+                        existingBadge.remove();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('좋아요 처리 중 오류가 발생했습니다.');
+                });
+        });
     });
 
     function loadComments() {
@@ -210,31 +779,52 @@
             .then(response => response.json())
             .then(data => {
                 const commentList = document.getElementById('commentList');
+                
+                if (data.comments.length === 0) {
+                    commentList.innerHTML = `
+                        <div class="text-center py-4">
+                            <i class="fas fa-comments fa-3x mb-3 text-muted"></i>
+                            <p class="text-muted">아직 댓글이 없습니다. 첫 댓글을 남겨보세요!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
                 commentList.innerHTML = data.comments.map(comment => {
-                    // 댓글 삭제 버튼: 현재 사용자가 작성한 댓글에만 추가 (nickname 대신 username으로 검사)
                     let deleteBtn = "";
                     if (currentUser && comment.author_username === currentUser) {
-                        deleteBtn = `<button class="btn btn-sm btn-danger delete-comment-btn" data-comment-id="${comment.id}">삭제</button>`;
+                        deleteBtn = `<button class="delete-comment" data-comment-id="${comment.id}">
+                            <i class="fas fa-trash-alt me-1"></i>삭제
+                        </button>`;
                     }
+                    
+                    const commentMessage = comment.message.includes('<') && comment.message.includes('>')
+                        ? comment.message
+                        : `<p>${comment.message}</p>`;
+                    
                     return `
-                        <div class="card mb-2">
-                            <div class="card-body">
-                                <p class="card-text">${comment.message}</p>
-                                <small class="text-muted">
-                                    작성자: ${comment.author} | 
-                                    작성일: ${new Date(comment.created_at).toLocaleString()}
-                                </small>
-                                ${deleteBtn}
+                        <div class="comment-card">
+                            <div class="comment-body">
+                                <div class="comment-text">
+                                    ${commentMessage}
+                                </div>
+                                <div class="comment-meta">
+                                    <div>
+                                        <span class="comment-author">${comment.author}</span>
+                                        <span class="comment-date">${new Date(comment.created_at).toLocaleString()}</span>
+                                    </div>
+                                    ${deleteBtn}
+                                </div>
                             </div>
                         </div>
                     `;
                 }).join('');
-                // 삭제 버튼 이벤트 할당
-                document.querySelectorAll('.delete-comment-btn').forEach(btn => {
+                
+                document.querySelectorAll('.delete-comment').forEach(btn => {
                     btn.addEventListener('click', function () {
                         const commentId = this.getAttribute('data-comment-id');
                         if (!confirm("정말로 이 댓글을 삭제하시겠습니까?")) return;
-                        showLoadingModal();
+                        showLoadingModal("댓글 삭제 중...");
                         fetch(`/comments/${commentId}/`, {
                             method: 'DELETE',
                             headers: {
@@ -256,48 +846,10 @@
                 });
             });
     }
-
-    // 로딩 모달 함수
-    function showLoadingModal() {
-        document.getElementById('loadingModal').style.display = 'block';
-    }
-    function hideLoadingModal() {
-        document.getElementById('loadingModal').style.display = 'none';
-    }
-
-    document.getElementById('commentForm')?.addEventListener('submit', function (e) {
-        e.preventDefault();
-        showLoadingModal();
-        const message = document.getElementById('commentMessage').value;
-
-        fetch(`/posts/${postId}/comments/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            },
-            body: JSON.stringify({ message })
-        })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('commentMessage').value = '';
-                loadComments();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('댓글 작성에 실패했습니다.');
-            })
-            .finally(() => {
-                hideLoadingModal();
-            });
-    });
-
-    // 큐레이션 생성 AJAX 요청 스크립트 수정: 선택된 style 전송, 로딩 표시 및 버튼 상태 업데이트 추가
+    
     document.getElementById('generateCurationBtn')?.addEventListener('click', function () {
-        // 설정: AI 큐레이션 생성중 메시지 출력
-        document.querySelector('#loadingModal div').innerText = 'AI 큐레이션 생성중...';
-        showLoadingModal();
-        const curation_style = document.getElementById('curationStyleSelect').value;
+        showLoadingModal('AI 큐레이션 생성중...');
+        const curationStyle = document.getElementById('curationStyleSelect').value;
         const url = `{% url 'generate_curation' post.id %}`;
         fetch(url, {
             method: 'POST',
@@ -305,14 +857,12 @@
                 'Content-Type': 'application/json',
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
             },
-            body: JSON.stringify({ style: curation_style })
+            body: JSON.stringify({ style: curationStyle })
         })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('curationText').innerHTML = `<small class="text-muted">큐레이션: ${data.curation_text}</small>`;
-                // 음성으로 듣기 버튼 활성화 (보이도록)
-                document.getElementById('playCaptionBtn').style.display = 'inline-block';
-                // 일시정지와 재생 버튼 숨기기
+                document.getElementById('curationText').innerHTML = data.curation_text;
+                document.getElementById('playCaptionBtn').style.display = 'inline-flex';
                 document.getElementById('pauseAudioBtn').style.display = 'none';
                 document.getElementById('resumeAudioBtn').style.display = 'none';
             })
@@ -325,17 +875,13 @@
             });
     });
 
-    // 전역 오디오 객체
     let audio = null;
 
-    // 음성 재생 기능 수정: POST 방식 및 로딩 표시 추가
     document.getElementById('playCaptionBtn')?.addEventListener('click', function () {
-        // 설정: AI 음성 생성중 메시지 출력
-        document.querySelector('#loadingModal div').innerText = 'AI 음성 생성중...';
-        showLoadingModal();
+        showLoadingModal('AI 음성 생성중...');
         const btn = this;
         const curationElem = document.getElementById('curationText');
-        let text = curationElem.innerText.replace('큐레이션:', '').trim();
+        let text = curationElem.innerText;
         if (!text) {
             alert('재생할 큐레이션 텍스트가 없습니다.');
             hideLoadingModal();
@@ -357,10 +903,10 @@
                 const audioUrl = URL.createObjectURL(blob);
                 audio = new Audio(audioUrl);
                 audio.play();
-                // 버튼 토글: play 버튼 숨기고 일시정지 버튼 보이기
                 btn.style.display = 'none';
-                document.getElementById('pauseAudioBtn').style.display = 'inline-block';
+                document.getElementById('pauseAudioBtn').style.display = 'inline-flex';
                 document.getElementById('resumeAudioBtn').style.display = 'none';
+                document.querySelector('.audio-controls').classList.add('active');
             })
             .catch(error => {
                 console.error('음성 재생 오류:', error);
@@ -371,68 +917,68 @@
             });
     });
 
-    // 일시정지 버튼 이벤트
     document.getElementById('pauseAudioBtn')?.addEventListener('click', function () {
         if (audio && !audio.paused) {
             audio.pause();
             this.style.display = 'none';
-            document.getElementById('resumeAudioBtn').style.display = 'inline-block';
+            document.getElementById('resumeAudioBtn').style.display = 'inline-flex';
         }
     });
 
-    // 재생 버튼 이벤트
     document.getElementById('resumeAudioBtn')?.addEventListener('click', function () {
         if (audio && audio.paused) {
             audio.play();
             this.style.display = 'none';
-            document.getElementById('pauseAudioBtn').style.display = 'inline-block';
+            document.getElementById('pauseAudioBtn').style.display = 'inline-flex';
         }
     });
+    
+    document.getElementById('commentSubmitBtn')?.addEventListener('click', function () {
+        var commentOptionModal = new bootstrap.Modal(document.getElementById('commentOptionModal'));
+        commentOptionModal.show();
+    });
 
-    document.getElementById('likeButton')?.addEventListener('click', function () {
-        const postId = this.dataset.postId;
-        const button = this;
-        const icon = button.querySelector('i');
-        const countSpan = document.getElementById('likeCount');
+    document.getElementById('normalCommentBtn')?.addEventListener('click', function () {
+        var modalEl = document.getElementById('commentOptionModal');
+        var modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) { modal.hide(); }
 
-        fetch(`/app/posts/${postId}/like/`, {
+        const message = document.getElementById('commentMessage').value;
+        if (!message.trim()) {
+            alert('댓글 내용을 입력해주세요.');
+            return;
+        }
+
+        showLoadingModal('댓글 작성 중...');
+        fetch(`/posts/${postId}/comments/`, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-            }
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ message })
         })
             .then(response => response.json())
             .then(data => {
-                countSpan.textContent = data.likes_count;
-                if (data.liked) {
-                    icon.classList.add('text-danger');
-                } else {
-                    icon.classList.remove('txt-danger');
-                }
-
-                const existingBadge = document.querySelector('.badge.bg-warning');
-                if (data.is_popular && !existingBadge) {
-                    const badge = document.createElement('span');
-                    badge.className = 'badge bg-warning text-dark ms-2';
-                    badge.textContent = '인기';
-                    button.parentNode.appendChild(badge);
-                } else if (!data.is_popular && existingBadge) {
-                    existingBadge.remove();
-                }
+                document.getElementById('commentMessage').value = '';
+                loadComments();
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('좋아요 처리 중 오류가 발생했습니다.');
+                alert('댓글 작성에 실패했습니다.');
+            })
+            .finally(() => { 
+                hideLoadingModal(); 
             });
     });
 
-    // 댓글 기능 스크립트: 댓글 평가 버튼 이벤트 추가
-    document.getElementById('evaluateCommentBtn')?.addEventListener('click', function (e) {
-        e.preventDefault();
-        document.querySelector('#loadingModal div').innerText = 'AI 큐레이션 생성중...';
-        showLoadingModal();
-        const commentMessageElem = document.getElementById('commentMessage');
-        const commentText = commentMessageElem.value;
+    document.getElementById('aiCommentBtn')?.addEventListener('click', function () {
+        var modalEl = document.getElementById('commentOptionModal');
+        var modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) { modal.hide(); }
+
+        showLoadingModal('AI 멘토링 생성 중...');
+        const commentText = document.getElementById('commentMessage').value;
         const curationStyle = document.getElementById('curationStyleSelect').value;
         if (!commentText) {
             alert('댓글 내용을 입력해주세요.');
@@ -446,7 +992,6 @@
                 'Content-Type': 'application/json',
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
             },
-            // 수정: comment 값도 함께 전달
             body: JSON.stringify({
                 style: curationStyle,
                 comment: commentText
@@ -454,9 +999,8 @@
         })
             .then(response => response.json())
             .then(data => {
-                // 업데이트: curation_text 값도 받아와서 해당 영역에 표시
-                document.getElementById('curationText').innerHTML = `<small class="text-muted">큐레이션: ${data.curation_text}</small>`;
-                const combinedComment = `<p>* 사용자 감상 : ${commentText}</p><hr><p>* AI 큐레이터의[${curationStyle}] 감상평가 : ${data.evaluation_feedback}</p>`;
+                document.getElementById('curationText').innerHTML = data.curation_text;
+                const combinedComment = `<p><strong>✍️ 사용자 감상</strong></p><p>${commentText}</p><hr><p><strong>🤖 AI 큐레이터의 [${curationStyle}] 감상평가</strong></p><p>${data.evaluation_feedback}</p>`;
                 return fetch(`/posts/${postId}/comments/`, {
                     method: 'POST',
                     headers: {
@@ -468,26 +1012,24 @@
             })
             .then(response => response.json())
             .then(data => {
-                commentMessageElem.value = '';
+                document.getElementById('commentMessage').value = '';
                 loadComments();
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('댓글 평가 처리 중 오류가 발생했습니다.');
+                alert('댓글 작성에 실패했습니다.');
             })
-            .finally(() => {
-                hideLoadingModal();
+            .finally(() => { 
+                hideLoadingModal(); 
             });
     });
-
-    // 음성 입력 버튼 이벤트 리스너 추가
-    document.getElementById('commentVoiceInputBtn')?.addEventListener('click', () => handleVoiceInput(false));
-    document.getElementById('commentAiVoiceInputBtn')?.addEventListener('click', () => {
-        const user_style = document.getElementById('commentAiVoiceInputBtn').getAttribute('data-user-style');
+    
+    document.getElementById('voiceInputBtn')?.addEventListener('click', () => handleVoiceInput(false));
+    document.getElementById('aiVoiceInputBtn')?.addEventListener('click', () => {
+        const user_style = document.getElementById('aiVoiceInputBtn').getAttribute('data-user-style');
         handleVoiceInput(true, user_style);
     });
 
-    // 음성 인식 처리 함수
     function handleVoiceInput(useAI = false, user_style) {
         if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
             alert("이 브라우저는 음성 인식을 지원하지 않습니다.");
@@ -555,102 +1097,5 @@
             document.getElementById('speechRecognitionModal').style.display = 'none';
         }
     }
-
-    // 새 "댓글 작성" 버튼 클릭 시 댓글 옵션 모달을 표시
-    document.getElementById('commentSubmitBtn')?.addEventListener('click', function () {
-        var commentOptionModal = new bootstrap.Modal(document.getElementById('commentOptionModal'));
-        commentOptionModal.show();
-    });
-
-    // "일반 댓글" 버튼: 입력된 댓글을 바로 제출
-    document.getElementById('normalCommentBtn')?.addEventListener('click', function () {
-        var modalEl = document.getElementById('commentOptionModal');
-        var modal = bootstrap.Modal.getInstance(modalEl);
-        if (modal) { modal.hide(); }
-
-        const message = document.getElementById('commentMessage').value;
-        // 추가: 댓글 내용이 비어있는지 확인
-        if (!message.trim()) {
-            alert('댓글 내용을 입력해주세요.');
-            return;
-        }
-
-        showLoadingModal();
-        fetch(`/posts/${postId}/comments/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            },
-            body: JSON.stringify({ message })
-        })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('commentMessage').value = '';
-                loadComments();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('댓글 작성에 실패했습니다.');
-            })
-            .finally(() => { hideLoadingModal(); });
-    });
-
-    // "AI 평가 포함" 버튼: AI 평가 후, 평가 결과와 함께 댓글 제출
-    document.getElementById('aiCommentBtn')?.addEventListener('click', function () {
-        // 먼저 댓글 옵션 모달 닫기
-        var modalEl = document.getElementById('commentOptionModal');
-        var modal = bootstrap.Modal.getInstance(modalEl);
-        if (modal) { modal.hide(); }
-
-        showLoadingModal();
-        const commentText = document.getElementById('commentMessage').value;
-        const curationStyle = document.getElementById('curationStyleSelect').value;
-        if (!commentText) {
-            alert('댓글 내용을 입력해주세요.');
-            hideLoadingModal();
-            return;
-        }
-        const curationUrl = `{% url 'evaluate_curation' post.id %}`;
-        fetch(curationUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-            },
-            body: JSON.stringify({
-                style: curationStyle,
-                comment: commentText
-            })
-        })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('curationText').innerHTML = `<small class="text-muted">큐레이션: ${data.curation_text}</small>`;
-                const combinedComment = `<p>* 사용자 감상 : ${commentText}</p><hr><p>* AI 큐레이터의[${curationStyle}] 감상평가 : ${data.evaluation_feedback}</p>`;
-                return fetch(`/posts/${postId}/comments/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                    },
-                    body: JSON.stringify({ message: combinedComment })
-                });
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('commentMessage').value = '';
-                loadComments();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('댓글 작성에 실패했습니다.');
-            })
-            .finally(() => { hideLoadingModal(); });
-    });
 </script>
-{% endblock js %}
-
-
-{% block footer %}
-{% include "app/common/footer.html" %}
-{% endblock footer %}
+{% endblock %}

@@ -97,18 +97,18 @@
             });
         }
 
-        if (searchInput) {
-            searchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    {% if user.is_authenticated %}
-                    window.location.href = "{% url 'create_post' %}";
-                    {% else %}
-                    doLogin();
-                    {% endif %}
-                }
-            });
-        }
+        // if (searchInput) {
+        //     searchInput.addEventListener('keypress', function(e) {
+        //         if (e.key === 'Enter') {
+        //             e.preventDefault();
+        //             {% if user.is_authenticated %}
+        //             window.location.href = "{% url 'create_post' %}";
+        //             {% else %}
+        //             doLogin();
+        //             {% endif %}
+        //         }
+        //     });
+        // }
     });
 </script>
 <script src="{% static 'js/script.js' %}"></script>

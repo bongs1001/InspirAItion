@@ -861,8 +861,6 @@ def my_gallery(request):
     
     posts_qs = posts_qs.annotate(like_count=Count("likes"))
 
-    
-
     if search_query:
         posts_qs = posts_qs.filter(title__icontains=search_query)
 
