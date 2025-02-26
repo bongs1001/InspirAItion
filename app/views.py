@@ -1548,7 +1548,7 @@ def upscale_image(request):
     image_url = request.POST.get("image_url", "").strip()
     if not image_url:
         return JsonResponse({"error": "이미지 URL을 제공해주세요."}, status=400)
-    
+
     try:
         logging.info(f"이미지 업스케일 요청: {image_url}")
 
@@ -1559,15 +1559,18 @@ def upscale_image(request):
 
         prompt = request.POST.get("prompt", "Upscaled image")
 
-        return JsonResponse({
-            "image_url": comfyui_image_url,
-            "generated_prompt": prompt,
-            "message": "이미지가 성공적으로 업스케일되었습니다."
-        })
-    
+        return JsonResponse(
+            {
+                "image_url": comfyui_image_url,
+                "generated_prompt": prompt,
+                "message": "이미지가 성공적으로 업스케일되었습니다.",
+            }
+        )
+
     except Exception as e:
         logging.error(f"이미지 업스케일 중 오류 발생: {str(e)}", exc_info=True)
         return JsonResponse({"error": str(e)}, status=500)
+
 
 def load_upscaling_workflow():
     workflow_path = os.path.join("static", "workflows", "Upscale_Final.json")
@@ -1577,15 +1580,13 @@ def load_upscaling_workflow():
     except FileNotFoundError:
         logging.error(f"업스케일 워크플로우 파일을 찾을 수 없습니다: {workflow_path}")
         return None
-    
-def queue_prompt(prompt_json):
-    url = settings.COMFYUI_API_URL + "/prompt"
+
+
+def queue_prompt(prompt_json, COMFYUI_API_URL):
+    url = COMFYUI_API_URL + "/prompt"
     data = json.dumps({"prompt": prompt_json}).encode("utf-8")
 
-    headers = {
-        "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0"
-    }
+    headers = {"Content-Type": "application/json", "User-Agent": "Mozilla/5.0"}
 
     try:
         req = request.Request(url, data=data, headers=headers, method="POST")
@@ -1595,9 +1596,10 @@ def queue_prompt(prompt_json):
     except Exception as e:
         logging.error(f"ComfyUI 프롬프트 전송 중 오류 발생: {e}")
         return None
-    
-def get_image_info(prompt_id):
-    url = f"{settings.COMFYUI_API_URL}/history/{prompt_id}"
+
+
+def get_image_info(prompt_id, COMFYUI_API_URL):
+    url = f"{COMFYUI_API_URL}/history/{prompt_id}"
     try:
         response = request.urlopen(url)
         image_info = json.loads(response.read().decode("utf-8"))
@@ -1606,12 +1608,17 @@ def get_image_info(prompt_id):
         logging.error(f"이미지 정보 가져오기 오류: {e}")
         return None
 
-def check_workflow_status(prompt_id):
-    url = f"{settings.COMFYUI_API_URL}/history/{prompt_id}"
+
+def check_workflow_status(prompt_id, COMFYUI_API_URL):
+    url = f"{COMFYUI_API_URL}/history/{prompt_id}"
     try:
         response = request.urlopen(url)
         image_info = json.loads(response.read().decode("utf-8"))
-        if image_info and prompt_id in image_info and image_info[prompt_id]["status"]["completed"]:
+        if (
+            image_info
+            and prompt_id in image_info
+            and image_info[prompt_id]["status"]["completed"]
+        ):
             return True
         else:
             return False
@@ -1619,7 +1626,25 @@ def check_workflow_status(prompt_id):
         logging.error(f"워크플로우 상태 확인 중 오류 발생: {e}")
         return False
 
+
 def process_upscaling_with_comfyui(image_url):
+
+    try:
+        global comfyui_call_counter
+        try:
+            comfyui_call_counter
+        except NameError:
+            comfyui_call_counter = 0
+    except NameError:
+        comfyui_call_counter = 0
+
+    COMFYUI_API_URL = settings.COMFYUI_API_URL[
+        comfyui_call_counter % (len(settings.COMFYUI_API_URL) - 1)
+    ]
+    comfyui_call_counter += 1
+
+    print(f"COMFYUI_API_URL: {COMFYUI_API_URL}")
+
     logging.info("업스케일링 workflow를 불러옵니다.")
     workflow = load_upscaling_workflow()
     if not workflow:
@@ -1632,60 +1657,70 @@ def process_upscaling_with_comfyui(image_url):
         logging.error("워크플로우에서 LoadImageFromUrlOrPath 노드를 찾을 수 없습니다.")
         return None
 
-    result = queue_prompt(workflow)
+    result = queue_prompt(workflow, COMFYUI_API_URL)
 
     if result is None:
         logging.error("ComfyUI 업스케일링 처리에 실패했습니다.")
         return None
-    
+
     prompt_id = result.get("prompt_id")
     if not prompt_id:
         logging.error("ComfyUI 응답에서 prompt_id를 찾을 수 없습니다.")
         return None
 
-    
     max_wait_time = 600
     wait_interval = 2
     total_waited = 0
 
-    while not check_workflow_status(prompt_id):
+    while not check_workflow_status(prompt_id, COMFYUI_API_URL):
         time.sleep(wait_interval)
         total_waited += wait_interval
         if total_waited >= max_wait_time:
             logging.error(f"워크플로우 실행 제한 시간({max_wait_time}초) 초과")
             return None
-        
-    image_info = get_image_info(prompt_id)
+
+    image_info = get_image_info(prompt_id, COMFYUI_API_URL)
     if image_info:
         try:
             if "14" in image_info[prompt_id]["outputs"]:
-                file_name = image_info[prompt_id]["outputs"]["14"]["images"][0]["filename"]
+                file_name = image_info[prompt_id]["outputs"]["14"]["images"][0][
+                    "filename"
+                ]
             elif "62" in image_info[prompt_id]["outputs"]:
-                file_name = image_info[prompt_id]["outputs"]["62"]["images"][0]["filename"]
+                file_name = image_info[prompt_id]["outputs"]["62"]["images"][0][
+                    "filename"
+                ]
             else:
                 logging.error("SaveImage 노드 출력을 찾을 수 없습니다.")
                 return None
 
-            comfyui_image_url = f"{settings.COMFYUI_API_URL}/view?filename={file_name}&type=output&subfolder="
+            comfyui_image_url = (
+                f"{COMFYUI_API_URL}/view?filename={file_name}&type=output&subfolder="
+            )
             logging.info(f"ComfyUI 업스케일링 이미지 URL: {comfyui_image_url}")
 
-            saved_image_url = save_image_to_blob_storage(comfyui_image_url, None, "upscale", prompt_id)
+            saved_image_url = save_image_to_blob_storage(
+                comfyui_image_url, None, "upscale", prompt_id
+            )
             if saved_image_url:
                 logging.info(f"업스케일링 이미지 저장 완료: {saved_image_url}")
                 return saved_image_url
             else:
                 return comfyui_image_url
-            
+
         except KeyError as e:
             logging.error(f"이미지 정보에서 파일 이름을 찾을 수 없습니다.")
             logging.debug(f"이미지 정보: {image_info}")
             return None
-        
+
     else:
         logging.error("이미지 정보를 가져올 수 없습니다.")
         return None
-        
-def save_image_to_blob_storage(image_url, gpt_prompt=None, image_type="dalle", prompt_id=None):
+
+
+def save_image_to_blob_storage(
+    image_url, gpt_prompt=None, image_type="dalle", prompt_id=None
+):
     try:
         logging.info(f"이미지 다운로드 중... URL: {image_url}")
         response = requests.get(image_url, stream=True)
@@ -1693,7 +1728,13 @@ def save_image_to_blob_storage(image_url, gpt_prompt=None, image_type="dalle", p
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         if image_type == "dalle":
-            sanitised_prompt = "".join(c if c.isalnum() or c in " _-" else "_" for c in gpt_prompt[:50]) if gpt_prompt else "generated_image"
+            sanitised_prompt = (
+                "".join(
+                    c if c.isalnum() or c in " _-" else "_" for c in gpt_prompt[:50]
+                )
+                if gpt_prompt
+                else "generated_image"
+            )
             filename = f"{sanitised_prompt}_{timestamp}.png"
         elif image_type == "upscale":
             if prompt_id:
@@ -1702,8 +1743,12 @@ def save_image_to_blob_storage(image_url, gpt_prompt=None, image_type="dalle", p
                     prompt_node_id = "27"
 
                     try:
-                        prompt = image_info[prompt_id]["prompt"][2][prompt_node_id]["inputs"]["text"]
-                        sanitised_prompt = "".join(c if c.isalnum() or c in " _-" else "_" for c in prompt[:50])
+                        prompt = image_info[prompt_id]["prompt"][2][prompt_node_id][
+                            "inputs"
+                        ]["text"]
+                        sanitised_prompt = "".join(
+                            c if c.isalnum() or c in " _-" else "_" for c in prompt[:50]
+                        )
                         filename = f"{sanitised_prompt}_{timestamp}.png"
                     except (KeyError, TypeError):
                         filename = f"upscaled_image_{prompt_id}_{timestamp}.png"
@@ -1711,7 +1756,7 @@ def save_image_to_blob_storage(image_url, gpt_prompt=None, image_type="dalle", p
                     filename = f"upscaled_image_{prompt_id}_{timestamp}.png"
             else:
                 filename = f"upscaled_image_{timestamp}.png"
-        
+
         else:
             raise ValueError(f"지원하지 않는 이미지 타입입니다: {image_type}")
 
@@ -1722,23 +1767,30 @@ def save_image_to_blob_storage(image_url, gpt_prompt=None, image_type="dalle", p
         else:
             raise ValueError(f"지원하지 않는 이미지 타입입니다: {image_type}")
 
-        blob_service_client = BlobServiceClient.from_connection_string(settings.AZURE_CONNECTION_STRING)
+        blob_service_client = BlobServiceClient.from_connection_string(
+            settings.AZURE_CONNECTION_STRING
+        )
 
-        blob_client = blob_service_client.get_blob_client(container=container_name, blob=filename)
+        blob_client = blob_service_client.get_blob_client(
+            container=container_name, blob=filename
+        )
 
         logging.info(f"Azure Blob Storage에 업로드 중... 파일명: {filename}")
         blob_client.upload_blob(response.content, overwrite=True)
 
-        logging.info(f"이미지가 Azure Blob Storage에 성공적으로 저장되었습니다: {filename}")
+        logging.info(
+            f"이미지가 Azure Blob Storage에 성공적으로 저장되었습니다: {filename}"
+        )
         return blob_client.url
-    
+
     except requests.exceptions.RequestException as req_err:
         logging.error(f"이미지 다운로드 오류: {req_err}")
         return None
     except Exception as e:
         logging.error(f"Azure Blob Storage에 이미지 저장 중 오류 발생: {e}")
         return None
-    
+
+
 @login_required
 def outpaint_image(request):
     if request.method != "POST":
@@ -1747,26 +1799,31 @@ def outpaint_image(request):
     image_url = request.POST.get("image_url", "").strip()
     if not image_url:
         return JsonResponse({"error": "이미지 URL을 제공해주세요."}, status=400)
-    
+
     try:
         logging.info(f"이미지 아웃페인팅 요청: {image_url}")
 
         comfyui_image_url = process_outpainting_with_comfyui(image_url)
 
         if not comfyui_image_url:
-            return JsonResponse({"error": "아웃페인팅 처리에 실패했습니다."}, status=500)
+            return JsonResponse(
+                {"error": "아웃페인팅 처리에 실패했습니다."}, status=500
+            )
 
         prompt = request.POST.get("prompt", "Outpainted image")
 
-        return JsonResponse({
-            "image_url": comfyui_image_url,
-            "generated_prompt": prompt,
-            "message": "이미지가 성공적으로 아웃페인팅되었습니다."
-        })
-    
+        return JsonResponse(
+            {
+                "image_url": comfyui_image_url,
+                "generated_prompt": prompt,
+                "message": "이미지가 성공적으로 아웃페인팅되었습니다.",
+            }
+        )
+
     except Exception as e:
         logging.error(f"이미지 아웃페인팅 중 오류 발생: {str(e)}", exc_info=True)
         return JsonResponse({"error": str(e)}, status=500)
+
 
 def load_outpainting_workflow():
     workflow_path = os.path.join("static", "workflows", "Outpainting_Final.json")
@@ -1776,8 +1833,10 @@ def load_outpainting_workflow():
     except FileNotFoundError:
         logging.error(f"아웃페인팅 워크플로우 파일을 찾을 수 없습니다: {workflow_path}")
         return None
-    
+
+
 def process_outpainting_with_comfyui(image_url):
+    COMFYUI_API_URL = settings.COMFYUI_API_URL[3]
     logging.info("아웃페인팅 workflow를 불러옵니다.")
     workflow = load_outpainting_workflow()
     if not workflow:
@@ -1795,13 +1854,12 @@ def process_outpainting_with_comfyui(image_url):
     if result is None:
         logging.error("ComfyUI 아웃페인팅 처리에 실패했습니다.")
         return None
-    
+
     prompt_id = result.get("prompt_id")
     if not prompt_id:
         logging.error("ComfyUI 응답에서 prompt_id를 찾을 수 없습니다.")
         return None
 
-    
     max_wait_time = 600
     wait_interval = 2
     total_waited = 0
@@ -1812,26 +1870,30 @@ def process_outpainting_with_comfyui(image_url):
         if total_waited >= max_wait_time:
             logging.error(f"워크플로우 실행 제한 시간({max_wait_time}초) 초과")
             return None
-        
+
     image_info = get_image_info(prompt_id)
     if image_info:
         try:
             file_name = image_info[prompt_id]["outputs"]["14"]["images"][0]["filename"]
-            comfyui_image_url = f"{settings.COMFYUI_API_URL}/view?filename={file_name}&type=output&subfolder="
+            comfyui_image_url = (
+                f"{COMFYUI_API_URL}/view?filename={file_name}&type=output&subfolder="
+            )
             logging.info(f"ComfyUI 아웃페인팅 이미지 URL: {comfyui_image_url}")
 
-            saved_image_url = save_image_to_blob_storage(comfyui_image_url, None, "outpainting", prompt_id)
+            saved_image_url = save_image_to_blob_storage(
+                comfyui_image_url, None, "outpainting", prompt_id
+            )
             if saved_image_url:
                 logging.info(f"아웃페인팅 이미지 저장 완료: {saved_image_url}")
                 return saved_image_url
             else:
                 return comfyui_image_url
-            
+
         except KeyError as e:
             logging.error(f"이미지 정보에서 파일 이름을 찾을 수 없습니다: {str(e)}")
             logging.debug(f"이미지 정보: {image_info}")
             return None
-        
+
     else:
         logging.error("이미지 정보를 가져올 수 없습니다.")
         return None
