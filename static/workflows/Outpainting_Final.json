@@ -1,10 +1,7 @@
 {
   "1": {
     "inputs": {
-      "images": [
-        "11",
-        0
-      ]
+      "images": ["11", 0]
     },
     "class_type": "PreviewImage",
     "_meta": {
@@ -15,14 +12,8 @@
     "inputs": {
       "fill": "navier-stokes",
       "falloff": 0,
-      "image": [
-        "11",
-        0
-      ],
-      "mask": [
-        "11",
-        1
-      ]
+      "image": ["11", 0],
+      "mask": ["11", 1]
     },
     "class_type": "INPAINT_MaskedFill",
     "_meta": {
@@ -31,10 +22,7 @@
   },
   "3": {
     "inputs": {
-      "images": [
-        "2",
-        0
-      ]
+      "images": ["2", 0]
     },
     "class_type": "PreviewImage",
     "_meta": {
@@ -45,14 +33,8 @@
     "inputs": {
       "blur": 35,
       "falloff": 0,
-      "image": [
-        "2",
-        0
-      ],
-      "mask": [
-        "11",
-        1
-      ]
+      "image": ["2", 0],
+      "mask": ["11", 1]
     },
     "class_type": "INPAINT_MaskedBlur",
     "_meta": {
@@ -61,10 +43,7 @@
   },
   "5": {
     "inputs": {
-      "images": [
-        "4",
-        0
-      ]
+      "images": ["4", 0]
     },
     "class_type": "PreviewImage",
     "_meta": {
@@ -73,14 +52,8 @@
   },
   "6": {
     "inputs": {
-      "samples": [
-        "7",
-        0
-      ],
-      "vae": [
-        "12",
-        2
-      ]
+      "samples": ["7", 0],
+      "vae": ["12", 2]
     },
     "class_type": "VAEDecode",
     "_meta": {
@@ -89,28 +62,16 @@
   },
   "7": {
     "inputs": {
-      "seed": 0,
+      "seed": 552820889871956,
       "steps": 30,
       "cfg": 7,
       "sampler_name": "dpmpp_sde",
       "scheduler": "karras",
       "denoise": 1,
-      "model": [
-        "8",
-        0
-      ],
-      "positive": [
-        "10",
-        0
-      ],
-      "negative": [
-        "10",
-        1
-      ],
-      "latent_image": [
-        "10",
-        2
-      ]
+      "model": ["8", 0],
+      "positive": ["10", 0],
+      "negative": ["10", 1],
+      "latent_image": ["10", 2]
     },
     "class_type": "KSampler",
     "_meta": {
@@ -119,10 +80,7 @@
   },
   "8": {
     "inputs": {
-      "model": [
-        "12",
-        0
-      ]
+      "model": ["12", 0]
     },
     "class_type": "DifferentialDiffusion",
     "_meta": {
@@ -133,10 +91,7 @@
     "inputs": {
       "kernel_size": 50,
       "sigma": 50,
-      "mask": [
-        "11",
-        1
-      ]
+      "mask": ["11", 1]
     },
     "class_type": "ImpactGaussianBlurMask",
     "_meta": {
@@ -146,26 +101,11 @@
   "10": {
     "inputs": {
       "noise_mask": true,
-      "positive": [
-        "15",
-        0
-      ],
-      "negative": [
-        "13",
-        0
-      ],
-      "vae": [
-        "12",
-        2
-      ],
-      "pixels": [
-        "4",
-        0
-      ],
-      "mask": [
-        "9",
-        0
-      ]
+      "positive": ["15", 0],
+      "negative": ["13", 0],
+      "vae": ["12", 2],
+      "pixels": ["4", 0],
+      "mask": ["9", 0]
     },
     "class_type": "InpaintModelConditioning",
     "_meta": {
@@ -179,10 +119,7 @@
       "right": 256,
       "bottom": 0,
       "feathering": 40,
-      "image": [
-        "17",
-        0
-      ]
+      "image": ["17", 0]
     },
     "class_type": "ImagePadForOutpaint",
     "_meta": {
@@ -201,10 +138,7 @@
   "13": {
     "inputs": {
       "text": "text, watermark, embedding:BadDream, embedding: easynegative.",
-      "clip": [
-        "12",
-        1
-      ]
+      "clip": ["12", 1]
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
@@ -214,10 +148,7 @@
   "14": {
     "inputs": {
       "filename_prefix": "ComfyUI",
-      "images": [
-        "6",
-        0
-      ]
+      "images": ["6", 0]
     },
     "class_type": "SaveImage",
     "_meta": {
@@ -227,10 +158,7 @@
   "15": {
     "inputs": {
       "text": "A place reflected in the sunset",
-      "clip": [
-        "12",
-        1
-      ]
+      "clip": ["12", 1]
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
