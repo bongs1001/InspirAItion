@@ -832,7 +832,7 @@
             })
                 .then(response => response.json())
                 .then(result => {
-                    hideLoadingModal();
+                    hideLoadingModal();  // 여기서 로딩 모달을 명시적으로 숨김
                     loadComments();
                 })
                 .catch(error => {
@@ -1004,15 +1004,14 @@
         })
             .then(response => response.json())
             .then(data => {
+                hideLoadingModal();  // 댓글 작성 완료 후 로딩 모달 숨김
                 document.getElementById('commentMessage').value = '';
                 loadComments();
             })
             .catch(error => {
+                hideLoadingModal();
                 console.error('Error:', error);
                 alert('댓글 작성에 실패했습니다.');
-            })
-            .finally(() => {
-                hideLoadingModal();
             });
     });
 
@@ -1058,15 +1057,14 @@
             })
             .then(response => response.json())
             .then(data => {
+                hideLoadingModal();  // 댓글 작성 완료 후 로딩 모달 숨김
                 document.getElementById('commentMessage').value = '';
                 loadComments();
             })
             .catch(error => {
+                hideLoadingModal();
                 console.error('Error:', error);
                 alert('댓글 작성에 실패했습니다.');
-            })
-            .finally(() => {
-                hideLoadingModal();
             });
     });
 </script>
