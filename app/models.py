@@ -186,8 +186,9 @@ class Auction(models.Model):
     seller = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="auctions_selling"
     )
-    start_price = models.DecimalField(max_digits=10, decimal_places=2)
-    current_price = models.DecimalField(max_digits=10, decimal_places=2)
+    # 소수점 없이 정수로 변경
+    start_price = models.DecimalField(max_digits=10, decimal_places=0)
+    current_price = models.DecimalField(max_digits=10, decimal_places=0)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     status = models.CharField(
@@ -226,10 +227,25 @@ class Auction(models.Model):
         )
 
     def clean(self):
-        if self.post.is_on_auction:
-            raise ValidationError("이미 경매 중인 작품입니다.")
-        if self.seller != self.post.current_owner:
-            raise ValidationError("현재 소유자만 경매를 등록할 수 있습니다.")
+        # 수정된 부분: 객체가 새로 생성될 때만 체크
+        if not self.pk:
+            try:
+                # 이미 진행 중인 경매가 있는지 확인
+                existing_auction = Auction.objects.filter(
+                    post=self.post,
+                    status=AuctionStatus.ACTIVE,
+                    end_time__gt=timezone.now()
+                ).exists()
+                
+                if existing_auction:
+                    raise ValidationError("이미 경매 중인 작품입니다.")
+                
+                # 소유자 확인
+                if self.seller != self.post.current_owner:
+                    raise ValidationError("현재 소유자만 경매를 등록할 수 있습니다.")
+            except Post.DoesNotExist:
+                # post가 OneToOneField이므로 이런 경우는 거의 없겠지만, 예외 처리
+                pass
 
     @transaction.atomic
     def finalise_auction(self):
@@ -272,39 +288,45 @@ class Auction(models.Model):
             return False, "잔액이 부족합니다."
 
         try:
-            if self.bids.exists():
-                last_bid = self.bids.first()
-                last_bidder = last_bid.bidder
-                last_bidder.profile.balance += last_bid.amount
-                last_bidder.profile.save()
+            with transaction.atomic():
+                # 이전 입찰자에게 돈 환불
+                if self.bids.exists():
+                    last_bid = self.bids.first()
+                    last_bidder = last_bid.bidder
+                    last_bidder.profile.balance += last_bid.amount
+                    last_bidder.profile.save()
 
-            bidder.profile.balance -= amount
-            bidder.profile.save()
+                # 새 입찰자의 잔액 차감
+                bidder.profile.balance -= amount
+                bidder.profile.save()
 
-            Bid.objects.create(
-                auction=self,
-                bidder=bidder,
-                amount=amount
-            )
+                # 새 입찰 생성
+                Bid.objects.create(
+                    auction=self,
+                    bidder=bidder,
+                    amount=amount
+                )
 
-            self.current_price = amount
-            self.winner = bidder
-            self.save()
+                # 현재 가격과 우승자 업데이트
+                self.current_price = amount
+                self.winner = bidder
+                self.save()
 
-            logging.info(f"경매 #{self.id}: {bidder.username}님이 {amount}원 입찰")
+                logging.info(f"경매 #{self.id}: {bidder.username}님이 {amount}원 입찰")
 
-            return True, "입찰이 완료되었습니다."
-
+                return True, "입찰이 완료되었습니다."
         except Exception as e:
             logging.error(f"입찰 처리 중 오류 발생: {str(e)}")
             return False, "입찰 처리 중 오류가 발생했습니다."
         
     @transaction.atomic
     def cancel(self):
+        """경매 취소 및 입찰금 환불"""
         if self.status != AuctionStatus.ACTIVE:
             return False, "진행 중인 경매만 취소할 수 있습니다."
 
         try:
+            # 모든 입찰자에게 환불
             for bid in self.bids.all():
                 bid.bidder.profile.balance += bid.amount
                 bid.bidder.profile.save()

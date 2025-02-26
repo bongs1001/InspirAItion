@@ -43,44 +43,66 @@ class PostForm(forms.ModelForm):
 class AuctionForm(forms.ModelForm):
     start_time = forms.DateTimeField(
         label="경매 시작 시간",
-        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
-        initial=timezone.now,
+        widget=forms.DateTimeInput(attrs={
+            "type": "datetime-local", 
+            "class": "form-control",
+            "step": "60"  # 초 단위 입력 방지 (1분 단위로만 선택 가능)
+        }),
+        input_formats=['%Y-%m-%dT%H:%M', '%Y-%m-%d %H:%M'],
     )
     end_time = forms.DateTimeField(
         label="경매 종료 시간",
-        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
-        initial=timezone.now() + timedelta(days=7),
+        widget=forms.DateTimeInput(attrs={
+            "type": "datetime-local", 
+            "class": "form-control",
+            "step": "60"  # 초 단위 입력 방지 (1분 단위로만 선택 가능)
+        }),
+        input_formats=['%Y-%m-%dT%H:%M', '%Y-%m-%d %H:%M'],
     )
-    start_price = forms.DecimalField(
+    # 소수점 없는 정수 필드로 변경
+    start_price = forms.IntegerField(
         label="시작가",
-        min_value=0,
-        decimal_places=2,
-        widget=forms.NumberInput(attrs={"placeholder": "시작가를 입력하세요."}),
+        min_value=1000,
+        widget=forms.NumberInput(attrs={
+            "placeholder": "시작가를 입력하세요 (최소 1,000원)",
+            "class": "form-control"
+        }),
     )
 
     class Meta:
         model = Auction
         fields = ["start_price", "start_time", "end_time"]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # 기본값 설정
+        if not self.is_bound:  # 폼이 아직 데이터로 바인딩되지 않은 경우에만
+            now = timezone.now()
+            start_time = now + timedelta(minutes=5)
+            end_time = start_time + timedelta(minutes=10)
+            self.initial['start_time'] = start_time.strftime('%Y-%m-%dT%H:%M')
+            self.initial['end_time'] = end_time.strftime('%Y-%m-%dT%H:%M')
+            self.initial['start_price'] = 1000  # 기본 시작가
+
     def clean(self):
         cleaned_data = super().clean()
-        if not self.instance.post_id:
-            return cleaned_data
         start_time = cleaned_data.get("start_time")
         end_time = cleaned_data.get("end_time")
 
+        # 필드가 존재하는 경우에만 유효성 검사 수행
         if start_time and end_time:
-            if start_time < timezone.now():
-                raise forms.ValidationError(
-                    "경매 시작 시간은 현재 시간 이후여야 합니다."
-                )
+            now = timezone.now()
+            
+            # 시작 시간이 현재 시간 이후인지 확인
+            if start_time < now:
+                self.add_error('start_time', "경매 시작 시간은 현재 시간 이후여야 합니다.")
+            
+            # 종료 시간이 시작 시간 이후인지 확인
             if end_time <= start_time:
-                raise forms.ValidationError(
-                    "경매 종료 시간은 시작 시간 이후여야 합니다."
-                )
-            if end_time < timezone.now():
-                raise forms.ValidationError(
-                    "경매 종료 시간은 현재 시간 이후여야 합니다."
-                )
+                self.add_error('end_time', "경매 종료 시간은 시작 시간 이후여야 합니다.")
+            
+            # 종료 시간이 현재 시간 이후인지 확인
+            if end_time < now:
+                self.add_error('end_time', "경매 종료 시간은 현재 시간 이후여야 합니다.")
 
         return cleaned_data
