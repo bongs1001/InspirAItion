@@ -234,31 +234,29 @@ class Auction(models.Model):
     @transaction.atomic
     def finalise_auction(self):
         """경매 종료 및 소유권 이전"""
-        if self.status == AuctionStatus.ACTIVE and self.winner:
-            try:
-                self.seller.profile.balance += self.current_price
-                self.seller.profile.save()
-
-                self.status = AuctionStatus.ENDED
+        if self.status == AuctionStatus.ACTIVE and self.end_time <= timezone.now():
+            if self.bids.exists() and self.winner:
+                try:
+                    self.seller.profile.balance += self.current_price
+                    self.seller.profile.save()
+                    
+                    self.status = AuctionStatus.ENDED
+                    self.save()
+                    
+                    self.post.transfer_ownership(self.winner, transfer_type="auction")
+                    
+                    logging.info(f"경매 #{self.id} 성공적으로 종료: 작품 '{self.post.title}'(#{self.post.id})가 {self.winner.username}에게 {self.current_price}원에 낙찰")
+                    
+                    return True, "경매가 성공적으로 종료되었습니다. 낙찰된 작품은 이제 귀하의 갤러리에서 확인하실 수 있습니다."
+                
+                except Exception as e:
+                    logging.error(f"경매 종료 처리 중 오류 발생: {str(e)}")
+                    return False, "경매 종료 처리 중 오류가 발생했습니다."
+            else:
+                self.status = AuctionStatus.CANCELLED
                 self.save()
-
-                self.post.current_owner = self.winner
-                self.post.ownership_history.append({
-                    "owner": self.winner.id,
-                    "date": timezone.now().isoformat(),
-                    "type": "auction",
-                    "price": str(self.current_price)
-                })
-                self.post.save()
-
-                logging.info(f"경매 #{self.id} 성공적으로 종료: 작품 '{self.post.title}'(#{self.post.id})가 {self.winner.username}에게 {self.current_price}원에 낙찰")
-
-                return True, "경매가 성공적으로 종료되었습니다. 낙찰된 작품은 이제 귀하의 갤러리에서 확인하실 수 있습니다."
-
-            except Exception as e:
-                logging.error(f"경매 종료 처리 중 오류 발생: {str(e)}")
-                return False, "경매 종료 처리 중 오류가 발생했습니다."
-
+                return True, "입찰이 없어 경매가 취소되었습니다."
+        
         return False, "종료할 수 없는 경매입니다."
 
     def place_bid(self, bidder, amount):

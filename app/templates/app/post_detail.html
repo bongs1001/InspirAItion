@@ -374,6 +374,27 @@
         color: rgba(255, 255, 255, 0.8);
     }
 
+    .auction-history-badge {
+        display: inline-block;
+        padding: 0.3rem 0.7rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .auction-history-ended {
+        background-color: rgba(13, 110, 253, 0.2);
+        color: #0d6efd;
+        border: 1px solid rgba(13, 110, 253, 0.4);
+    }
+    
+    .auction-history-cancelled {
+        background-color: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+        border: 1px solid rgba(220, 53, 69, 0.4);
+    }
+
     @media (max-width: 768px) {
         .artwork-meta {
             flex-direction: column;
@@ -484,6 +505,24 @@
             </div>
             {% endif %}
 
+            <!-- 경매 이력 표시 (있는 경우) -->
+            {% if has_auction_history %}
+            <div class="mt-4">
+                <h5>경매 이력</h5>
+                <div>
+                    {% for history in auction_history %}
+                    <span class="auction-history-badge auction-history-{{ history.status }}">
+                        {% if history.status == 'ended' %}
+                        <i class="fas fa-gavel me-1"></i> {{ history.end_time|date:"Y.m.d" }} 종료 ({{ history.current_price|floatformat:0 }}원)
+                        {% elif history.status == 'cancelled' %}
+                        <i class="fas fa-times me-1"></i> {{ history.updated_at|date:"Y.m.d" }} 취소
+                        {% endif %}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
             <div class="action-buttons">
                 {% if user.is_authenticated and user == post.user %}
                 <a href="{% url 'edit_post' post.id %}" class="btn btn-primary btn-with-icon">
@@ -502,7 +541,12 @@
                     굿즈 제작
                 </a>
 
-                {% if not post.is_on_auction %}
+                {% if post.is_on_auction %}
+                <a href="{% url 'auction_detail' post.auction.id %}" class="btn btn-warning btn-with-icon">
+                    <i class="fas fa-gavel"></i>
+                    경매 진행중
+                </a>
+                {% else %}
                 <a href="{% url 'register_auction' post.id %}" class="btn btn-warning btn-with-icon">
                     <i class="fas fa-gavel"></i>
                     경매 등록
