@@ -1,5 +1,5 @@
 from django.utils import timezone
-from django.db import models
+from django.db import models, transaction
 from django.conf import settings
 from django.contrib.auth.models import User
 from azure.storage.blob import BlobServiceClient
@@ -231,6 +231,7 @@ class Auction(models.Model):
         if self.seller != self.post.current_owner:
             raise ValidationError("현재 소유자만 경매를 등록할 수 있습니다.")
 
+    @transaction.atomic
     def finalise_auction(self):
         """경매 종료 및 소유권 이전"""
         if self.status == AuctionStatus.ACTIVE and self.winner:
@@ -239,10 +240,20 @@ class Auction(models.Model):
                 self.seller.profile.save()
 
                 self.status = AuctionStatus.ENDED
-                self.post.transfer_ownership(self.winner, "auction")
                 self.save()
 
-                return True, "경매가 성공적으로 종료되었습니다."
+                self.post.current_owner = self.winner
+                self.post.ownership_history.append({
+                    "owner": self.winner.id,
+                    "date": timezone.now().isoformat(),
+                    "type": "auction",
+                    "price": str(self.current_price)
+                })
+                self.post.save()
+
+                logging.info(f"경매 #{self.id} 성공적으로 종료: 작품 '{self.post.title}'(#{self.post.id})가 {self.winner.username}에게 {self.current_price}원에 낙찰")
+
+                return True, "경매가 성공적으로 종료되었습니다. 낙찰된 작품은 이제 귀하의 갤러리에서 확인하실 수 있습니다."
 
             except Exception as e:
                 logging.error(f"경매 종료 처리 중 오류 발생: {str(e)}")
@@ -280,11 +291,32 @@ class Auction(models.Model):
             self.winner = bidder
             self.save()
 
+            logging.info(f"경매 #{self.id}: {bidder.username}님이 {amount}원 입찰")
+
             return True, "입찰이 완료되었습니다."
 
         except Exception as e:
             logging.error(f"입찰 처리 중 오류 발생: {str(e)}")
             return False, "입찰 처리 중 오류가 발생했습니다."
+        
+    @transaction.atomic
+    def cancel(self):
+        if self.status != AuctionStatus.ACTIVE:
+            return False, "진행 중인 경매만 취소할 수 있습니다."
+
+        try:
+            for bid in self.bids.all():
+                bid.bidder.profile.balance += bid.amount
+                bid.bidder.profile.save()
+                logging.info(f"경매 취소: 입찰자 {bid.bidder.username}에게 {bid.amount}원 환불")
+
+            self.status = AuctionStatus.CANCELLED
+            self.save()
+
+            return True, "경매가 취소되었고 모든 입찰금액이 환불되었습니다."
+        except Exception as e:
+            logging.error(f"경매 취소 중 오류 발생: {str(e)}")
+            return False, "경매 취소 처리 중 오류가 발생했습니다."
 
 
 class Bid(models.Model):

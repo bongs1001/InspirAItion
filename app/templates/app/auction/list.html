@@ -66,14 +66,27 @@
         position: absolute;
         top: 15px;
         right: 15px;
-        background-color: rgba(220, 53, 69, 0.9);
-        color: white;
-        font-weight: 600;
         padding: 0.4rem 1rem;
         border-radius: 30px;
         font-size: 0.8rem;
+        font-weight: 600;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         z-index: 10;
+    }
+
+    .auction-badge.active {
+        background-color: rgba(25, 135, 84, 0.9);
+        color: white;
+    }
+
+    .auction-badge.ended {
+        background-color: rgba(13, 110, 253, 0.9);
+        color: white;
+    }
+
+    .auction-badge.cancelled {
+        background-color: rgba(220, 53, 69, 0.9);
+        color: white;
     }
     
     .auction-timer {
@@ -229,6 +242,20 @@
         background-color: #0d6efd;
         color: white;
     }
+
+    .winner-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background-color: #ffc107;
+        color: #212529;
+        padding: 0.4rem 1rem;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        z-index: 10;
+    }
 </style>
 {% endblock css %}
 
@@ -245,18 +272,46 @@
 </section>
 
 <div class="container mb-5">
-    <div class="filter-container d-flex justify-content-between align-items-center">
-        <div class="btn-group">
-            <a href="?sort=latest" class="btn btn-outline-primary filter-btn {% if sort_by == 'latest' %}active{% endif %}">최신순</a>
-            <a href="?sort=ending_soon" class="btn btn-outline-primary filter-btn {% if sort_by == 'ending_soon' %}active{% endif %}">마감임박순</a>
-            <a href="?sort=popular" class="btn btn-outline-primary filter-btn {% if sort_by == 'popular' %}active{% endif %}">인기순</a>
+    <div class="filter-container">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="btn-group">
+                    <!-- 상태 필터 버튼 -->
+                    <a href="?status=active{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="btn btn-outline-primary filter-btn {% if status_filter == 'active' %}active{% endif %}">진행중인 경매</a>
+                    <a href="?status=ended{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="btn btn-outline-primary filter-btn {% if status_filter == 'ended' %}active{% endif %}">종료된 경매</a>
+                    <a href="?status=all{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="btn btn-outline-primary filter-btn {% if status_filter == 'all' %}active{% endif %}">전체 경매</a>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                <div class="btn-group float-md-end">
+                    <!-- 정렬 버튼 -->
+                    <a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}sort=latest" class="btn btn-outline-primary filter-btn {% if sort_by == 'latest' %}active{% endif %}">최신순</a>
+                    <a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}sort=ending_soon" class="btn btn-outline-primary filter-btn {% if sort_by == 'ending_soon' %}active{% endif %}">마감임박순</a>
+                    <a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}sort=popular" class="btn btn-outline-primary filter-btn {% if sort_by == 'popular' %}active{% endif %}">인기순</a>
+                </div>
+            </div>
         </div>
         
-        {% if user.is_authenticated %}
-        <a href="{% url 'my_gallery' %}" class="btn btn-primary">
-            <i class="fas fa-gavel me-2"></i>내 작품 경매 등록하기
-        </a>
-        {% endif %}
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+                {% if status_filter == 'active' %}
+                <h4>진행중인 경매 <span class="badge bg-primary">{{ auctions|length }}개</span></h4>
+                {% elif status_filter == 'ended' %}
+                <h4>종료된 경매 <span class="badge bg-secondary">{{ auctions|length }}개</span></h4>
+                {% elif status_filter == 'cancelled' %}
+                <h4>취소된 경매 <span class="badge bg-danger">{{ auctions|length }}개</span></h4>
+                {% else %}
+                <h4>전체 경매 <span class="badge bg-info">{{ auctions|length }}개</span></h4>
+                {% endif %}
+            </div>
+            
+            {% if user.is_authenticated %}
+            <a href="{% url 'my_gallery' %}" class="btn btn-primary">
+                <i class="fas fa-gavel me-2"></i>내 작품 경매 등록하기
+            </a>
+            {% endif %}
+        </div>
     </div>
 
     {% if auctions %}
@@ -272,15 +327,40 @@
                         <i class="fas fa-image fa-3x" style="color: #dee2e6;"></i>
                     </div>
                     {% endif %}
-                    <div class="auction-badge">
+                    
+                    <!-- 상태별 배지 표시 -->
+                    {% if auction.status == 'active' %}
+                    <div class="auction-badge active">
                         <i class="fas fa-gavel me-1"></i> 경매중
                     </div>
+                    {% elif auction.status == 'ended' %}
+                    <div class="auction-badge ended">
+                        <i class="fas fa-check-circle me-1"></i> 경매 종료
+                    </div>
+                    {% elif auction.status == 'cancelled' %}
+                    <div class="auction-badge cancelled">
+                        <i class="fas fa-times-circle me-1"></i> 취소됨
+                    </div>
+                    {% endif %}
+                    
+                    <!-- 낙찰자 표시 -->
+                    {% if auction.status == 'ended' and auction.winner %}
+                        {% if auction.winner == user %}
+                        <div class="winner-badge">
+                            <i class="fas fa-trophy me-1"></i> 낙찰됨
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <!-- 진행 중인 경매만 남은 시간 표시 -->
+                    {% if auction.status == 'active' and auction.time_remaining %}
                     <div class="auction-timer">
                         <span class="timer-text">남은 시간:</span>
                         <div class="time-remaining" data-end-time="{{ auction.end_time|date:'c' }}">
                             계산 중...
                         </div>
                     </div>
+                    {% endif %}
                 </div>
                 
                 <div class="auction-info">
@@ -293,7 +373,7 @@
                             <span class="price-value">{{ auction.start_price|floatformat:0 }}원</span>
                         </div>
                         <div class="auction-price-item text-end">
-                            <span class="price-label">현재가</span>
+                            <span class="price-label">{% if auction.status == 'ended' %}낙찰가{% else %}현재가{% endif %}</span>
                             <span class="price-value current">{{ auction.current_price|floatformat:0 }}원</span>
                         </div>
                     </div>
@@ -311,7 +391,7 @@
                         <div class="auction-stats">
                             <div class="stat-item">
                                 <i class="fas fa-gavel"></i>
-                                <span>{{ auction.bids.count }}</span>
+                                <span>{{ auction.bid_count }}</span>
                             </div>
                         </div>
                     </div>
@@ -325,7 +405,17 @@
     {% else %}
     <div class="no-auctions">
         <i class="fas fa-gavel fa-3x mb-3 text-muted"></i>
-        <h3>현재 진행 중인 경매가 없습니다.</h3>
+        <h3>
+            {% if status_filter == 'active' %}
+            현재 진행 중인 경매가 없습니다.
+            {% elif status_filter == 'ended' %}
+            종료된 경매가 없습니다.
+            {% elif status_filter == 'cancelled' %}
+            취소된 경매가 없습니다.
+            {% else %}
+            등록된 경매가 없습니다.
+            {% endif %}
+        </h3>
         <p class="text-muted mb-4">새로운 경매가 등록되면 이곳에 표시됩니다.</p>
         {% if user.is_authenticated %}
         <a href="{% url 'my_gallery' %}" class="btn btn-primary">내 작품 경매 등록하기</a>

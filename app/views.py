@@ -1218,11 +1218,19 @@ def register_auction(request, post_id):
 
 
 def auction_list(request):
+    status_filter = request.GET.get("status", "active")
     sort_by = request.GET.get("sort", "latest")
 
-    auctions = Auction.objects.filter(
-        status=AuctionStatus.ACTIVE, end_time__gt=timezone.now()
-    ).select_related("post", "seller", "post__current_owner")
+    auctions = Auction.objects.all()
+
+    if status_filter == "all":
+        auctions = Auction.objects.all()
+    elif status_filter == "ended":
+        auctions = Auction.objects.filter(status=AuctionStatus.ENDED)
+    elif status_filter == "cancelled":
+        auctions = Auction.objects.filter(status=AuctionStatus.CANCELLED)
+    else:  
+        auctions = auctions.select_related("post", "seller", "post__current_owner")
 
     if sort_by == "ending_soon":
         auctions = auctions.order_by("end_time")
@@ -1232,10 +1240,18 @@ def auction_list(request):
         auctions = auctions.order_by("-created_at")
 
     for auction in auctions:
-        auction.time_remaining = auction.end_time - timezone.now()
+        if auction.status == AuctionStatus.ACTIVE and auction.end_time > timezone.now():
+            auction.time_remaining = auction.end_time - timezone.now()
+        else:
+            auction.time_remaining = None
+        
         auction.bid_count = auction.bids.count()
 
-    context = {"auctions": auctions, "sort_by": sort_by}
+    context = {
+        "auctions": auctions,
+        "sort_by": sort_by,
+        "status_filter": status_filter
+    }
 
     return render(request, "app/auction/list.html", context)
 
@@ -1251,25 +1267,6 @@ def auction_detail(request, auction_id):
 
     min_bid = auction.current_price + Decimal("1000")
 
-    if request.method == "POST" and auction.is_active:
-        try:
-            with transaction.atomic():
-                bid_amount = Decimal(request.POST.get("bid_amount", "0"))
-
-                success, message = auction.place_bid(request.user, bid_amount)
-
-                if success:
-                    messages.success(request, message)
-                    auction.refresh_from_db()
-                else:
-                    messages.error(request, message)
-
-        except (ValueError, TypeError):
-            messages.error(request, "유효한 금액을 입력해주세요.")
-        except Exception as e:
-            messages.error(request, "입찰 처리 중 오류가 발생했습니다.")
-            logging.error(f"입찰 처리 중 예외 발생: {str(e)}")
-
     if auction.is_active and auction.end_time <= timezone.now():
         success, message = auction.finalise_auction()
         if success:
@@ -1277,6 +1274,23 @@ def auction_detail(request, auction_id):
         else:
             messages.error(request, message)
         auction.refresh_from_db()
+
+    if request.method == "POST" and auction.is_active:
+        try:
+            with transaction.atomic():
+                bid_amount = Decimal(request.POST.get("bid_amount", "0"))
+                success, message = auction.place_bid(request.user, bid_amount)
+
+                if success:
+                    messages.success(request, message)
+                    auction.refresh_from_db()
+                else:
+                    messages.error(request, message)
+        except (ValueError, TypeError):
+            messages.error(request, "유효한 금액을 입력해주세요.")
+        except Exception as e:
+            messages.error(request, "입찰 처리 중 오류가 발생했습니다.")
+            logging.error(f"입찰 처리 중 예외 발생: {str(e)}")
 
     context = {
         "auction": auction,
