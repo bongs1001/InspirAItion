@@ -260,6 +260,7 @@
                         AI 이미지 생성
                     </button>
                     
+                    {% if "127.0.0.1" in request.get_host %}
                     <button type="button" id="upscaleImageBtn" class="btn btn-warning feature-button" disabled>
                         <i class="fas fa-expand-arrows-alt"></i>
                         업스케일
@@ -269,6 +270,7 @@
                         <i class="fas fa-paint-brush"></i>
                         아웃페인팅
                     </button>
+                    {% endif %}
                 </div>
                 
                 <div class="mb-3">
