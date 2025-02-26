@@ -1849,7 +1849,7 @@ def process_outpainting_with_comfyui(image_url):
         logging.error("워크플로우에서 LoadImageFromUrlOrPath 노드를 찾을 수 없습니다.")
         return None
 
-    result = queue_prompt(workflow)
+    result = queue_prompt(workflow, COMFYUI_API_URL)
 
     if result is None:
         logging.error("ComfyUI 아웃페인팅 처리에 실패했습니다.")
@@ -1864,14 +1864,14 @@ def process_outpainting_with_comfyui(image_url):
     wait_interval = 2
     total_waited = 0
 
-    while not check_workflow_status(prompt_id):
+    while not check_workflow_status(prompt_id, COMFYUI_API_URL):
         time.sleep(wait_interval)
         total_waited += wait_interval
         if total_waited >= max_wait_time:
             logging.error(f"워크플로우 실행 제한 시간({max_wait_time}초) 초과")
             return None
 
-    image_info = get_image_info(prompt_id)
+    image_info = get_image_info(prompt_id, COMFYUI_API_URL)
     if image_info:
         try:
             file_name = image_info[prompt_id]["outputs"]["14"]["images"][0]["filename"]
