@@ -4,6 +4,133 @@
 
 {% block title %}{{ auction.post.title }} - 경매 - InspirAItion{% endblock title %}
 
+{% block css %}
+<style>
+    .auction-status-badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+    }
+    
+    .auction-ended {
+        background-color: rgba(13, 110, 253, 0.2);
+        color: #0d6efd;
+        border: 1px solid rgba(13, 110, 253, 0.4);
+    }
+    
+    .auction-active {
+        background-color: rgba(25, 135, 84, 0.2);
+        color: #198754;
+        border: 1px solid rgba(25, 135, 84, 0.4);
+    }
+    
+    .auction-cancelled {
+        background-color: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+        border: 1px solid rgba(220, 53, 69, 0.4);
+    }
+    
+    .auction-pending {
+        background-color: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.4);
+    }
+    
+    .winner-info {
+        padding: 1rem;
+        margin-top: 1rem;
+        border-radius: 10px;
+        background-color: #f8f9fa;
+        border-left: 4px solid #198754;
+    }
+    
+    .timer-container {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 10px;
+        background-color: #f8f9fa;
+    }
+    
+    .countdown-timer {
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-align: center;
+    }
+    
+    .ending-soon {
+        color: #dc3545;
+    }
+    
+    .bid-history-title {
+        margin-top: 2rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #f8f9fa;
+    }
+    
+    .bid-history {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .bid-item {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        transition: all 0.2s ease;
+    }
+    
+    .bid-item:hover {
+        background-color: #e9ecef;
+    }
+    
+    .bid-amount {
+        font-weight: 700;
+        color: #0d6efd;
+    }
+    
+    .winning-bid {
+        border-left: 4px solid #198754;
+    }
+    
+    .ownership-info {
+        font-size: 0.9rem;
+        margin-top: 1rem;
+    }
+    
+    .original-creator {
+        color: #6c757d;
+    }
+    
+    .current-owner {
+        font-weight: 700;
+    }
+    
+    @media (max-width: 768px) {
+        .countdown-timer {
+            font-size: 1.2rem;
+        }
+    }
+
+    [data-theme="dark"] .winner-info {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    [data-theme="dark"] .timer-container,
+    [data-theme="dark"] .bid-item {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    [data-theme="dark"] .bid-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    [data-theme="dark"] .bid-history-title {
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+</style>
+{% endblock %}
+
 {% block header %}
 {% include "app/common/header.html" %}
 {% endblock header %}
@@ -16,13 +143,42 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h2 class="card-title">{{ auction.post.title }}</h2>
+                    
+                    <div class="mb-3">
+                        {% if auction.status == 'active' %}
+                        <span class="auction-status-badge auction-active">
+                            <i class="fas fa-gavel me-1"></i> 경매 진행중
+                        </span>
+                        {% elif auction.status == 'ended' %}
+                        <span class="auction-status-badge auction-ended">
+                            <i class="fas fa-check-circle me-1"></i> 경매 종료
+                        </span>
+                        {% elif auction.status == 'cancelled' %}
+                        <span class="auction-status-badge auction-cancelled">
+                            <i class="fas fa-times-circle me-1"></i> 경매 취소됨
+                        </span>
+                        {% else %}
+                        <span class="auction-status-badge auction-pending">
+                            <i class="fas fa-clock me-1"></i> 경매 대기중
+                        </span>
+                        {% endif %}
+                        
+                        {% if auction.status == 'ended' and auction.winner == user %}
+                        <span class="auction-status-badge ms-2" style="background-color: rgba(255, 193, 7, 0.2); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.4);">
+                            <i class="fas fa-trophy me-1"></i> 낙찰 완료
+                        </span>
+                        {% endif %}
+                    </div>
+                    
                     {% if auction.post.image %}
                     <img src="{{ auction.post.image }}" alt="{{ auction.post.title }}" class="img-fluid mb-3">
                     {% endif %}
+                    
                     <div class="mb-3">
                         <h5>작품 설명</h5>
                         <p>{{ auction.post.content }}</p>
                     </div>
+                    
                     {% if auction.post.tags %}
                     <div class="mb-3">
                         <h5>태그</h5>
@@ -33,6 +189,15 @@
                         </div>
                     </div>
                     {% endif %}
+                    
+                    <div class="ownership-info">
+                        <div class="mb-1">
+                            <span class="original-creator">원작자: {{ auction.post.original_creator.profile.nickname }}</span>
+                        </div>
+                        <div>
+                            <span class="current-owner">현재 소유자: {{ auction.post.current_owner.profile.nickname }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -41,99 +206,141 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h3 class="card-title">경매 정보</h3>
-                    <div class="alert {% if auction.is_active %}alert-info{% else %}alert-warning{% endif %}">
-                        <strong>상태:</strong>
-                        {% if auction.is_active %}
-                        진행 중
-                        {% else %}
-                        {% if auction.status == 'pending' %}
-                        대기 중
-                        {% elif auction.status == 'ended' %}
-                        종료됨
-                        {% else %}
-                        취소됨
-                        {% endif %}
-                        {% endif %}
-                    </div>
-
-                    <div class="mb-3">
-                        <strong>판매자:</strong> {{ auction.seller.profile.nickname }}
-                    </div>
-
-                    <div class="mb-3">
-                        <strong>시작가:</strong> {{ auction.start_price|floatformat:0 }}원
-                    </div>
-
-                    <div class="mb-3">
-                        <strong>현재가:</strong> {{ auction.current_price|floatformat:0 }}원
-                    </div>
-
-                    <div class="mb-3">
-                        <strong>남은 시간:</strong>
-                        <span id="timeRemaining" data-end-time="{{ auction.end_time|date:'c' }}">
-                            계산 중...
-                        </span>
-                    </div>
-
-                    {% if user.is_authenticated %}
-                    <div class="mb-3">
-                        <strong>내 잔액:</strong>
-                        <span class="text-primary">{{ user_balance|floatformat:0 }}원</span>
-                    </div>
-
-                    {% if auction.is_active %}
-                    {% if user != auction.seller %}
-                    <form method="post" class="mb-3" id="bidForm" onsubmit="return validateBid();">
-                        {% csrf_token %}
-                        <div class="input-group">
-                            <input type="number" class="form-control" name="bid_amount" id="bidAmount"
-                                min="{{ min_bid }}" step="1000" placeholder="입찰가를 입력하세요.">
-                            <button type="submit" class="btn btn-primary">입찰하기</button>
-                        </div>
-                        <small class="text-muted d-block">최소 입찰가: {{ min_bid|floatformat:0 }}원</small>
-                        <small class="text-muted d-block">입찰 단위: 1,000원</small>
-                    </form>
-                    {% else %}
-                    <div class="alert alert-info">
-                        자신의 경매에는 입찰할 수 없습니다.
-                    </div>
-                    {% endif %}
-                    {% else %}
-                    <div class="alert alert-warning">
-                        현재 입찰이 불가능한 경매입니다.
-                    </div>
-                    {% endif %}
-                    {% else %}
-                    <div class="alert alert-warning">
-                        입찰에 참여하려면 <a href="{% url 'login' %}">로그인</a>이 필요합니다.
-                    </div>
-                    {% endif %}
-
-                    <div class="mt-4">
-                        <h4>입찰 기록</h4>
-                        <div class="bid-history">
-                            {% for bid in auction.bids.all %}
-                            <div class="bid-item d-flex justify-content-between align-items-center mb-2">
-                                <div>
-                                    <strong>{{ bid.bidder.profile.nickname }}</strong>
-                                    <small class="text-muted d-block">{{ bid.created_at|date:"Y-m-d H:i" }}</small>
-                                </div>
-                                <div class="text-primary">{{ bid.amount|floatformat:0 }}원</div>
+                    
+                    {% if auction.status == 'active' %}
+                        <div class="timer-container">
+                            <p class="text-center mb-1">남은 시간</p>
+                            <div id="timeRemaining" class="countdown-timer" data-end-time="{{ auction.end_time|date:'c' }}">
+                                계산 중...
                             </div>
-                            {% empty %}
-                            <p class="text-muted text-center">아직 입찰 기록이 없습니다.</p>
-                            {% endfor %}
+                        </div>
+                    {% elif auction.status == 'ended' %}
+                        <div class="winner-info">
+                            <h5 class="mb-2">
+                                <i class="fas fa-trophy me-1 text-warning"></i> 낙찰 정보
+                            </h5>
+                            <p class="mb-1">
+                                <strong>낙찰자:</strong> {{ auction.winner.profile.nickname }}
+                            </p>
+                            <p class="mb-1">
+                                <strong>낙찰가:</strong> {{ auction.current_price|floatformat:0 }}원
+                            </p>
+                            <p class="mb-0">
+                                <strong>종료일:</strong> {{ auction.end_time|date:"Y년 m월 d일 H:i" }}
+                            </p>
+                        </div>
+                    {% elif auction.status == 'cancelled' %}
+                        <div class="alert alert-danger">
+                            <h5 class="alert-heading">경매 취소됨</h5>
+                            <p class="mb-0">이 경매는 취소되었습니다. 입찰된 금액은 모두 환불 처리되었습니다.</p>
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3 mt-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fs-5">판매자</span>
+                            <div class="d-flex align-items-center">
+                                {% if auction.seller.profile.profile_image %}
+                                <img src="{{ auction.seller.profile.profile_image }}" alt="{{ auction.seller.profile.nickname }}" 
+                                     class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                                {% endif %}
+                                <span class="fw-bold">{{ auction.seller.profile.nickname }}</span>
+                            </div>
                         </div>
                     </div>
 
-                    {% if user == auction.seller %}
                     <div class="mb-3">
-                        <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal"
-                            data-bs-target="#cancelModal">
-                            경매 취소
-                        </button>
+                        <div class="d-flex justify-content-between fw-bold">
+                            <span>시작가</span>
+                            <span>{{ auction.start_price|floatformat:0 }}원</span>
+                        </div>
                     </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between fw-bold">
+                            <span>{% if auction.status == 'ended' %}낙찰가{% else %}현재가{% endif %}</span>
+                            <span class="text-primary">{{ auction.current_price|floatformat:0 }}원</span>
+                        </div>
+                    </div>
+
+                    {% if auction.status == 'active' %}
+                        {% if user.is_authenticated %}
+                            <div class="mb-3">
+                                <div class="alert alert-info">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong>내 잔액:</strong>
+                                        <span class="text-primary fw-bold">{{ user_balance|floatformat:0 }}원</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if user != auction.seller %}
+                                <form method="post" class="mb-3" id="bidForm" onsubmit="return validateBid();">
+                                    {% csrf_token %}
+                                    <div class="mb-2">
+                                        <label for="bidAmount" class="form-label">입찰 금액 (원)</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" name="bid_amount" id="bidAmount"
+                                                min="{{ min_bid }}" step="1000" placeholder="입찰가를 입력하세요.">
+                                            <button type="submit" class="btn btn-primary">입찰하기</button>
+                                        </div>
+                                        <div class="form-text">
+                                            <small>최소 입찰가: {{ min_bid|floatformat:0 }}원</small><br>
+                                            <small>입찰 단위: 1,000원</small>
+                                        </div>
+                                    </div>
+                                </form>
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    자신의 경매에는 입찰할 수 없습니다.
+                                </div>
+
+                                <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                                    <i class="fas fa-times-circle me-2"></i>경매 취소
+                                </button>
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                입찰에 참여하려면 <a href="{% url 'login' %}" class="alert-link">로그인</a>이 필요합니다.
+                            </div>
+                        {% endif %}
                     {% endif %}
+
+                    <a href="{% url 'auction_list' %}" class="btn btn-outline-secondary w-100 mt-3">
+                        <i class="fas fa-arrow-left me-2"></i>경매 목록으로 돌아가기
+                    </a>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-history me-2"></i>입찰 기록
+                        <span class="badge bg-secondary ms-2">{{ auction.bids.all|length }}</span>
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="bid-history">
+                        {% for bid in auction.bids.all %}
+                        <div class="bid-item d-flex justify-content-between align-items-center mb-2 {% if bid.bidder == auction.winner and auction.status == 'ended' %}winning-bid{% endif %}">
+                            <div>
+                                <div class="fw-bold">{{ bid.bidder.profile.nickname }}</div>
+                                <small class="text-muted">{{ bid.created_at|date:"Y-m-d H:i" }}</small>
+                                {% if bid.bidder == auction.winner and auction.status == 'ended' %}
+                                <span class="badge bg-success ms-2">낙찰</span>
+                                {% endif %}
+                            </div>
+                            <div class="bid-amount">{{ bid.amount|floatformat:0 }}원</div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-gavel fa-3x mb-3 text-muted"></i>
+                            <p class="text-muted mb-0">아직 입찰 기록이 없습니다.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -172,13 +379,18 @@
 <script>
     function updateTimeRemaining() {
         const element = document.getElementById('timeRemaining');
+        if (!element) return;
+        
         const endTime = new Date(element.dataset.endTime);
         const now = new Date();
         const diff = endTime - now;
 
         if (diff <= 0) {
             element.textContent = '경매 종료';
-            location.reload();
+            element.classList.add('text-danger');
+            setTimeout(() => {
+                location.reload();
+            }, 3000);
             return;
         }
 
@@ -192,57 +404,49 @@
         timeText += `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
         element.textContent = timeText;
+        
+        if (diff < 24 * 60 * 60 * 1000) {
+            element.classList.add('ending-soon');
+        }
     }
-
-    document.getElementById('bidForm')?.addEventListener('submit', function (e) {
-        e.preventDefault();
-        const amount = parseInt(document.getElementById('bidAmount').value);
-        const mindBid = parseInt(this.querySelector('input[name="bid_amount"]').min);
-
-        if (isNaN(amount)) {
-            alert('유효한 금액을 입력해주세요.');
-            return;
-        }
-
-        if (amount < minBid) {
-            alert(`최소 입찰가(${minBid}원)보다 높은 금액을 입력해주세요.`);
-            return;
-        }
-
-        this.submit();
-    });
-
-    setInterval(updateTimeRemaining, 1000);
-    updateTimeRemaining();
 
     function validateBid() {
         const bidAmount = parseFloat(document.getElementById('bidAmount').value);
-        const minBid = {{ min_bid }
-    };
-    const userBalance = {{ user_balance }};
+        const minBid = {{ min_bid }};
+        const userBalance = {{ user_balance }};
 
-    if (isNaN(bidAmount)) {
-        alert('유효한 금액을 입력해주세요.');
-        return false;
+        if (isNaN(bidAmount)) {
+            alert('유효한 금액을 입력해주세요.');
+            return false;
+        }
+
+        if (bidAmount < minBid) {
+            alert(`최소 입찰가(${minBid.toLocaleString()}원)보다 높은 금액을 입력해주세요.`);
+            return false;
+        }
+
+        if (bidAmount > userBalance) {
+            alert('잔액이 부족합니다.');
+            return false;
+        }
+
+        if (bidAmount % 1000 !== 0) {
+            alert('입찰 금액은 1,000원 단위로 입력해주세요.');
+            return false;
+        }
+
+        return confirm('입찰하시겠습니까?');
     }
 
-    if (bidAmount < minBid) {
-        alert(`최소 입찰가(${minBid.toLocaleString()}원)보다 높은 금액을 입력해주세요.`);
-        return false;
-    }
-
-    if (bidAmount > userBalance) {
-        alert('잔액이 부족합니다.');
-        return false;
-    }
-
-    if (bidAmount % 1000 !== 0) {
-        alert('입찰 금액은 1,000원 단위로 입력해주세요.');
-        return false;
-    }
-
-    return confirm('입찰하시겠습니까?');
-    }
+    updateTimeRemaining();
+    
+    setInterval(updateTimeRemaining, 1000);
+    
+    document.getElementById('bidForm')?.addEventListener('submit', function(e) {
+        if (!validateBid()) {
+            e.preventDefault();
+        }
+    });
 </script>
 {% endblock js %}
 
