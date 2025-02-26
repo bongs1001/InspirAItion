@@ -124,6 +124,7 @@
         } catch (error) {
             alert(error.message);
             console.error("Error:", error);
+            window.location.reload();
         } finally {
             generateBtn.disabled = false;
             generateBtn.innerHTML = originalText;
