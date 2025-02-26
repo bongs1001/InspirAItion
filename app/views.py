@@ -1205,59 +1205,80 @@ def gpt4o_stt_api(request):
 def register_auction(request, post_id):
     post = get_object_or_404(Post, id=post_id, current_owner=request.user)
 
-    active_auction = Auction.objects.filter(
-        post=post, 
-        status=AuctionStatus.ACTIVE,
-        end_time__gt=timezone.now()
-    ).first()
-    
-    if active_auction:
-        messages.error(request, "이미 진행 중인 경매가 있습니다.")
-        return redirect("auction_detail", auction_id=active_auction.id)
+    # 이미 존재하는 Auction 객체를 찾거나 None을 반환
+    try:
+        existing_auction = Auction.objects.get(post=post)
+        
+        # 진행 중인 경매인 경우
+        if existing_auction.status == AuctionStatus.ACTIVE and existing_auction.end_time > timezone.now():
+            messages.error(request, "이미 진행 중인 경매가 있습니다.")
+            return redirect("auction_detail", auction_id=existing_auction.id)
+        
+        # 현재 경매가 종료되었거나 취소된 경우 해당 레코드를 수정
+        # 이 부분이 중요: 새 레코드를 만들려고 하지 않고 기존 레코드를 업데이트함
+        auction = existing_auction
+    except Auction.DoesNotExist:
+        # 경매 레코드가 없는 경우 새로 생성
+        auction = None
 
+    # 이전 경매 기록 조회
     auction_history = Auction.objects.filter(
         post=post, 
         status__in=[AuctionStatus.ENDED, AuctionStatus.CANCELLED]
     ).order_by('-updated_at')
 
     if request.method == "POST":
-        auction = Auction(post=post, seller=request.user)
+        # auction 객체가 이미 있으면 그걸 기반으로 form 생성
         form = AuctionForm(request.POST, instance=auction)
 
         if form.is_valid():
             try:
-                auction = form.save(commit=False)
+                new_auction = form.save(commit=False)
+                new_auction.post = post
+                new_auction.seller = request.user
 
+                # 시작 시간과 종료 시간 유효성 검사
                 now = timezone.now()
-
-                if auction.start_time < now:
-                    auction.start_time = now + timezone.timedelta(minutes=1)
+                if new_auction.start_time < now:
+                    new_auction.start_time = now + timezone.timedelta(minutes=1)
                 
-                if auction.end_time <= auction.start_time:
-                    auction.end_time = auction.start_time + timezone.timedelta(minutes=10)
+                if new_auction.end_time <= new_auction.start_time:
+                    new_auction.end_time = new_auction.start_time + timezone.timedelta(minutes=10)
 
-                auction.current_price = form.cleaned_data["start_price"]
+                # 현재 가격은 시작 가격과 동일하게 설정
+                new_auction.current_price = form.cleaned_data["start_price"]
+                # 경매 상태를 활성으로 설정
+                new_auction.status = AuctionStatus.ACTIVE
+                # 저장
+                new_auction.save()
 
-                auction.status = AuctionStatus.ACTIVE
-
-                auction.save()
-
-                print(f"경매 등록됨: {auction.id}")
+                logging.info(f"경매 등록/수정됨: {new_auction.id}")
                 messages.success(request, "경매가 성공적으로 등록되었습니다.")
-                return redirect("auction_detail", auction_id=auction.id)
+                return redirect("auction_detail", auction_id=new_auction.id)
             
             except ValidationError as e:
                 messages.error(request, str(e))
                 
             except Exception as e:
+                logging.error(f"경매 등록 중 오류 발생: {str(e)}")
                 messages.error(request, f"경매 등록 중 오류가 발생했습니다: {str(e)}")
+        else:
+            # 폼 유효성 검사 실패 시 자세한 오류 메시지 로깅
+            error_msgs = []
+            for field, errors in form.errors.items():
+                for error in errors:
+                    error_msgs.append(f"{field}: {error}")
+            
+            logging.error(f"경매 등록 폼 유효성 검사 실패: {', '.join(error_msgs)}")
     else:
+        # GET 요청 시 기본값 설정
         initial_data = {
             "start_price": 1000,  
-            "start_time": timezone.timedelta(minutes=1), 
-            "end_time": timezone.timedelta(minutes=11)
+            "start_time": timezone.now() + timezone.timedelta(minutes=1), 
+            "end_time": timezone.now() + timezone.timedelta(minutes=11)
         }
         
+        # 이전 경매가 있으면 그 가격을 기본값으로 설정
         last_auction = Auction.objects.filter(
             post=post
         ).order_by('-created_at').first()
@@ -1265,7 +1286,8 @@ def register_auction(request, post_id):
         if last_auction:
             initial_data["start_price"] = last_auction.start_price
         
-        form = AuctionForm(initial=initial_data)
+        # auction 객체가 이미 있으면 인스턴스로 지정하여 업데이트 모드로 설정
+        form = AuctionForm(initial=initial_data, instance=auction)
 
     return render(request, "app/auction/register.html", {
         "form": form, 
