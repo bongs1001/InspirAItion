@@ -6,84 +6,432 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/goods.css' %}">
-{% endblock %}
+<style>
+    .page-header {
+        background-color: var(--bg-secondary);
+        padding: 2.5rem 0;
+        margin-bottom: 2.5rem;
+        text-align: center;
+        border-radius: 15px;
+    }
+    
+    .page-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+    
+    .page-subtitle {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    
+    .product-card {
+        background-color: var(--card-bg);
+        border-radius: 15px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease;
+        border: 1px solid var(--border-color);
+        height: 100%;
+    }
+    
+    .product-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .product-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+    
+    .product-description {
+        color: var(--text-secondary);
+        margin-bottom: 0;
+        font-size: 0.95rem;
+    }
+    
+    .product-image-container {
+        padding: 2rem;
+        background-color: var(--bg-secondary);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        height: 400px;
+        position: relative;
+    }
+    
+    .product-image {
+        max-width: 100%;
+        max-height: 360px;
+        transition: transform 0.3s ease;
+    }
+    
+    .options-card {
+        background-color: var(--card-bg);
+        border-radius: 15px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+        height: 100%;
+    }
+    
+    .options-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .options-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0;
+    }
+    
+    .options-body {
+        padding: 1.5rem;
+    }
+    
+    .option-section {
+        margin-bottom: 2rem;
+    }
+    
+    .option-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-option {
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        text-align: center;
+        border: 2px solid var(--border-color);
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+        font-weight: 500;
+    }
+    
+    .btn-option:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        border-color: #6c5ce7;
+    }
+    
+    .btn-check:checked + .btn-option {
+        border-color: #6c5ce7;
+        background-color: rgba(108, 92, 231, 0.1);
+    }
+    
+    .option-price {
+        display: block;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        color: var(--text-secondary);
+    }
+    
+    .size-dimensions {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+        color: var(--text-secondary);
+    }
+    
+    .price-summary {
+        background-color: var(--bg-secondary);
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-top: 1.5rem;
+    }
+    
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+    
+    .price-label {
+        color: var(--text-secondary);
+    }
+    
+    .price-value {
+        font-weight: 500;
+    }
+    
+    .price-total {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+        margin-top: 1rem;
+    }
+    
+    .price-total-label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .price-total-value {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #6c5ce7;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    .btn-create {
+        flex: 1;
+        padding: 0.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-create:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .frame-preview {
+        width: 100%;
+        height: 80px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        border-radius: 5px;
+        transition: all 0.2s ease;
+        background: url('{% static "img/frame-sample.png" %}') center/cover;
+    }
+    
+    .frame-preview.no-frame {
+        border: 1px dashed #ccc;
+    }
+    
+    .frame-preview.내추럴-우드 {
+        border: 10px solid #d2b48c;
+        box-shadow: inset 0 0 0 1px #a67c52;
+    }
+    
+    .frame-preview.매트-블랙 {
+        border: 10px solid #2a2a2a;
+        box-shadow: inset 0 0 0 1px #000;
+    }
+    
+    .frame-preview.실버 {
+        border: 10px solid #c0c0c0;
+        box-shadow: inset 0 0 0 1px #808080;
+    }
+    
+    .finish-badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .finish-badge.matte {
+        background-color: rgba(108, 92, 231, 0.1);
+        color: #6c5ce7;
+        border: 1px solid rgba(108, 92, 231, 0.3);
+    }
+    
+    .finish-badge.gloss {
+        background-color: rgba(0, 184, 148, 0.1);
+        color: #00b894;
+        border: 1px solid rgba(0, 184, 148, 0.3);
+    }
+    
+    .help-section {
+        background-color: rgba(108, 92, 231, 0.1);
+        border-left: 4px solid #6c5ce7;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-top: 2rem;
+    }
+    
+    .help-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #6c5ce7;
+    }
+    
+    .help-list {
+        margin-bottom: 0;
+        padding-left: 1.5rem;
+    }
+    
+    .help-list li {
+        margin-bottom: 0.5rem;
+    }
+    
+    @media (max-width: 992px) {
+        .product-card, .options-card {
+            margin-bottom: 2rem;
+        }
+    }
+    
+    [data-theme="dark"] .btn-option {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    [data-theme="dark"] .btn-check:checked + .btn-option {
+        background-color: rgba(108, 92, 231, 0.2);
+        border-color: #6c5ce7;
+    }
+    
+    [data-theme="dark"] .frame-preview.no-frame {
+        border-color: #444;
+    }
+    
+    [data-theme="dark"] .help-section {
+        background-color: rgba(108, 92, 231, 0.2);
+    }
+</style>
+{% endblock css %}
 
 {% block header %}
 {% include "app/common/header.html" %}
 {% endblock header %}
 
 {% block content %}
-<hr class="featurette-divider">
-<div class="container">
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card mb-4 product-display">
-                <div class="card-body">
-                    <h2 class="card-title">{{ post.title }} - 굿즈 제작</h2>
-                    <div class="product-image-container">
-                        <div class="frame no-frame">
-                            <img src="{{ post.image }}" alt="{{ post.title }}" class="img-fluid product-image">
-                        </div>
+<div class="container py-4">
+    <div class="page-header">
+        <h1 class="page-title">작품으로 굿즈 제작하기</h1>
+        <p class="page-subtitle">나만의 작품을 다양한 옵션으로 프린트하여 실물로 소장해보세요. 프레임, 사이즈, 마감 처리를 선택하여 맞춤 제작합니다.</p>
+    </div>
+    
+    <div class="help-section mb-4">
+        <h4 class="help-title"><i class="fas fa-lightbulb me-2"></i>굿즈 제작 안내</h4>
+        <ul class="help-list">
+            <li>고품질 캔버스 및 포토 용지에 작품이 선명하게 인쇄됩니다.</li>
+            <li>모든 프린트는 최소 300dpi 고해상도로 제작됩니다.</li>
+            <li>최적의 결과물을 위해 원본 이미지의 크기와 비율이 유지됩니다.</li>
+            <li>매트(Matte) 마감은 빛 반사가 적고 부드러운 느낌을 줍니다.</li>
+            <li>글로스(Gloss) 마감은 더 선명하고 생생한 색감을 제공합니다.</li>
+        </ul>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="product-card">
+                <div class="product-header">
+                    <h2 class="product-title">{{ post.title }}</h2>
+                    <p class="product-description">{{ post.content|truncatechars:120 }}</p>
+                </div>
+                <div class="product-image-container">
+                    <div class="frame no-frame" id="previewFrame">
+                        <img src="{{ post.image }}" alt="{{ post.title }}" class="product-image" id="productImage">
                     </div>
                 </div>
             </div>
+            
+
         </div>
 
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h3 class="card-title mb-4">굿즈 옵션 선택</h3>
-                    
-                    <form method="post" action="{% url 'create_goods' post.id %}">
+        <div class="col-lg-6">
+            <div class="options-card">
+                <div class="options-header">
+                    <h3 class="options-title">굿즈 옵션 선택</h3>
+                </div>
+                <div class="options-body">
+                    <form method="post" action="{% url 'create_goods' post.id %}" id="goodsForm">
                         {% csrf_token %}
-                        
-                        <div class="mb-4">
-                            <h5>마감 선택</h5>
-                            <div class="btn-group w-100" role="group">
-                                {% for finish in finish_types %}
-                                <input type="radio" class="btn-check" name="finish_type" id="finish_{{ finish.id }}" value="{{ finish.id }}" {% if forloop.first %}checked{% endif %}>
-                                <label class="btn btn-outline-primary" for="finish_{{ finish.id }}">
-                                    {{ finish.name }}
-                                    <small class="d-block">+{{ finish.price_addition|floatformat:0 }}원</small>
-                                </label>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <h5>사이즈 선택</h5>
-                            <div class="btn-group w-100" role="group">
+
+                        <div class="option-section">
+                            <h4 class="option-title">
+                                <i class="fas fa-ruler-combined me-2"></i>사이즈 선택
+                            </h4>
+                            <div class="row g-3">
                                 {% for size in sizes %}
-                                <input type="radio" class="btn-check" name="size" id="size_{{ size.id }}" value="{{ size.id }}" {% if forloop.first %}checked{% endif %}>
-                                <label class="btn btn-outline-primary" for="size_{{ size.id }}">
-                                    {{ size.name }}
-                                    <small class="d-block">{{ size.width }}×{{ size.height }}cm</small>
-                                    <small class="d-block">{{ size.get_price|floatformat:0 }}원</small>
-                                </label>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <h5>프레임 선택</h5>
-                            <div class="frame-options">
-                                {% for frame in frame_types %}
-                                <div class="frame-option">
-                                    <input type="radio" class="btn-check" name="frame_type" id="frame_{{ frame.id }}" value="{{ frame.id }}" {% if forloop.first %}checked{% endif %}>
-                                    <label class="frame-label" for="frame_{{ frame.id }}">
-                                        <div class="frame-preview {{ frame.name|slugify }}"></div>
-                                        <div class="frame-name">{{ frame.name }}</div>
-                                        <div class="frame-price">{% if frame.price_addition > 0 %}+{{ frame.price_addition|floatformat:0 }}원{% else %}기본{% endif %}</div>
+                                <div class="col-md-4">
+                                    <input type="radio" class="btn-check" name="size" id="size_{{ size.id }}" value="{{ size.id }}" {% if forloop.first %}checked{% endif %} 
+                                           data-price="{{ size.get_price|floatformat:0 }}">
+                                    <label class="btn btn-option w-100" for="size_{{ size.id }}">
+                                        {{ size.name }}
+                                        <span class="size-dimensions">{{ size.width }}×{{ size.height }}cm</span>
+                                        <span class="option-price">{{ size.get_price|floatformat:0 }}원</span>
                                     </label>
                                 </div>
                                 {% endfor %}
                             </div>
                         </div>
 
-                        <div class="price-info mb-4">
-                            <div class="d-flex justify-content-between fs-4">
-                                <span>예상 가격:</span>
-                                <span class="fw-bold text-primary" id="estimated-price">
+                        <div class="option-section">
+                            <h4 class="option-title">
+                                <i class="fas fa-square me-2"></i>프레임 선택
+                            </h4>
+                            <div class="row g-3">
+                                {% for frame in frame_types %}
+                                <div class="col-md-6">
+                                    <input type="radio" class="btn-check" name="frame_type" id="frame_{{ frame.id }}" value="{{ frame.id }}" {% if forloop.first %}checked{% endif %} 
+                                           data-price="{{ frame.price_addition|floatformat:0 }}" data-frame-name="{{ frame.name|slugify }}">
+                                    <label class="btn btn-option w-100" for="frame_{{ frame.id }}">
+                                        <div class="frame-preview {{ frame.name|slugify }}"></div>
+                                        {{ frame.name }}
+                                        <span class="option-price">{% if frame.price_addition > 0 %}+{{ frame.price_addition|floatformat:0 }}원{% else %}기본{% endif %}</span>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="option-section">
+                            <h4 class="option-title">
+                                <i class="fas fa-paint-brush me-2"></i>마감 선택
+                            </h4>
+                            <div class="row g-3">
+                                {% for finish in finish_types %}
+                                <div class="col-md-6">
+                                    <input type="radio" class="btn-check" name="finish_type" id="finish_{{ finish.id }}" value="{{ finish.id }}" {% if forloop.first %}checked{% endif %} 
+                                           data-price="{{ finish.price_addition|floatformat:0 }}">
+                                    <label class="btn btn-option w-100" for="finish_{{ finish.id }}">
+                                        <span class="finish-badge {% if finish.name == 'Matte' %}matte{% else %}gloss{% endif %}">{{ finish.name }}</span>
+                                        <div>{{ finish.description }}</div>
+                                        <span class="option-price">+{{ finish.price_addition|floatformat:0 }}원</span>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="price-summary">
+                            <div class="price-row">
+                                <span class="price-label">기본 사이즈 가격</span>
+                                <span class="price-value" id="sizePrice">{% with first_size=sizes.0 %}{{ first_size.get_price|floatformat:0 }}원{% endwith %}</span>
+                            </div>
+                            <div class="price-row">
+                                <span class="price-label">프레임 추가 비용</span>
+                                <span class="price-value" id="framePrice">{% with first_frame=frame_types.0 %}{{ first_frame.price_addition|floatformat:0 }}원{% endwith %}</span>
+                            </div>
+                            <div class="price-row">
+                                <span class="price-label">마감 처리 비용</span>
+                                <span class="price-value" id="finishPrice">{% with first_finish=finish_types.0 %}{{ first_finish.price_addition|floatformat:0 }}원{% endwith %}</span>
+                            </div>
+                            <div class="price-total">
+                                <span class="price-total-label">총 결제 금액</span>
+                                <span class="price-total-value" id="totalPrice">
                                     {% with first_size=sizes.0 %}
                                     {% with first_frame=frame_types.0 %}
                                     {% with first_finish=finish_types.0 %}
@@ -94,10 +442,14 @@
                                 </span>
                             </div>
                         </div>
-                        
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">굿즈 생성하기</button>
-                            <a href="{% url 'post_detail' post.id %}" class="btn btn-outline-secondary">취소</a>
+
+                        <div class="action-buttons">
+                            <button type="submit" class="btn btn-primary btn-create">
+                                <i class="fas fa-magic me-2"></i>굿즈 제작하기
+                            </button>
+                            <a href="{% url 'post_detail' post.id %}" class="btn btn-outline-secondary btn-create">
+                                <i class="fas fa-times me-2"></i>취소
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -107,64 +459,61 @@
 </div>
 {% endblock content %}
 
+{% block footer %}
+{% include "app/common/footer.html" %}
+{% endblock footer %}
+
 {% block js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        function updateEstimatedPrice() {
+        const sizeInputs = document.querySelectorAll('input[name="size"]');
+        const frameInputs = document.querySelectorAll('input[name="frame_type"]');
+        const finishInputs = document.querySelectorAll('input[name="finish_type"]');
+        
+        const sizePriceEl = document.getElementById('sizePrice');
+        const framePriceEl = document.getElementById('framePrice');
+        const finishPriceEl = document.getElementById('finishPrice');
+        const totalPriceEl = document.getElementById('totalPrice');
+        
+        const previewFrame = document.getElementById('previewFrame');
+        
+        function formatPrice(price) {
+            return price.toLocaleString() + '원';
+        }
+        
+        function updateTotalPrice() {
             const selectedSize = document.querySelector('input[name="size"]:checked');
             const selectedFrame = document.querySelector('input[name="frame_type"]:checked');
             const selectedFinish = document.querySelector('input[name="finish_type"]:checked');
             
-            const sizePrice = {
-                {% for size in sizes %}
-                "{{ size.id }}": {{ size.get_price }},
-                {% endfor %}
-            };
+            const sizePrice = parseInt(selectedSize.dataset.price);
+            const framePrice = parseInt(selectedFrame.dataset.price);
+            const finishPrice = parseInt(selectedFinish.dataset.price);
             
-            const framePrice = {
-                {% for frame in frame_types %}
-                "{{ frame.id }}": {{ frame.price_addition }},
-                {% endfor %}
-            };
+            const total = sizePrice + framePrice + finishPrice;
             
-            const finishPrice = {
-                {% for finish in finish_types %}
-                "{{ finish.id }}": {{ finish.price_addition }},
-                {% endfor %}
-            };
+            sizePriceEl.textContent = formatPrice(sizePrice);
+            framePriceEl.textContent = formatPrice(framePrice);
+            finishPriceEl.textContent = formatPrice(finishPrice);
+            totalPriceEl.textContent = formatPrice(total);
             
-            let totalPrice = 0;
-            if (selectedSize) totalPrice += sizePrice[selectedSize.value];
-            if (selectedFrame) totalPrice += framePrice[selectedFrame.value];
-            if (selectedFinish) totalPrice += finishPrice[selectedFinish.value];
-            
-            document.getElementById('estimated-price').textContent = totalPrice.toLocaleString() + '원';
-            
-            updateFramePreview();
+            previewFrame.className = 'frame';
+            previewFrame.classList.add(selectedFrame.dataset.frameName || 'no-frame');
         }
         
-        function updateFramePreview() {
-            const selectedFrame = document.querySelector('input[name="frame_type"]:checked');
-            const frameLabel = selectedFrame ? selectedFrame.nextElementSibling.querySelector('.frame-preview').className.split(' ')[1] : 'no-frame';
-            
-            const imageContainer = document.querySelector('.product-image-container');
-            const frameDiv = imageContainer.querySelector('.frame');
-            
-            frameDiv.className = 'frame';
-            
-            frameDiv.classList.add(frameLabel);
-        }
-        
-        const optionInputs = document.querySelectorAll('input[type="radio"]');
-        optionInputs.forEach(input => {
-            input.addEventListener('change', updateEstimatedPrice);
+        sizeInputs.forEach(input => {
+            input.addEventListener('change', updateTotalPrice);
         });
         
-        updateEstimatedPrice();
+        frameInputs.forEach(input => {
+            input.addEventListener('change', updateTotalPrice);
+        });
+        
+        finishInputs.forEach(input => {
+            input.addEventListener('change', updateTotalPrice);
+        });
+        
+        updateTotalPrice();
     });
 </script>
-{% endblock %}
-
-{% block footer %}
-{% include "app/common/footer.html" %}
-{% endblock footer %}
+{% endblock js %}
