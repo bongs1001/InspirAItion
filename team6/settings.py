@@ -303,13 +303,5 @@ DALLE_CONTAINER_NAME = env("DALLE_CONTAINER_NAME")
 SD_OUTPAINT_CONTAINER_NAME = env("SD_OUTPAINT_CONTAINER_NAME")
 SD_UPSCALE_CONTAINER_NAME = env("SD_UPSCALE_CONTAINER_NAME")
 
-COMFYUI_API_URL = [
-    "http://comfyui.inspiraition.net:8188",
-    "http://comfyui.inspiraition.net:8189",
-    "http://comfyui.inspiraition.net:8190",
-    "http://comfyui.inspiraition.net:8181",
-]
-CMFYUI_TIMEOUT = 600
-
-# ComfiyUI API http 비보안 호출 위함
-SECURE_SSL_REDIRECT = False
+COMFYUI_API_URL = "http://comfyui.inspiraition.net:8188"
+CMFYUI_TIMEOUT = 300
