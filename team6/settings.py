@@ -307,6 +307,6 @@ COMFYUI_API_URL = [
     "http://comfyui.inspiraition.net:8188",
     "http://comfyui.inspiraition.net:8189",
     "http://comfyui.inspiraition.net:8190",
-    "http://comfyui.inspiraition.net:8181",
+    "http://comfyui.inspiraition.net:8191",
 ]
 CMFYUI_TIMEOUT = 300
