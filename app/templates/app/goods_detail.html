@@ -6,6 +6,316 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/goods.css' %}">
+<style>
+    .page-header {
+        background-color: var(--bg-secondary);
+        padding: 2.5rem 0;
+        margin-bottom: 2.5rem;
+        text-align: center;
+        border-radius: 15px;
+    }
+    
+    .page-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+    
+    .page-subtitle {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    
+    .product-card {
+        background-color: var(--card-bg);
+        border-radius: 15px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        height: 100%;
+    }
+    
+    .product-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .product-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 0;
+        color: var(--text-primary);
+    }
+    
+    .product-display {
+        padding: 2rem;
+        min-height: 400px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: var(--bg-secondary);
+    }
+    
+    .product-image-container {
+        position: relative;
+        text-align: center;
+    }
+    
+    .product-image {
+        max-width: 100%;
+        max-height: 380px;
+        transition: transform 0.3s ease;
+    }
+    
+    .options-card {
+        background-color: var(--card-bg);
+        border-radius: 15px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+        height: 100%;
+    }
+    
+    .options-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .options-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0;
+    }
+    
+    .options-body {
+        padding: 1.5rem;
+    }
+    
+    .current-specs {
+        margin-bottom: 1.5rem;
+    }
+    
+    .specs-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .spec-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+    
+    .spec-label {
+        color: var(--text-secondary);
+    }
+    
+    .spec-value {
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+    
+    .spec-value.price {
+        color: #6c5ce7;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+    
+    .option-section {
+        margin-bottom: 2rem;
+    }
+    
+    .option-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .finish-badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+    
+    .finish-badge.matte {
+        background-color: rgba(108, 92, 231, 0.1);
+        color: #6c5ce7;
+        border: 1px solid rgba(108, 92, 231, 0.3);
+    }
+    
+    .finish-badge.gloss {
+        background-color: rgba(0, 184, 148, 0.1);
+        color: #00b894;
+        border: 1px solid rgba(0, 184, 148, 0.3);
+    }
+    
+    .price-preview {
+        background-color: var(--bg-secondary);
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-top: 1.5rem;
+    }
+    
+    .price-label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .price-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #6c5ce7;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    .action-btn {
+        flex: 1;
+        padding: 0.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .frame-options {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+    
+    .frame-options .btn {
+        height: 100px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem;
+    }
+    
+    .frame-preview {
+        width: 100%;
+        height: 60px;
+        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.2s ease;
+        background: url('/static/img/frame-sample.png') center/cover;
+    }
+    
+    .frame-preview.no-frame {
+        border: 1px dashed #ccc;
+    }
+    
+    .frame-preview.내추럴-우드 {
+        border: 10px solid #d2b48c;
+        box-shadow: inset 0 0 0 1px #a67c52;
+    }
+    
+    .frame-preview.매트-블랙 {
+        border: 10px solid #2a2a2a;
+        box-shadow: inset 0 0 0 1px #000;
+    }
+    
+    .frame-preview.실버 {
+        border: 10px solid #c0c0c0;
+        box-shadow: inset 0 0 0 1px #808080;
+    }
+    
+    .size-options,
+    .finish-options {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    
+    .help-section {
+        background-color: rgba(108, 92, 231, 0.1);
+        border-left: 4px solid #6c5ce7;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-top: 2rem;
+    }
+    
+    .help-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #6c5ce7;
+    }
+    
+    .help-list {
+        margin-bottom: 0;
+        padding-left: 1.5rem;
+    }
+    
+    .help-list li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn-check:checked + .btn {
+        border-color: #6c5ce7;
+        background-color: rgba(108, 92, 231, 0.1);
+    }
+    
+    .frame-btn {
+        height: 120px !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    @media (max-width: 992px) {
+        .product-card, .options-card {
+            margin-bottom: 2rem;
+        }
+        
+        .frame-options {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    [data-theme="dark"] .btn-option {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    [data-theme="dark"] .btn-check:checked + .btn-option {
+        background-color: rgba(108, 92, 231, 0.2);
+        border-color: #6c5ce7;
+    }
+    
+    [data-theme="dark"] .frame-preview.no-frame {
+        border-color: #444;
+    }
+    
+    [data-theme="dark"] .help-section {
+        background-color: rgba(108, 92, 231, 0.2);
+    }
+</style>
 {% endblock %}
 
 {% block header %}
@@ -13,122 +323,153 @@
 {% endblock header %}
 
 {% block content %}
-<hr class="featurette-divider">
-<div class="container">
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card mb-4 product-display">
-                <div class="card-body">
-                    <h2 class="card-title">{{ goods_item.post.title }}</h2>
+<div class="container py-4">
+    <div class="page-header">
+        <h1 class="page-title">{{ goods_item.post.title }}</h1>
+        <p class="page-subtitle">나만의 작품을 다양한 옵션으로 제작하고 컬렉션을 완성하세요.</p>
+    </div>
+    
+    <div class="help-section mb-4">
+        <h4 class="help-title"><i class="fas fa-lightbulb me-2"></i>굿즈 제작 안내</h4>
+        <ul class="help-list">
+            <li><strong>프리미엄 프린팅:</strong> 선명한 색감과 디테일을 살린 고해상도 인쇄</li>
+            <li><strong>내구성:</strong> 변색 방지 처리로 오랫동안 선명함 유지</li>
+            <li><strong>맞춤 옵션:</strong> 원하는 사이즈, 프레임, 마감 처리를 선택하여 개성 있는 작품 완성</li>
+            <li><strong>배송:</strong> 주문 후 5-7일 내에 안전하게 포장하여 배송</li>
+            <li><strong>AS:</strong> 제품 하자 시 교환/환불 가능 (배송일로부터 7일 이내)</li>
+        </ul>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="product-card">
+                <div class="product-header">
+                    <h2 class="product-title">굿즈 미리보기</h2>
+                </div>
+                <div class="product-display">
                     <div class="product-image-container">
                         {% if goods_item.frame_type %}
-                        <div class="frame {{ goods_item.frame_type.name|slugify }}">
+                        <div class="frame {{ goods_item.frame_type.name|slugify }}" id="previewFrame">
                         {% else %}
-                        <div class="frame no-frame">
+                        <div class="frame no-frame" id="previewFrame">
                         {% endif %}
-                            <img src="{{ goods_item.post.image }}" alt="{{ goods_item.post.title }}" class="img-fluid product-image">
+                            <img src="{{ goods_item.post.image }}" alt="{{ goods_item.post.title }}" class="product-image" id="productImage">
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h3 class="card-title mb-4">굿즈 정보</h3>
-                    
-                    <div class="specs mb-4">
-                        <h5>현재 옵션</h5>
+        
+        <div class="col-lg-5">
+            <div class="options-card">
+                <div class="options-header">
+                    <h3 class="options-title">굿즈 정보 및 옵션</h3>
+                </div>
+                <div class="options-body">
+                    <div class="current-specs">
+                        <h4 class="specs-title">현재 선택 옵션</h4>
                         
                         <div class="spec-item">
-                            <div class="d-flex justify-content-between">
-                                <span class="spec-label">사이즈:</span>
-                                <span class="spec-value">{{ goods_item.size.name }} ({{ goods_item.size.width }}×{{ goods_item.size.height }}cm)</span>
-                            </div>
+                            <span class="spec-label">사이즈:</span>
+                            <span class="spec-value">{{ goods_item.size.name }} ({{ goods_item.size.width }}×{{ goods_item.size.height }}cm)</span>
                         </div>
                         
                         <div class="spec-item">
-                            <div class="d-flex justify-content-between">
-                                <span class="spec-label">프레임:</span>
-                                <span class="spec-value">{{ goods_item.frame_type.name }}</span>
-                            </div>
+                            <span class="spec-label">프레임:</span>
+                            <span class="spec-value">{{ goods_item.frame_type.name }}</span>
                         </div>
                         
                         <div class="spec-item">
-                            <div class="d-flex justify-content-between">
-                                <span class="spec-label">마감:</span>
-                                <span class="spec-value">{{ goods_item.finish_type.name }}</span>
-                            </div>
+                            <span class="spec-label">마감:</span>
+                            <span class="spec-value">{{ goods_item.finish_type.name }}</span>
                         </div>
                         
-                        <div class="spec-item price mt-3">
-                            <div class="d-flex justify-content-between">
-                                <span class="spec-label">최종 가격:</span>
-                                <span class="spec-value">{{ goods_item.final_price|floatformat:0 }}원</span>
-                            </div>
+                        <div class="spec-item mt-3">
+                            <span class="spec-label">현재 가격:</span>
+                            <span class="spec-value price">{{ goods_item.final_price|floatformat:0 }}원</span>
                         </div>
                     </div>
                     
-                    <form method="post" action="{% url 'edit_goods' goods_item.id %}">
+                    <form method="post" action="{% url 'edit_goods' goods_item.id %}" id="editForm">
                         {% csrf_token %}
                         
-                        <h5>옵션 변경</h5>
-                        
-                        <div class="mb-4">
-                            <h6>마감 선택</h6>
-                            <div class="btn-group w-100" role="group">
-                                {% for finish in finish_types %}
-                                <input type="radio" class="btn-check" name="finish_type" id="finish_{{ finish.id }}" value="{{ finish.id }}" {% if goods_item.finish_type.id == finish.id %}checked{% endif %}>
-                                <label class="btn btn-outline-primary" for="finish_{{ finish.id }}">
-                                    {{ finish.name }}
-                                    <small class="d-block">+{{ finish.price_addition|floatformat:0 }}원</small>
-                                </label>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <h6>사이즈 선택</h6>
-                            <div class="btn-group w-100" role="group">
+                        <div class="option-section">
+                            <h4 class="option-title">
+                                <i class="fas fa-ruler-combined me-2"></i>사이즈 변경
+                            </h4>
+                            <div class="size-options">
                                 {% for size in sizes %}
-                                <input type="radio" class="btn-check" name="size" id="size_{{ size.id }}" value="{{ size.id }}" {% if goods_item.size.id == size.id %}checked{% endif %}>
-                                <label class="btn btn-outline-primary" for="size_{{ size.id }}">
-                                    {{ size.name }}
-                                    <small class="d-block">{{ size.width }}×{{ size.height }}cm</small>
-                                    <small class="d-block">{{ size.get_price|floatformat:0 }}원</small>
-                                </label>
+                                <div class="text-center">
+                                    <input type="radio" class="btn-check" name="size" id="size_{{ size.id }}" value="{{ size.id }}" 
+                                        {% if goods_item.size.id == size.id %}checked{% endif %} data-price="{{ size.get_price|floatformat:0 }}">
+                                    <label class="btn btn-outline-primary w-100" for="size_{{ size.id }}">
+                                        {{ size.name }}
+                                        <small class="d-block">{{ size.width }}×{{ size.height }}cm</small>
+                                        <small class="d-block">{{ size.get_price|floatformat:0 }}원</small>
+                                    </label>
+                                </div>
                                 {% endfor %}
                             </div>
                         </div>
                         
-                        <div class="mb-4">
-                            <h6>프레임 선택</h6>
+                        <div class="option-section">
+                            <h4 class="option-title">
+                                <i class="fas fa-square me-2"></i>프레임 변경
+                            </h4>
                             <div class="frame-options">
                                 {% for frame in frame_types %}
-                                <div class="frame-option">
-                                    <input type="radio" class="btn-check" name="frame_type" id="frame_{{ frame.id }}" value="{{ frame.id }}" {% if goods_item.frame_type.id == frame.id %}checked{% endif %}>
-                                    <label class="frame-label" for="frame_{{ frame.id }}">
+                                <div class="text-center">
+                                    <input type="radio" class="btn-check" name="frame_type" id="frame_{{ frame.id }}" value="{{ frame.id }}" 
+                                        {% if goods_item.frame_type.id == frame.id %}checked{% endif %}
+                                        data-price="{{ frame.price_addition|floatformat:0 }}" data-frame-name="{{ frame.name|slugify }}">
+                                    <label class="btn btn-outline-primary w-100 frame-btn" for="frame_{{ frame.id }}">
                                         <div class="frame-preview {{ frame.name|slugify }}"></div>
-                                        <div class="frame-name">{{ frame.name }}</div>
-                                        <div class="frame-price">{% if frame.price_addition > 0 %}+{{ frame.price_addition|floatformat:0 }}원{% else %}기본{% endif %}</div>
+                                        <small>{{ frame.name }}</small>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="option-section">
+                            <h4 class="option-title">
+                                <i class="fas fa-paint-brush me-2"></i>마감 변경
+                            </h4>
+                            <div class="finish-options">
+                                {% for finish in finish_types %}
+                                <div class="text-center">
+                                    <input type="radio" class="btn-check" name="finish_type" id="finish_{{ finish.id }}" value="{{ finish.id }}" 
+                                        {% if goods_item.finish_type.id == finish.id %}checked{% endif %}
+                                        data-price="{{ finish.price_addition|floatformat:0 }}">
+                                    <label class="btn btn-outline-primary w-100" for="finish_{{ finish.id }}">
+                                        <span class="badge bg-primary mb-1">{{ finish.name }}</span>
+                                        <small class="d-block">{{ finish.price_addition|floatformat:0 }}원</small>
                                     </label>
                                 </div>
                                 {% endfor %}
                             </div>
                         </div>
 
-                        <div class="price-info mb-4">
-                            <div class="d-flex justify-content-between fs-4">
-                                <span>변경 후 예상 가격:</span>
-                                <span class="fw-bold text-primary" id="estimated-price">{{ goods_item.final_price|floatformat:0 }}원</span>
+                        <div class="price-preview">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="price-label">변경 후 예상 가격:</span>
+                                <span class="price-value" id="estimated-price">{{ goods_item.final_price|floatformat:0 }}원</span>
                             </div>
                         </div>
                         
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">옵션 변경하기</button>
-                            <a href="#" class="btn btn-success">주문하기</a>
-                            <a href="{% url 'post_detail' goods_item.post.id %}" class="btn btn-outline-secondary">원본 작품으로 돌아가기</a>
+                        <div class="action-buttons">
+                            <button type="submit" class="btn btn-primary action-btn">
+                                <i class="fas fa-save me-2"></i>옵션 저장하기
+                            </button>
+                            <a href="#" class="btn btn-success action-btn">
+                                <i class="fas fa-shopping-cart me-2"></i>장바구니
+                            </a>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <a href="{% url 'post_detail' goods_item.post.id %}" class="btn btn-link">
+                                <i class="fas fa-arrow-left me-1"></i>원본 작품으로 돌아가기
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -138,64 +479,53 @@
 </div>
 {% endblock content %}
 
+{% block footer %}
+{% include "app/common/footer.html" %}
+{% endblock footer %}
+
 {% block js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        function updateEstimatedPrice() {
+        const sizeInputs = document.querySelectorAll('input[name="size"]');
+        const frameInputs = document.querySelectorAll('input[name="frame_type"]');
+        const finishInputs = document.querySelectorAll('input[name="finish_type"]');
+        const estimatedPriceEl = document.getElementById('estimated-price');
+        const previewFrame = document.getElementById('previewFrame');
+        
+        function formatPrice(price) {
+            return price.toLocaleString() + '원';
+        }
+        
+        function updateTotalPrice() {
             const selectedSize = document.querySelector('input[name="size"]:checked');
             const selectedFrame = document.querySelector('input[name="frame_type"]:checked');
             const selectedFinish = document.querySelector('input[name="finish_type"]:checked');
             
-            const sizePrice = {
-                {% for size in sizes %}
-                "{{ size.id }}": {{ size.get_price }},
-                {% endfor %}
-            };
+            const sizePrice = parseInt(selectedSize.dataset.price);
+            const framePrice = parseInt(selectedFrame.dataset.price);
+            const finishPrice = parseInt(selectedFinish.dataset.price);
             
-            const framePrice = {
-                {% for frame in frame_types %}
-                "{{ frame.id }}": {{ frame.price_addition }},
-                {% endfor %}
-            };
+            const total = sizePrice + framePrice + finishPrice;
             
-            const finishPrice = {
-                {% for finish in finish_types %}
-                "{{ finish.id }}": {{ finish.price_addition }},
-                {% endfor %}
-            };
+            estimatedPriceEl.textContent = formatPrice(total);
             
-            let totalPrice = 0;
-            if (selectedSize) totalPrice += sizePrice[selectedSize.value];
-            if (selectedFrame) totalPrice += framePrice[selectedFrame.value];
-            if (selectedFinish) totalPrice += finishPrice[selectedFinish.value];
-            
-            document.getElementById('estimated-price').textContent = totalPrice.toLocaleString() + '원';
-            
-            updateFramePreview();
+            previewFrame.className = 'frame';
+            previewFrame.classList.add(selectedFrame.dataset.frameName || 'no-frame');
         }
         
-        function updateFramePreview() {
-            const selectedFrame = document.querySelector('input[name="frame_type"]:checked');
-            const frameLabel = selectedFrame ? selectedFrame.nextElementSibling.querySelector('.frame-preview').className.split(' ')[1] : 'no-frame';
-            
-            const imageContainer = document.querySelector('.product-image-container');
-            const frameDiv = imageContainer.querySelector('.frame');
-            
-            frameDiv.className = 'frame';
-            
-            frameDiv.classList.add(frameLabel);
-        }
-        
-        const optionInputs = document.querySelectorAll('input[type="radio"]');
-        optionInputs.forEach(input => {
-            input.addEventListener('change', updateEstimatedPrice);
+        sizeInputs.forEach(input => {
+            input.addEventListener('change', updateTotalPrice);
         });
         
-        updateEstimatedPrice();
+        frameInputs.forEach(input => {
+            input.addEventListener('change', updateTotalPrice);
+        });
+        
+        finishInputs.forEach(input => {
+            input.addEventListener('change', updateTotalPrice);
+        });
+        
+        updateTotalPrice();
     });
 </script>
-{% endblock %}
-
-{% block footer %}
-{% include "app/common/footer.html" %}
-{% endblock footer %}
+{% endblock js %}

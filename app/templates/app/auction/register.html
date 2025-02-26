@@ -319,48 +319,50 @@
 {% block js %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const startTimeInput = document.getElementById('{{ form.start_time.id_for_label }}');
-        const endTimeInput = document.getElementById('{{ form.end_time.id_for_label }}');
+    const startTimeInput = document.getElementById('{{ form.start_time.id_for_label }}');
+    const endTimeInput = document.getElementById('{{ form.end_time.id_for_label }}');
 
-        if (startTimeInput && endTimeInput) {
-            const now = new Date();
-            now.setMinutes(now.getMinutes() + 5); 
+    if (startTimeInput && endTimeInput) {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() + 5);
 
-            const startYear = now.getFullYear();
-            const startMonth = String(now.getMonth() + 1).padStart(2, '0');
-            const startDay = String(now.getDate()).padStart(2, '0');
-            const startHours = String(now.getHours()).padStart(2, '0');
-            const startMinutes = String(now.getMinutes()).padStart(2, '0');
+        const startYear = now.getFullYear();
+        const startMonth = String(now.getMonth() + 1).padStart(2, '0');
+        const startDay = String(now.getDate()).padStart(2, '0');
+        const startHours = String(now.getHours()).padStart(2, '0');
+        const startMinutes = String(now.getMinutes()).padStart(2, '0');
 
-            startTimeInput.value = `${startYear}-${startMonth}-${startDay}T${startHours}:${startMinutes}`;
+        startTimeInput.value = `${startYear}-${startMonth}-${startDay}T${startHours}:${startMinutes}`;
 
-            const endDate = new Date(now);
-            endDate.setMinutes(endDate.getMinutes() + 10);
+        const endDate = new Date(now);
+        endDate.setMinutes(endDate.getMinutes() + 10);
 
-            const endYear = endDate.getFullYear();
-            const endMonth = String(endDate.getMonth() + 1).padStart(2, '0');
-            const endDay = String(endDate.getDate()).padStart(2, '0');
-            const endHours = String(endDate.getHours()).padStart(2, '0');
-            const endMinutes = String(endDate.getMinutes()).padStart(2, '0');
+        const endYear = endDate.getFullYear();
+        const endMonth = String(endDate.getMonth() + 1).padStart(2, '0');
+        const endDay = String(endDate.getDate()).padStart(2, '0');
+        const endHours = String(endDate.getHours()).padStart(2, '0');
+        const endMinutes = String(endDate.getMinutes()).padStart(2, '0');
 
-            endTimeInput.value = `${endYear}-${endMonth}-${endDay}T${endHours}:${endMinutes}`;
+        endTimeInput.value = `${endYear}-${endMonth}-${endDay}T${endHours}:${endMinutes}`;
 
-            startTimeInput.addEventListener('change', function () {
-                if (this.value) {
-                    const startDate = new Date(this.value);
-                    const endDate = new Date(startDate);
-                    endDate.setMinutes(startDate.getMinutes() + 10);
+        // 변경 시 end_time 업데이트
+        startTimeInput.addEventListener('change', function () {
+            if (this.value) {
+                const startDate = new Date(this.value);
+                const updatedEndDate = new Date(startDate);
+                updatedEndDate.setMinutes(startDate.getMinutes() + 10);
 
-                    const year = endDate.getFullYear();
-                    const month = String(endDate.getMonth() + 1).padStart(2, '0');
-                    const day = String(endDate.getDate()).padStart(2, '0');
-                    const hours = String(endDate.getHours()).padStart(2, '0');
-                    const minutes = String(endDate.getMinutes()).padStart(2, '0');
+                const year = updatedEndDate.getFullYear();
+                const month = String(updatedEndDate.getMonth() + 1).padStart(2, '0');
+                const day = String(updatedEndDate.getDate()).padStart(2, '0');
+                const hours = String(updatedEndDate.getHours()).padStart(2, '0');
+                const minutes = String(updatedEndDate.getMinutes()).padStart(2, '0');
 
-                    endTimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
-                }
-            });
-        }
-    });
+                endTimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            }
+        });
+    }
+});
+
 </script>
 {% endblock js %}

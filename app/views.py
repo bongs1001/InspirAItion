@@ -1227,21 +1227,35 @@ def register_auction(request, post_id):
         if form.is_valid():
             try:
                 auction = form.save(commit=False)
-                auction.current_price = form.cleaned_data["start_price"]
-                auction.status = AuctionStatus.ACTIVE
-                auction.save()
+
+                now = timezone.now()
+
+                if auction.start_time < now:
+                    auction.start_time = now + timezone.timedelta(minutes=1)
                 
+                if auction.end_time <= auction.start_time:
+                    auction.end_time = auction.start_time + timezone.timedelta(minutes=10)
+
+                auction.current_price = form.cleaned_data["start_price"]
+
+                auction.status = AuctionStatus.ACTIVE
+
+                auction.save()
+
+                print(f"경매 등록됨: {auction.id}")
                 messages.success(request, "경매가 성공적으로 등록되었습니다.")
                 return redirect("auction_detail", auction_id=auction.id)
+            
             except ValidationError as e:
                 messages.error(request, str(e))
+                
             except Exception as e:
                 messages.error(request, f"경매 등록 중 오류가 발생했습니다: {str(e)}")
     else:
         initial_data = {
             "start_price": 1000,  
-            "start_time": timezone.now(), 
-            "end_time": timezone.now() + timezone.timedelta(days=7)  
+            "start_time": timezone.timedelta(minutes=1), 
+            "end_time": timezone.timedelta(minutes=11)
         }
         
         last_auction = Auction.objects.filter(
@@ -1249,7 +1263,7 @@ def register_auction(request, post_id):
         ).order_by('-created_at').first()
         
         if last_auction:
-            initial_data["start_price"] = last_auction.start_price * Decimal('0.9')
+            initial_data["start_price"] = last_auction.start_price
         
         form = AuctionForm(initial=initial_data)
 

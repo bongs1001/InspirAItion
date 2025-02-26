@@ -2,10 +2,291 @@
 {% load static %}
 {% load django_bootstrap5 %}
 
-{% block title %}내 굿즈 목록 - InspirAItion{% endblock title %}
+{% block title %}장바구니 - InspirAItion{% endblock title %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/goods.css' %}">
+<style>
+    .page-header {
+        background-color: var(--bg-secondary);
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+
+    .page-subtitle {
+        color: var(--text-secondary);
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .cart-item {
+        background-color: var(--card-bg);
+        border-radius: 15px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .cart-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .cart-item-inner {
+        display: flex;
+        flex-direction: column;
+    }
+
+    @media (min-width: 768px) {
+        .cart-item-inner {
+            flex-direction: row;
+        }
+    }
+
+    .cart-item-image {
+        flex: 0 0 200px;
+        overflow: hidden;
+        background-color: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    @media (max-width: 767px) {
+        .cart-item-image {
+            height: 200px;
+        }
+    }
+
+    .cart-item-details {
+        flex: 1;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .cart-item-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+
+    .cart-item-specs {
+        margin-bottom: 1rem;
+    }
+
+    .spec-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 0.5rem;
+    }
+
+    .spec-item {
+        display: flex;
+        margin-right: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .spec-label {
+        color: var(--text-secondary);
+        margin-right: 0.5rem;
+    }
+
+    .spec-value {
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    .finish-label {
+        display: inline-block;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 20px;
+        margin-right: 0.25rem;
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+        border: 1px solid rgba(13, 110, 253, 0.2);
+    }
+
+    .cart-item-actions {
+        margin-top: auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .cart-item-price {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0d6efd;
+    }
+
+    .action-btns {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-btn {
+        border-radius: 30px;
+        font-weight: 500;
+    }
+
+    .empty-cart {
+        text-align: center;
+        padding: 4rem 0;
+        background-color: var(--card-bg);
+        border-radius: 15px;
+        border: 1px dashed var(--border-color);
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--text-secondary);
+        opacity: 0.5;
+        margin-bottom: 1.5rem;
+    }
+
+    .cart-summary {
+        background-color: var(--card-bg);
+        border-radius: 15px;
+        border: 1px solid var(--border-color);
+        padding: 1.5rem;
+        position: sticky;
+        top: 20px;
+    }
+
+    .summary-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+
+    .summary-label {
+        color: var(--text-secondary);
+    }
+
+    .summary-value {
+        font-weight: 500;
+    }
+
+    .summary-total {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .summary-total-label {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .summary-total-value {
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: #0d6efd;
+    }
+
+    .checkout-btn {
+        margin-top: 1.5rem;
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .quantity-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1px solid var(--border-color);
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .quantity-btn:hover {
+        background-color: var(--hover-bg);
+    }
+
+    .quantity-input {
+        width: 40px;
+        text-align: center;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        padding: 0.25rem;
+    }
+
+    .frame-preview-container.내추럴-우드,
+    .frame-preview-container.natural-wood {
+        border: 12px solid #d2b48c;
+        box-shadow: inset 0 0 0 1px #a67c52;
+    }
+
+    .frame-preview-container.매트-블랙,
+    .frame-preview-container.matte-black {
+        border: 12px solid #2a2a2a;
+        box-shadow: inset 0 0 0 1px #000;
+    }
+
+    .frame-preview-container.실버,
+    .frame-preview-container.silver {
+        border: 12px solid #c0c0c0;
+        box-shadow: inset 0 0 0 1px #808080;
+    }
+
+    [data-theme="dark"] .modal-content {
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+
+    [data-theme="dark"] .modal-header,
+    [data-theme="dark"] .modal-footer {
+        border-color: var(--border-color);
+    }
+
+    [data-theme="dark"] .alert-info {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: var(--text-primary);
+        border-color: rgba(13, 110, 253, 0.2);
+    }
+
+    [data-theme="dark"] .bg-light {
+        background-color: var(--bg-secondary) !important;
+        border-color: var(--border-color);
+    }
+</style>
 {% endblock %}
 
 {% block header %}
@@ -13,78 +294,311 @@
 {% endblock header %}
 
 {% block content %}
-<hr class="featurette-divider">
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>내 굿즈 목록</h2>
-        <a href="{% url 'my_gallery' %}" class="btn btn-primary">
-            <i class="fas fa-plus-circle me-2"></i>새 굿즈 만들기
-        </a>
+<div class="container py-4">
+    <div class="page-header">
+        <h1 class="page-title">장바구니</h1>
+        <p class="page-subtitle">장바구니에 담긴 굿즈 아이템을 확인하고 주문을 진행할 수 있습니다.</p>
     </div>
-    
+
     {% if goods_items %}
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        {% for item in goods_items %}
-        <div class="col">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="goods-preview-container mb-3">
+    <div class="row">
+        <div class="col-lg-8">
+            {% for item in goods_items %}
+            <div class="cart-item" data-item-id="{{ item.id }}" data-price="{{ item.final_price|floatformat:0 }}">
+                <div class="cart-item-inner">
+                    <div class="d-flex align-items-center ms-3 me-2">
+                        <div class="form-check">
+                            <input class="form-check-input item-checkbox" type="checkbox" value="{{ item.id }}"
+                                id="check-{{ item.id }}" checked onchange="updateCartTotal()">
+                        </div>
+                    </div>
+                    <div class="cart-item-image">
                         {% if item.frame_type %}
                         <div class="frame-preview-container {{ item.frame_type.name|slugify }}">
-                        {% endif %}
-                            <img src="{{ item.post.image }}" class="goods-preview" alt="{{ item.post.title }}">
-                        {% if item.frame_type %}
+                            {% endif %}
+                            <img src="{{ item.post.image }}" style="max-width: 100%; max-height: 180px;"
+                                alt="{{ item.post.title }}">
+                            {% if item.frame_type %}
                         </div>
                         {% endif %}
                     </div>
-                    <h5 class="card-title">{{ item.post.title }}</h5>
-                    
-                    <div class="specs mt-3">
-                        <div class="spec-item">
-                            <span class="spec-label">사이즈:</span>
-                            <span class="spec-value">{{ item.size.name }} ({{ item.size.width }}×{{ item.size.height }}cm)</span>
+                    <div class="cart-item-details">
+                        <h3 class="cart-item-title">{{ item.post.title }}</h3>
+
+                        <div class="cart-item-specs">
+                            <div class="spec-row">
+                                <div class="spec-item">
+                                    <span class="spec-label">사이즈:</span>
+                                    <span class="spec-value">{{ item.size.name }} ({{ item.size.width }}×{{item.size.height }}cm)</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">프레임:</span>
+                                    <span class="spec-value">{{ item.frame_type.name }}</span>
+                                </div>
+                            </div>
+                            <div class="spec-row">
+                                <div class="spec-item">
+                                    <span class="spec-label">마감:</span>
+                                    <span class="finish-label">{{ item.finish_type.name }}</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">생성일:</span>
+                                    <span class="spec-value">{{ item.created_at|date:"Y-m-d" }}</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="spec-item">
-                            <span class="spec-label">프레임:</span>
-                            <span class="spec-value">{{ item.frame_type.name }}</span>
+
+                        <div class="cart-item-actions">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="quantity-control">
+                                    <button type="button" class="quantity-btn"
+                                        onclick="updateQuantity({{ item.id }}, -1)">-</button>
+                                    <input type="number" class="quantity-input" id="quantity-{{ item.id }}" value="1"
+                                        min="1" max="10" onchange="updateCartTotal()">
+                                    <button type="button" class="quantity-btn"
+                                        onclick="updateQuantity({{ item.id }}, 1)">+</button>
+                                </div>
+                                <div class="cart-item-price item-price">{{ item.final_price|floatformat:0 }}원</div>
+                            </div>
+
+                            <div class="action-btns">
+                                <a href="{% url 'goods_detail' item.id %}" class="btn btn-outline-primary action-btn">옵션
+                                    변경</a>
+                                <button type="button" class="btn btn-outline-danger action-btn"
+                                    onclick="removeFromCart({{ item.id }})">
+                                    <i class="fas fa-trash-alt me-1"></i> 삭제
+                                </button>
+                            </div>
                         </div>
-                        <div class="spec-item">
-                            <span class="spec-label">마감:</span>
-                            <span class="spec-value">{{ item.finish_type.name }}</span>
-                        </div>
-                        <div class="spec-item price mt-2">
-                            <span class="spec-label">가격:</span>
-                            <span class="spec-value">{{ item.final_price|floatformat:0 }}원</span>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-3 d-grid gap-2">
-                        <a href="{% url 'goods_detail' item.id %}" class="btn btn-primary">상세보기</a>
-                        <a href="#" class="btn btn-success">주문하기</a>
                     </div>
                 </div>
-                <div class="card-footer text-muted">
-                    생성일: {{ item.created_at|date:"Y-m-d" }}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="col-lg-4">
+            <div class="cart-summary">
+                <h3 class="summary-title">주문 요약</h3>
+
+                <div class="summary-item">
+                    <span class="summary-label">상품 금액</span>
+                    <span class="summary-value" id="subtotal">0원</span>
+                </div>
+
+                <div class="summary-item">
+                    <span class="summary-label">배송비</span>
+                    <span class="summary-value" id="shipping-fee">3,000원</span>
+                    <small class="d-block text-success text-end" id="free-shipping-notice" style="display: none;">
+                        50,000원 이상 구매 시 무료배송
+                    </small>
+                </div>
+
+                <div class="summary-item">
+                    <span class="summary-label">할인</span>
+                    <span class="summary-value" id="discount">-1,000원</span>
+                </div>
+
+                <div class="summary-item summary-total">
+                    <span class="summary-total-label">결제 금액</span>
+                    <span class="summary-total-value" id="total-price">0원</span>
+                </div>
+
+                <div class="alert alert-warning mt-3 mb-3" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>가상 주문 시스템입니다.</strong> 실제 결제 및 배송은 이루어지지 않습니다.
+                </div>
+
+                <button type="button" class="btn btn-primary checkout-btn" onclick="checkout()">
+                    가상 결제하기
+                </button>
+
+                <div class="text-center mt-3">
+                    <a href="{% url 'my_gallery' %}" class="btn btn-link">계속 쇼핑하기</a>
                 </div>
             </div>
         </div>
-        {% endfor %}
     </div>
     {% else %}
-    <div class="alert alert-info mt-4 p-5">
-        <div class="text-center mb-4">
-            <i class="fas fa-image fa-4x mb-3"></i>
-            <h4>생성된 굿즈 아이템이 없습니다</h4>
-            <p class="mb-4">갤러리에서 작품을 선택하여 굿즈로 제작해보세요!</p>
-            <a href="{% url 'my_gallery' %}" class="btn btn-primary btn-lg">
-                <i class="fas fa-images me-2"></i>내 갤러리로 가기
-            </a>
-        </div>
+    <div class="empty-cart">
+        <i class="fas fa-shopping-cart empty-icon"></i>
+        <h3 class="mb-3">장바구니가 비어있습니다</h3>
+        <p class="text-muted mb-4">갤러리에서 작품을 선택하여 굿즈로 제작해보세요!</p>
+        <a href="{% url 'my_gallery' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-images me-2"></i>내 갤러리로 가기
+        </a>
     </div>
     {% endif %}
+</div>
+
+<div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="checkoutModalLabel">주문 완료</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    <h4 class="mt-3">가상 주문이 완료되었습니다!</h4>
+                    <p class="text-muted">이 주문은 가상 시스템에서만 처리되며, 실제 결제와 배송은 이루어지지 않습니다.</p>
+                </div>
+
+                <div class="border p-3 rounded bg-light mb-3">
+                    <h5>가상 주문 정보</h5>
+                    <p class="mb-1"><strong>주문번호:</strong> ORD-{% now "YmdHis" %}</p>
+                    <p class="mb-1"><strong>주문일시:</strong> {% now "Y-m-d H:i" %}</p>
+                    <p class="mb-0"><strong>결제금액:</strong> <span id="modal-total-price">0원</span></p>
+                </div>
+
+                <div class="alert alert-info">
+                    <small>이 프로젝트는 실제 상거래를 위한 것이 아니며, 교육 및 데모 목적으로만 사용됩니다.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                <a href="{% url 'my_gallery' %}" class="btn btn-primary">갤러리로 이동</a>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock content %}
 
 {% block footer %}
 {% include "app/common/footer.html" %}
 {% endblock footer %}
+
+{% block js %}
+<script>
+    function formatPrice(price) {
+        return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "원";
+    }
+
+    function updateQuantity(itemId, delta) {
+        const inputEl = document.getElementById(`quantity-${itemId}`);
+        let quantity = parseInt(inputEl.value) + delta;
+
+        if (quantity < 1) quantity = 1;
+        if (quantity > 10) quantity = 10;
+
+        inputEl.value = quantity;
+
+        updateCartTotal();
+    }
+
+    function updateCartTotal() {
+        let subtotal = 0;
+        let itemCount = 0;
+
+        document.querySelectorAll('.cart-item').forEach(item => {
+            const checkbox = item.querySelector('.item-checkbox');
+            if (checkbox && checkbox.checked) {
+                const price = parseInt(item.dataset.price);
+                const quantity = parseInt(item.querySelector('.quantity-input').value);
+                subtotal += price * quantity;
+                itemCount++;
+            }
+        });
+
+        const shippingFee = subtotal >= 50000 ? 0 : 3000;
+        const discount = -1000; 
+        const total = subtotal + shippingFee + discount;
+
+        document.getElementById('subtotal').textContent = formatPrice(subtotal);
+        document.getElementById('shipping-fee').textContent = formatPrice(shippingFee);
+        document.getElementById('discount').textContent = formatPrice(discount);
+        document.getElementById('total-price').textContent = formatPrice(total);
+
+        const freeShippingNotice = document.getElementById('free-shipping-notice');
+        if (subtotal >= 50000) {
+            freeShippingNotice.textContent = "무료 배송이 적용되었습니다";
+            freeShippingNotice.style.display = "block";
+        } else {
+            const remainingForFree = 50000 - subtotal;
+            freeShippingNotice.textContent = `${formatPrice(remainingForFree)} 더 구매시 무료배송`;
+            freeShippingNotice.style.display = "block";
+        }
+    }
+
+    function removeFromCart(itemId) {
+        if (confirm('장바구니에서 이 상품을 삭제하시겠습니까?')) {
+            const cartItem = document.querySelector(`[data-item-id="${itemId}"]`);
+            if (cartItem) {
+                cartItem.style.opacity = 0;
+                setTimeout(() => {
+                    cartItem.remove();
+                    checkCartEmpty();
+                    updateCartTotal();
+                }, 300);
+            }
+        }
+    }
+
+    function checkCartEmpty() {
+        const cartItems = document.querySelectorAll('.cart-item');
+        if (cartItems.length === 0) {
+            const cartContainer = document.querySelector('.row');
+            cartContainer.innerHTML = `
+                <div class="empty-cart">
+                    <i class="fas fa-shopping-cart empty-icon"></i>
+                    <h3 class="mb-3">장바구니가 비어있습니다</h3>
+                    <p class="text-muted mb-4">갤러리에서 작품을 선택하여 굿즈로 제작해보세요!</p>
+                    <a href="{% url 'my_gallery' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-images me-2"></i>내 갤러리로 가기
+                    </a>
+                </div>
+            `;
+        }
+    }
+
+    function checkout() {
+        const totalPrice = document.getElementById('total-price').textContent;
+        document.getElementById('modal-total-price').textContent = totalPrice;
+
+        const checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal'));
+        checkoutModal.show();
+    }
+
+    function toggleSelectAll() {
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const allCheckboxes = document.querySelectorAll('.item-checkbox');
+        const isAllSelected = Array.from(allCheckboxes).every(checkbox => checkbox.checked);
+
+        allCheckboxes.forEach(checkbox => {
+            checkbox.checked = !isAllSelected;
+        });
+
+        if (isAllSelected) {
+            selectAllBtn.innerHTML = '<i class="fas fa-check-square me-1"></i> 전체 선택';
+        } else {
+            selectAllBtn.innerHTML = '<i class="fas fa-times-square me-1"></i> 전체 해제';
+        }
+
+        updateCartTotal();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        updateCartTotal();
+
+        document.querySelectorAll('.item-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                updateCartTotal();
+
+                const allCheckboxes = document.querySelectorAll('.item-checkbox');
+                const isAllSelected = Array.from(allCheckboxes).every(cb => cb.checked);
+                const selectAllBtn = document.getElementById('selectAllBtn');
+
+                if (isAllSelected) {
+                    selectAllBtn.innerHTML = '<i class="fas fa-times-square me-1"></i> 전체 해제';
+                } else {
+                    selectAllBtn.innerHTML = '<i class="fas fa-check-square me-1"></i> 전체 선택';
+                }
+            });
+        });
+
+        document.querySelectorAll('.quantity-input').forEach(input => {
+            input.addEventListener('input', updateCartTotal);
+        });
+    });
+</script>
+{% endblock %}
