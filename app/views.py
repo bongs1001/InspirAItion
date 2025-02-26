@@ -862,12 +862,10 @@ def my_gallery(request):
         )
     ][:10]
 
+    posts_qs = Post.objects.filter(current_owner=request.user)
+
     if ownership_filter == "created":
         posts_qs = Post.objects.filter(original_creator=request.user)
-    elif ownership_filter == "all":
-        posts_qs = Post.objects.filter(
-            Q(current_owner=request.user) | Q(original_creator=request.user)
-        )
 
     posts_qs = posts_qs.annotate(like_count=Count("likes"))
 
@@ -917,7 +915,7 @@ def my_gallery(request):
             "selected_tag": tag_filter,
             "has_more": has_more,
             "sort_by": sort_by,
-        },
+        }
     )
 
 
@@ -1240,7 +1238,6 @@ def register_auction(request, post_id):
             except Exception as e:
                 messages.error(request, f"경매 등록 중 오류가 발생했습니다: {str(e)}")
     else:
-        # 기본값 설정
         initial_data = {
             "start_price": 1000,  
             "start_time": timezone.now(), 

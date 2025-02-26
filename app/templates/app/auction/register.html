@@ -3,6 +3,185 @@
 {% load django_bootstrap5 %}
 {% block title %} 경매 등록 - InspirAItion {% endblock title %}
 
+{% block css %}
+<style>
+    .auction-header {
+        background-color: var(--bg-secondary);
+        padding: 2rem 0;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+
+    .auction-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+
+    .auction-subtitle {
+        color: var(--text-secondary);
+    }
+
+    .artwork-preview {
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        transition: transform 0.3s ease;
+    }
+
+    .artwork-preview:hover {
+        transform: translateY(-5px);
+    }
+
+    .artwork-image {
+        width: 100%;
+        border-radius: 10px;
+    }
+
+    .artwork-info {
+        padding: 1.5rem;
+        background-color: var(--card-bg);
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+    }
+
+    .artwork-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+
+    .artwork-description {
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+    }
+
+    .artwork-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .artwork-tag {
+        background-color: var(--tag-bg);
+        color: var(--tag-text);
+        font-size: 0.8rem;
+        padding: 0.2rem 0.8rem;
+        border-radius: 20px;
+    }
+
+    .auction-form-card {
+        border-radius: 10px;
+        background-color: var(--card-bg);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        padding: 2rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .auction-form-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .auction-history-card {
+        border-radius: 10px;
+        background-color: var(--card-bg);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .auction-history-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .history-badge {
+        display: inline-block;
+        padding: 0.3rem 0.7rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .history-badge-ended {
+        background-color: rgba(13, 110, 253, 0.2);
+        color: #0d6efd;
+        border: 1px solid rgba(13, 110, 253, 0.4);
+    }
+
+    .history-badge-cancelled {
+        background-color: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+        border: 1px solid rgba(220, 53, 69, 0.4);
+    }
+
+    .tips-section {
+        background-color: rgba(25, 135, 84, 0.1);
+        border-left: 4px solid #198754;
+        padding: 1.5rem;
+        border-radius: 5px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .tips-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #198754;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .form-actions button {
+        flex: 1;
+    }
+
+    .price-suggestion {
+        font-size: 0.85rem;
+        color: #0d6efd;
+        display: block;
+        margin-top: 0.25rem;
+    }
+
+    @media (max-width: 768px) {
+
+        .auction-form-card,
+        .artwork-preview,
+        .artwork-info {
+            margin-bottom: 1rem;
+        }
+
+        .auction-header {
+            padding: 1.5rem 0;
+        }
+
+        .auction-title {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock css %}
+
 {% block header %}
 {% include "app/common/header.html" %}
 {% endblock header %}
@@ -10,53 +189,123 @@
 {% block content %}
 <hr class="featurette-divider">
 <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h2 class="card-title mb-0">경매 등록</h2>
+    <div class="auction-header text-center">
+        <h2 class="auction-title">작품 경매 등록</h2>
+        <p class="auction-subtitle">나만의 작품을 경매에 올려 다른 사용자들에게 판매해보세요.</p>
+    </div>
+
+    <div class="tips-section">
+        <h4 class="tips-title"><i class="fas fa-lightbulb me-2"></i>경매 등록 팁</h4>
+        <ul class="mb-0">
+            <li>합리적인 시작가를 설정하세요. 너무 높으면 입찰자가 적을 수 있습니다.</li>
+            <li><strong>시연용:</strong> 현재 경매 종료 시간은 기본적으로 시작 시간으로부터 10분 후로 설정됩니다.</li>
+            <li>경매는 진행 중에도 판매자가 취소할 수 있으며, 입찰된 금액은 모두 환불됩니다.</li>
+            <li>경매가 성공적으로 종료되면 입찰된 금액이 자동으로 판매자의 계정으로 입금됩니다.</li>
+            <li>경매가 성공적으로 종료되면 작품은 낙찰자의 갤러리로 이동하며, 내 갤러리에서는 사라집니다.</li>
+        </ul>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="artwork-preview">
+                {% if post.image %}
+                <img src="{{ post.image }}" alt="{{ post.title }}" class="artwork-image">
+                {% else %}
+                <div class="text-center p-5 bg-light">
+                    <i class="fas fa-image fa-4x mb-3 text-muted"></i>
+                    <p class="text-muted">이미지가 없습니다</p>
                 </div>
-                <div class="card-body">
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <h5>작품 정보</h5>
-                            {% if post.image %}
-                            <img src="{{ post.image }}" alt="{{ post.title }}" class="img-fluid mb-2">
-                            {% endif %}
-                            <h6>{{ post.title }}</h6>
-                            <p class="text-muted">{{ post.content|truncatechars:100 }}</p>
-                            
-                            {% if auction_history %}
-                            <div class="mt-3">
-                                <h6>이전 경매 이력</h6>
-                                <ul class="list-group">
-                                    {% for auction in auction_history %}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        {% if auction.status == 'ended' %}
-                                            <span>{{ auction.end_time|date:"Y-m-d" }} 종료</span>
-                                            <span class="badge bg-primary rounded-pill">{{ auction.current_price|floatformat:0 }}원 낙찰</span>
-                                        {% elif auction.status == 'cancelled' %}
-                                            <span>{{ auction.updated_at|date:"Y-m-d" }} 취소</span>
-                                            <span class="badge bg-danger rounded-pill">취소됨</span>
-                                        {% endif %}
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <form method="post">
-                                {% csrf_token %}
-                                {% bootstrap_form form %}
-                                <div class="d-grid gap-2">
-                                    <button type="submit" class="btn btn-primary">경매 등록</button>
-                                    <a href="{% url 'my_gallery' %}" class="btn btn-secondary">취소</a>
-                                </div>
-                            </form>
-                        </div>
+                {% endif %}
+            </div>
+
+            <div class="artwork-info">
+                <h3 class="artwork-title">{{ post.title }}</h3>
+                <div class="artwork-description">{{ post.content|truncatechars:200 }}</div>
+
+                {% if post.tags %}
+                <div class="artwork-tags">
+                    {% for tag in post.tags %}
+                    <span class="artwork-tag">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- <div class="tips-section">
+                <h4 class="tips-title"><i class="fas fa-lightbulb me-2"></i>경매 등록 팁</h4>
+                <ul class="mb-0">
+                    <li>합리적인 시작가를 설정하세요. 너무 높으면 입찰자가 적을 수 있습니다.</li>
+                    <li><strong>시연용:</strong> 현재 경매 종료 시간은 기본적으로 시작 시간으로부터 10분 후로 설정됩니다.</li>
+                    <li>경매는 진행 중에도 판매자가 취소할 수 있으며, 입찰된 금액은 모두 환불됩니다.</li>
+                    <li>경매가 성공적으로 종료되면 입찰된 금액이 자동으로 판매자의 계정으로 입금됩니다.</li>
+                </ul>
+            </div> -->
+
+            {% if auction_history %}
+            <div class="auction-history-card">
+                <h4 class="auction-history-title"><i class="fas fa-history me-2"></i>이전 경매 이력</h4>
+
+                <div class="history-badges">
+                    {% for auction in auction_history %}
+                    <div
+                        class="history-badge {% if auction.status == 'ended' %}history-badge-ended{% elif auction.status == 'cancelled' %}history-badge-cancelled{% endif %} mb-2">
+                        {% if auction.status == 'ended' %}
+                        <i class="fas fa-gavel me-1"></i> {{ auction.end_time|date:"Y.m.d" }} 종료
+                        <span class="ms-1 fw-bold">({{ auction.current_price|floatformat:0 }}원 낙찰)</span>
+                        {% elif auction.status == 'cancelled' %}
+                        <i class="fas fa-times me-1"></i> {{ auction.updated_at|date:"Y.m.d" }} 취소됨
+                        {% endif %}
                     </div>
+                    {% endfor %}
                 </div>
+
+                <div class="mt-3 small text-muted">
+                    <i class="fas fa-info-circle me-1"></i> 이전 경매 기록은 입찰자들에게 참고 자료로 제공됩니다.
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-5">
+            <div class="auction-form-card">
+                <h3 class="auction-form-title">경매 정보 입력</h3>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label for="{{ form.start_price.id_for_label }}" class="form-label fw-bold">시작가 설정</label>
+                        {% bootstrap_field form.start_price show_label=False %}
+                        {% if auction_history.0 %}
+                        <span class="price-suggestion">
+                            <i class="fas fa-info-circle me-1"></i>
+                            이전 경매 시작가: {{ auction_history.0.start_price|floatformat:0 }}원
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.start_time.id_for_label }}" class="form-label fw-bold">경매 시작 시간</label>
+                        {% bootstrap_field form.start_time show_label=False %}
+                        <small class="text-muted">현재 시간보다 이후로 설정해야 합니다.</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.end_time.id_for_label }}" class="form-label fw-bold">경매 종료 시간</label>
+                        {% bootstrap_field form.end_time show_label=False %}
+                        <small class="text-muted"><strong class="text-danger">시연용:</strong> 기본값은 시작 시간으로부터 10분 후로
+                            설정됩니다.</small>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-gavel me-2"></i>경매 등록하기
+                        </button>
+                        <a href="{% url 'post_detail' post.id %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>취소
+                        </a>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -66,3 +315,52 @@
 {% block footer %}
 {% include "app/common/footer.html" %}
 {% endblock footer %}
+
+{% block js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const startTimeInput = document.getElementById('{{ form.start_time.id_for_label }}');
+        const endTimeInput = document.getElementById('{{ form.end_time.id_for_label }}');
+
+        if (startTimeInput && endTimeInput) {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() + 5); 
+
+            const startYear = now.getFullYear();
+            const startMonth = String(now.getMonth() + 1).padStart(2, '0');
+            const startDay = String(now.getDate()).padStart(2, '0');
+            const startHours = String(now.getHours()).padStart(2, '0');
+            const startMinutes = String(now.getMinutes()).padStart(2, '0');
+
+            startTimeInput.value = `${startYear}-${startMonth}-${startDay}T${startHours}:${startMinutes}`;
+
+            const endDate = new Date(now);
+            endDate.setMinutes(endDate.getMinutes() + 10);
+
+            const endYear = endDate.getFullYear();
+            const endMonth = String(endDate.getMonth() + 1).padStart(2, '0');
+            const endDay = String(endDate.getDate()).padStart(2, '0');
+            const endHours = String(endDate.getHours()).padStart(2, '0');
+            const endMinutes = String(endDate.getMinutes()).padStart(2, '0');
+
+            endTimeInput.value = `${endYear}-${endMonth}-${endDay}T${endHours}:${endMinutes}`;
+
+            startTimeInput.addEventListener('change', function () {
+                if (this.value) {
+                    const startDate = new Date(this.value);
+                    const endDate = new Date(startDate);
+                    endDate.setMinutes(startDate.getMinutes() + 10);
+
+                    const year = endDate.getFullYear();
+                    const month = String(endDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(endDate.getDate()).padStart(2, '0');
+                    const hours = String(endDate.getHours()).padStart(2, '0');
+                    const minutes = String(endDate.getMinutes()).padStart(2, '0');
+
+                    endTimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+                }
+            });
+        }
+    });
+</script>
+{% endblock js %}

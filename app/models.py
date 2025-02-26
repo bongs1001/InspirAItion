@@ -243,6 +243,8 @@ class Auction(models.Model):
                     self.status = AuctionStatus.ENDED
                     self.save()
                     
+                    previous_owner = self.post.current_owner
+                    
                     self.post.transfer_ownership(self.winner, transfer_type="auction")
                     
                     logging.info(f"경매 #{self.id} 성공적으로 종료: 작품 '{self.post.title}'(#{self.post.id})가 {self.winner.username}에게 {self.current_price}원에 낙찰")
