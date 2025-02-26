@@ -772,6 +772,31 @@
                     alert('좋아요 처리 중 오류가 발생했습니다.');
                 });
         });
+
+        // 이벤트 위임을 통해 댓글 삭제 이벤트 처리
+        document.getElementById('commentList')?.addEventListener('click', function (e) {
+            const deleteBtn = e.target.closest('.delete-comment');
+            if (!deleteBtn) return;
+            const commentId = deleteBtn.getAttribute('data-comment-id');
+            if (!confirm("정말로 이 댓글을 삭제하시겠습니까?")) return;
+            showLoadingModal("댓글 삭제 중...");
+            fetch(`/comments/${commentId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+                .then(response => response.json())
+                .then(result => {
+                    hideLoadingModal();
+                    loadComments();
+                })
+                .catch(error => {
+                    hideLoadingModal();
+                    console.error('댓글 삭제 오류:', error);
+                    alert('댓글 삭제에 실패했습니다.');
+                });
+        });
     });
 
     function loadComments() {
@@ -819,30 +844,6 @@
                         </div>
                     `;
                 }).join('');
-
-                document.querySelectorAll('.delete-comment').forEach(btn => {
-                    btn.addEventListener('click', function () {
-                        const commentId = this.getAttribute('data-comment-id');
-                        if (!confirm("정말로 이 댓글을 삭제하시겠습니까?")) return;
-                        showLoadingModal("댓글 삭제 중...");
-                        fetch(`/comments/${commentId}/`, {
-                            method: 'DELETE',
-                            headers: {
-                                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                            }
-                        })
-                            .then(response => response.json())
-                            .then(result => {
-                                hideLoadingModal();
-                                loadComments();
-                            })
-                            .catch(error => {
-                                hideLoadingModal();
-                                console.error('댓글 삭제 오류:', error);
-                                alert('댓글 삭제에 실패했습니다.');
-                            });
-                    });
-                });
             });
     }
 
