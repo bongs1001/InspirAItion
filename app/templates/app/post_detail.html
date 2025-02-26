@@ -833,7 +833,11 @@
                 .then(response => response.json())
                 .then(result => {
                     hideLoadingModal();  // 여기서 로딩 모달을 명시적으로 숨김
-                    loadComments();
+                    if (!window.location.href.includes("127.0.0.1")) {
+                        window.location.reload();
+                    } else {
+                        loadComments();
+                    }
                 })
                 .catch(error => {
                     hideLoadingModal();
@@ -1006,7 +1010,11 @@
             .then(data => {
                 hideLoadingModal();  // 댓글 작성 완료 후 로딩 모달 숨김
                 document.getElementById('commentMessage').value = '';
-                loadComments();
+                if (!window.location.href.includes("127.0.0.1")) {
+                    window.location.reload();
+                } else {
+                    loadComments();
+                }
             })
             .catch(error => {
                 hideLoadingModal();
