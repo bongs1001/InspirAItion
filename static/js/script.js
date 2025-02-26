@@ -255,7 +255,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    generateBtn.addEventListener("click", generateImage);
+    // generateBtn.addEventListener("click", generateImage);
     voiceInputBtn.addEventListener("click", () => handleVoiceInput(false)); // 기존 이벤트 핸들러
     // 변경: data attribute를 사용하여 HTML에서 user_style 값을 읽어 전달
     aiVoiceInputBtn.addEventListener("click", () => {
