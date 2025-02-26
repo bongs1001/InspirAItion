@@ -50,12 +50,12 @@
 
                 <button type="button" id="generateImageBtn" class="generate-btn">
                     <i class="fas fa-wand-magic-sparkles"></i>
-                    generate
+                    생성하기
                 </button>
                 {% else %}
                 <button type="button" class="generate-btn" onclick="doLogin()">
                     <i class="fas fa-wand-magic-sparkles"></i>
-                    generate
+                    생성하기
                 </button>
                 {% endif %}
             </div>
@@ -72,6 +72,7 @@
 {% endblock content %}
 
 {% block js %}
+<script src="{% static 'js/script.js' %}"></script>
 <script>
     function doLogin(event) {
         if (event) {
@@ -82,9 +83,54 @@
         window.location.href = "{% url 'login' %}";
         return false;
     }
+
+    const generateBtn = document.getElementById('generateImageBtn');
+    generateBtn.addEventListener("click", generateImage);
+
+    async function generateImage() {
+        const prompt = searchInput.value.trim();
+
+        if (!prompt) {
+            alert("프롬프트를 입력해주세요.");
+            return;
+        }
+
+        generateBtn.disabled = true;
+        const originalText = generateBtn.innerHTML;
+        generateBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 생성중...';
+
+        try {
+            const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+            const response = await fetch("/app/ai/generate/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": csrfToken,
+                },
+                body: `prompt=${encodeURIComponent(prompt)}`,
+            });
+
+            if (!response.ok) {
+                throw new Error("이미지 생성에 실패했습니다.");
+            }
+
+            const data = await response.json();
+
+            window.location.href = `/app/create/?${new URLSearchParams({
+                image_url: data.image_url,
+                generated_prompt: data.generated_prompt,
+                original_prompt: prompt,
+            }).toString()}`;
+        } catch (error) {
+            alert(error.message);
+            console.error("Error:", error);
+        } finally {
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = originalText;
+        }
+    }
 </script>
-<script src="{% static 'js/script.js' %}"></script>
-{% endblock %}
+{% endblock js %}
 
 {% block footer %}
 {% include "app/common/footer.html" %}

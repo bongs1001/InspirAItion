@@ -3,6 +3,7 @@ from decimal import Decimal
 import os
 import re
 import logging
+from urllib import request
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -14,6 +15,7 @@ import requests
 import uuid
 import json
 from datetime import datetime
+import time
 from django.utils import timezone
 from django.db.models import Count
 from io import BytesIO
@@ -53,6 +55,12 @@ GPT_CLIENT = AzureOpenAI(
     azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
     api_key=settings.AZURE_OPENAI_API_KEY,
     api_version=settings.AZURE_OPENAI_API_VERSION,
+)
+
+GPT_RAG_CLIENT = AzureOpenAI(
+    azure_endpoint=settings.AZUREAIASSISTANT_ENDPOINT,
+    api_key=settings.AZUREAIASSISTANT_API_KEY,
+    api_version=settings.AZUREAIASSISTANT_API_VERSION,
 )
 
 DALLE_CLIENT = AzureOpenAI(
@@ -535,8 +543,9 @@ def evaluate_ai_curation(curation_text, user_comment):
     try:
         print("GPT-4o를 사용해 프롬프트를 생성합니다...")
 
-        response = GPT_CLIENT.chat.completions.create(
-            model="gpt-4o",
+        response = GPT_RAG_CLIENT.chat.completions.create(
+            # model="gpt-4o",
+            model="gpt-4",
             messages=[
                 {
                     "role": "system",
@@ -574,47 +583,6 @@ def evaluate_ai_curation(curation_text, user_comment):
     except Exception as e:
         print("GPT-4o 호출 중 예외 발생:", str(e))
         return None
-
-
-# def evaluate_ai_curation(curation_text, user_comment):
-#     try:
-#         print("GPT-4o를 사용해 프롬프트를 생성합니다...")
-
-#         response = GPT_CLIENT.chat.completions.create(
-#             model="gpt-4o",
-#             messages=[
-#                 {
-#                     "role": "system",
-#                     "content": f"""
-#                         You are an AI assistant that evaluates user comments based on how well they describe a given text.
-#                         Your task is to analyze both the provided curation text and user comment, assess the accuracy and completeness of the comment,
-#                         and provide constructive feedback on its strengths and areas for improvement.
-
-#                         1. Read the curation_text carefully to understand its key message and intent.
-#                         2. Analyze user_comment to determine how well it captures the essence of curation_text.
-#                         3. Highlight the positive aspects of the user_comment, including accurate interpretations and insightful observations.
-#                         4. Identify any missing or misinterpreted elements in the user_comment and suggest specific improvements.
-#                         5. Provide feedback in Korean, ensuring it is clear and concise while maintaining a constructive tone.
-
-#                         Return only the final feedback in Korean without any additional formatting or explanations.
-#                     """,
-#                 },
-#                 {
-#                     "role": "user",
-#                     "content": f"curation_text: {curation_text}\n user_comment: {user_comment}",
-#                 },
-#             ],
-#         )
-
-#         if response.choices and len(response.choices) > 0:
-#             return response.choices[0].message.content
-#         else:
-#             print("응답을 생성하지 못했습니다.")
-#             return None
-
-#     except Exception as e:
-#         print("GPT-4o 호출 중 예외 발생:", str(e))
-#         return None
 
 
 @login_required
@@ -731,8 +699,9 @@ def generate_ai_curation(selected_style, user_prompt, captions, tags):
     style_prompt = style_prompts.get(selected_style, "")
     if style_prompt:
         try:
-            response = GPT_CLIENT.chat.completions.create(
-                model="gpt-4o",
+            response = GPT_RAG_CLIENT.chat.completions.create(
+                # model="gpt-4o",
+                model="gpt-4",
                 messages=[
                     {
                         "role": "system",
@@ -861,6 +830,7 @@ def delete_post(request: HttpRequest, pk: int) -> HttpResponse:
 from django.template.loader import render_to_string
 
 
+@login_required
 def my_gallery(request):
     search_query = request.GET.get("search", "")
     tag_filter = request.GET.get("tag", "")
@@ -883,16 +853,14 @@ def my_gallery(request):
         )
     ][:10]
 
-    posts_qs = Post.objects.filter(current_owner=request.user).annotate(
-        like_count=Count("likes")
-    )
-
     if ownership_filter == "created":
         posts_qs = Post.objects.filter(original_creator=request.user)
     elif ownership_filter == "all":
         posts_qs = Post.objects.filter(
             Q(current_owner=request.user) | Q(original_creator=request.user)
         )
+
+    posts_qs = posts_qs.annotate(like_count=Count("likes"))
 
     if search_query:
         posts_qs = posts_qs.filter(title__icontains=search_query)
@@ -1351,113 +1319,500 @@ def cancel_auction(request, auction_id):
 
     return redirect("auction_detail", auction_id=auction.id)
 
+
 @login_required
 def create_goods(request, post_id):
     post = get_object_or_404(Post, id=post_id, current_owner=request.user)
-    
+
     if request.method == "POST":
-        frame_type_id = request.POST.get('frame_type')
-        size_id = request.POST.get('size')
-        finish_type_id = request.POST.get('finish_type')
-        
+        frame_type_id = request.POST.get("frame_type")
+        size_id = request.POST.get("size")
+        finish_type_id = request.POST.get("finish_type")
+
         try:
-            frame_type = FrameType.objects.get(id=frame_type_id) if frame_type_id else None
-            size = ProductSize.objects.get(id=size_id) if size_id else None
-            finish_type = FinishType.objects.get(id=finish_type_id) if finish_type_id else None
-            
-            goods_item = GoodsItem.objects.create(
-                post=post,
-                frame_type=frame_type,
-                size=size,
-                finish_type=finish_type
+            frame_type = (
+                FrameType.objects.get(id=frame_type_id) if frame_type_id else None
             )
-            
-            return redirect('goods_detail', goods_id=goods_item.id)
-        
+            size = ProductSize.objects.get(id=size_id) if size_id else None
+            finish_type = (
+                FinishType.objects.get(id=finish_type_id) if finish_type_id else None
+            )
+
+            goods_item = GoodsItem.objects.create(
+                post=post, frame_type=frame_type, size=size, finish_type=finish_type
+            )
+
+            return redirect("goods_detail", goods_id=goods_item.id)
+
         except Exception as e:
             messages.error(request, f"상품 생성 중 오류가 발생했습니다: {str(e)}")
-            return redirect('post_detail', pk=post_id)
-    
+            return redirect("post_detail", pk=post_id)
+
     frame_types = FrameType.objects.filter(is_active=True)
     sizes = ProductSize.objects.filter(is_active=True)
     finish_types = FinishType.objects.filter(is_active=True)
-    
+
     context = {
-        'post': post,
-        'frame_types': frame_types,
-        'sizes': sizes,
-        'finish_types': finish_types,
+        "post": post,
+        "frame_types": frame_types,
+        "sizes": sizes,
+        "finish_types": finish_types,
     }
-    
-    return render(request, 'app/create_goods.html', context)
+
+    return render(request, "app/create_goods.html", context)
+
 
 @login_required
 def goods_detail(request, goods_id):
     goods_item = get_object_or_404(GoodsItem, id=goods_id)
-    
+
     if goods_item.post.current_owner != request.user:
         messages.error(request, "접근 권한이 없습니다.")
-        return redirect('my_gallery')
-    
+        return redirect("my_gallery")
+
     frame_types = FrameType.objects.filter(is_active=True)
     sizes = ProductSize.objects.filter(is_active=True)
     finish_types = FinishType.objects.filter(is_active=True)
-    
+
     context = {
-        'goods_item': goods_item,
-        'frame_types': frame_types,
-        'sizes': sizes,
-        'finish_types': finish_types,
+        "goods_item": goods_item,
+        "frame_types": frame_types,
+        "sizes": sizes,
+        "finish_types": finish_types,
     }
-    
-    return render(request, 'app/goods_detail.html', context)
+
+    return render(request, "app/goods_detail.html", context)
+
 
 @login_required
 def edit_goods(request, goods_id):
     goods_item = get_object_or_404(GoodsItem, id=goods_id)
-    
+
     if goods_item.post.current_owner != request.user:
         messages.error(request, "접근 권한이 없습니다.")
-        return redirect('my_gallery')
-    
+        return redirect("my_gallery")
+
     if request.method == "POST":
-        frame_type_id = request.POST.get('frame_type')
-        size_id = request.POST.get('size')
-        finish_type_id = request.POST.get('finish_type')
-        
+        frame_type_id = request.POST.get("frame_type")
+        size_id = request.POST.get("size")
+        finish_type_id = request.POST.get("finish_type")
+
         try:
-            goods_item.frame_type = FrameType.objects.get(id=frame_type_id) if frame_type_id else None
+            goods_item.frame_type = (
+                FrameType.objects.get(id=frame_type_id) if frame_type_id else None
+            )
             goods_item.size = ProductSize.objects.get(id=size_id) if size_id else None
-            goods_item.finish_type = FinishType.objects.get(id=finish_type_id) if finish_type_id else None
-            
+            goods_item.finish_type = (
+                FinishType.objects.get(id=finish_type_id) if finish_type_id else None
+            )
+
             goods_item.save()
-            
+
             messages.success(request, "상품 옵션이 성공적으로 수정되었습니다.")
-            return redirect('goods_detail', goods_id=goods_item.id)
-        
+            return redirect("goods_detail", goods_id=goods_item.id)
+
         except Exception as e:
             messages.error(request, f"상품 수정 중 오류가 발생했습니다: {str(e)}")
-    
+
     frame_types = FrameType.objects.filter(is_active=True)
     sizes = ProductSize.objects.filter(is_active=True)
     finish_types = FinishType.objects.filter(is_active=True)
-    
+
     context = {
-        'goods_item': goods_item,
-        'frame_types': frame_types,
-        'sizes': sizes,
-        'finish_types': finish_types,
+        "goods_item": goods_item,
+        "frame_types": frame_types,
+        "sizes": sizes,
+        "finish_types": finish_types,
     }
-    
-    return render(request, 'app/edit_goods.html', context)
+
+    return render(request, "app/edit_goods.html", context)
+
 
 @login_required
 def goods_list(request):
-    user_posts = Post.objects.filter(current_owner=request.user).values_list('id', flat=True)
-    goods_items = GoodsItem.objects.filter(post_id__in=user_posts).order_by('-created_at')
-    
-    context = {
-        'goods_items': goods_items
-    }
-    
-    return render(request, 'app/goods_list.html', context)
+    user_posts = Post.objects.filter(current_owner=request.user).values_list(
+        "id", flat=True
+    )
+    goods_items = GoodsItem.objects.filter(post_id__in=user_posts).order_by(
+        "-created_at"
+    )
+
+    context = {"goods_items": goods_items}
+
+    return render(request, "app/goods_list.html", context)
+
+
+@login_required
+def upscale_image(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST method required"}, status=405)
+
+    image_url = request.POST.get("image_url", "").strip()
+    if not image_url:
+        return JsonResponse({"error": "이미지 URL을 제공해주세요."}, status=400)
+
+    try:
+        logging.info(f"이미지 업스케일 요청: {image_url}")
+
+        comfyui_image_url = process_upscaling_with_comfyui(request, image_url)
+
+        if not comfyui_image_url:
+            return JsonResponse({"error": "업스케일 처리에 실패했습니다."}, status=500)
+
+        prompt = request.POST.get("prompt", "Upscaled image")
+
+        return JsonResponse(
+            {
+                "image_url": comfyui_image_url,
+                "generated_prompt": prompt,
+                "message": "이미지가 성공적으로 업스케일되었습니다.",
+            }
+        )
+
+    except Exception as e:
+        logging.error(f"이미지 업스케일 중 오류 발생: {str(e)}", exc_info=True)
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+def load_upscaling_workflow():
+    workflow_path = os.path.join("static", "workflows", "Upscale_Final.json")
+    try:
+        with open(workflow_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        logging.error(f"업스케일 워크플로우 파일을 찾을 수 없습니다: {workflow_path}")
+        return None
+
+
+def queue_prompt(prompt_json, COMFYUI_API_URL):
+    url = COMFYUI_API_URL + "/prompt"
+    data = json.dumps({"prompt": prompt_json}).encode("utf-8")
+
+    headers = {"Content-Type": "application/json", "User-Agent": "Mozilla/5.0"}
+
+    try:
+        req = request.Request(url, data=data, headers=headers, method="POST")
+        response = request.urlopen(req)
+        response_data = response.read().decode("utf-8")
+        return json.loads(response_data)
+    except Exception as e:
+        logging.error(f"ComfyUI 프롬프트 전송 중 오류 발생: {e}")
+        return None
+
+
+def get_image_info(prompt_id, COMFYUI_API_URL):
+    url = f"{COMFYUI_API_URL}/history/{prompt_id}"
+    try:
+        response = request.urlopen(url)
+        image_info = json.loads(response.read().decode("utf-8"))
+        return image_info
+    except Exception as e:
+        logging.error(f"이미지 정보 가져오기 오류: {e}")
+        return None
+
+
+def check_workflow_status(prompt_id, COMFYUI_API_URL):
+    url = f"{COMFYUI_API_URL}/history/{prompt_id}"
+    try:
+        response = request.urlopen(url)
+        image_info = json.loads(response.read().decode("utf-8"))
+        if (
+            image_info
+            and prompt_id in image_info
+            and image_info[prompt_id]["status"]["completed"]
+        ):
+            return True
+        else:
+            return False
+    except Exception as e:
+        logging.error(f"워크플로우 상태 확인 중 오류 발생: {e}")
+        return False
+
+
+def process_upscaling_with_comfyui(request, image_url):
+
+    global comfyui_call_counter
+    try:
+        if hasattr(request, "user") and request.user.is_authenticated:
+            user_id = request.user.id
+        else:
+            user_id = 0
+        print(f"사용자 ID: {user_id}")
+        COMFYUI_API_URL = settings.COMFYUI_API_URL[
+            user_id % (len(settings.COMFYUI_API_URL) - 1)
+        ]
+    except (AttributeError, IndexError, TypeError) as e:
+        logging.error("ComfyUI API URL 설정 중 오류 발생: %s", str(e))
+        COMFYUI_API_URL = settings.COMFYUI_API_URL[0]  # Fallback to first URL
+    try:
+        comfyui_call_counter
+    except NameError:
+        comfyui_call_counter = 0
+    comfyui_call_counter += 1
+
+    print(f"COMFYUI_API_URL: {COMFYUI_API_URL}")
+
+    logging.info("업스케일링 workflow를 불러옵니다.")
+    workflow = load_upscaling_workflow()
+    if not workflow:
+        logging.error("업스케일링 워크플로우를 로드할 수 없습니다.")
+        return None
+
+    if "68" in workflow and "inputs" in workflow["68"]:
+        workflow["68"]["inputs"]["url_or_path"] = image_url
+    else:
+        logging.error("워크플로우에서 LoadImageFromUrlOrPath 노드를 찾을 수 없습니다.")
+        return None
+
+    result = queue_prompt(workflow, COMFYUI_API_URL)
+
+    if result is None:
+        logging.error("ComfyUI 업스케일링 처리에 실패했습니다.")
+        return None
+
+    prompt_id = result.get("prompt_id")
+    if not prompt_id:
+        logging.error("ComfyUI 응답에서 prompt_id를 찾을 수 없습니다.")
+        return None
+
+    max_wait_time = 600
+    wait_interval = 2
+    total_waited = 0
+
+    while not check_workflow_status(prompt_id, COMFYUI_API_URL):
+        time.sleep(wait_interval)
+        total_waited += wait_interval
+        if total_waited >= max_wait_time:
+            logging.error(f"워크플로우 실행 제한 시간({max_wait_time}초) 초과")
+            return None
+
+    image_info = get_image_info(prompt_id, COMFYUI_API_URL)
+    if image_info:
+        try:
+            if "14" in image_info[prompt_id]["outputs"]:
+                file_name = image_info[prompt_id]["outputs"]["14"]["images"][0][
+                    "filename"
+                ]
+            elif "62" in image_info[prompt_id]["outputs"]:
+                file_name = image_info[prompt_id]["outputs"]["62"]["images"][0][
+                    "filename"
+                ]
+            else:
+                logging.error("SaveImage 노드 출력을 찾을 수 없습니다.")
+                return None
+
+            comfyui_image_url = (
+                f"{COMFYUI_API_URL}/view?filename={file_name}&type=output&subfolder="
+            )
+            logging.info(f"ComfyUI 업스케일링 이미지 URL: {comfyui_image_url}")
+
+            saved_image_url = save_image_to_blob_storage(
+                comfyui_image_url, None, "upscale", prompt_id
+            )
+            if saved_image_url:
+                logging.info(f"업스케일링 이미지 저장 완료: {saved_image_url}")
+                return saved_image_url
+            else:
+                return comfyui_image_url
+
+        except KeyError as e:
+            logging.error(f"이미지 정보에서 파일 이름을 찾을 수 없습니다.")
+            logging.debug(f"이미지 정보: {image_info}")
+            return None
+
+    else:
+        logging.error("이미지 정보를 가져올 수 없습니다.")
+        return None
+
+
+def save_image_to_blob_storage(
+    image_url, gpt_prompt=None, image_type="dalle", prompt_id=None
+):
+    try:
+        logging.info(f"이미지 다운로드 중... URL: {image_url}")
+        response = requests.get(image_url, stream=True)
+        response.raise_for_status()
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        if image_type == "dalle":
+            sanitised_prompt = (
+                "".join(
+                    c if c.isalnum() or c in " _-" else "_" for c in gpt_prompt[:50]
+                )
+                if gpt_prompt
+                else "generated_image"
+            )
+            filename = f"{sanitised_prompt}_{timestamp}.png"
+        elif image_type == "upscale":
+            if prompt_id:
+                try:
+                    image_info = get_image_info(prompt_id)
+                    prompt_node_id = "27"
+
+                    try:
+                        prompt = image_info[prompt_id]["prompt"][2][prompt_node_id][
+                            "inputs"
+                        ]["text"]
+                        sanitised_prompt = "".join(
+                            c if c.isalnum() or c in " _-" else "_" for c in prompt[:50]
+                        )
+                        filename = f"{sanitised_prompt}_{timestamp}.png"
+                    except (KeyError, TypeError):
+                        filename = f"upscaled_image_{prompt_id}_{timestamp}.png"
+                except:
+                    filename = f"upscaled_image_{prompt_id}_{timestamp}.png"
+            else:
+                filename = f"upscaled_image_{timestamp}.png"
+
+        else:
+            raise ValueError(f"지원하지 않는 이미지 타입입니다: {image_type}")
+
+        if image_type == "dalle":
+            container_name = settings.CONTAINER_NAME
+        elif image_type == "upscale":
+            container_name = settings.SD_UPSCALE_CONTAINER_NAME
+        else:
+            raise ValueError(f"지원하지 않는 이미지 타입입니다: {image_type}")
+
+        blob_service_client = BlobServiceClient.from_connection_string(
+            settings.AZURE_CONNECTION_STRING
+        )
+
+        blob_client = blob_service_client.get_blob_client(
+            container=container_name, blob=filename
+        )
+
+        logging.info(f"Azure Blob Storage에 업로드 중... 파일명: {filename}")
+        blob_client.upload_blob(response.content, overwrite=True)
+
+        logging.info(
+            f"이미지가 Azure Blob Storage에 성공적으로 저장되었습니다: {filename}"
+        )
+        return blob_client.url
+
+    except requests.exceptions.RequestException as req_err:
+        logging.error(f"이미지 다운로드 오류: {req_err}")
+        return None
+    except Exception as e:
+        logging.error(f"Azure Blob Storage에 이미지 저장 중 오류 발생: {e}")
+        return None
+
+
+@login_required
+def outpaint_image(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST method required"}, status=405)
+
+    image_url = request.POST.get("image_url", "").strip()
+    if not image_url:
+        return JsonResponse({"error": "이미지 URL을 제공해주세요."}, status=400)
+
+    try:
+        logging.info(f"이미지 아웃페인팅 요청: {image_url}")
+
+        comfyui_image_url = process_outpainting_with_comfyui(image_url)
+
+        if not comfyui_image_url:
+            return JsonResponse(
+                {"error": "아웃페인팅 처리에 실패했습니다."}, status=500
+            )
+
+        prompt = request.POST.get("prompt", "Outpainted image")
+
+        return JsonResponse(
+            {
+                "image_url": comfyui_image_url,
+                "generated_prompt": prompt,
+                "message": "이미지가 성공적으로 아웃페인팅되었습니다.",
+            }
+        )
+
+    except Exception as e:
+        logging.error(f"이미지 아웃페인팅 중 오류 발생: {str(e)}", exc_info=True)
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+def load_outpainting_workflow():
+    workflow_path = os.path.join("static", "workflows", "Outpainting_Final.json")
+    try:
+        with open(workflow_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        logging.error(f"아웃페인팅 워크플로우 파일을 찾을 수 없습니다: {workflow_path}")
+        return None
+
+
+def process_outpainting_with_comfyui(image_url):
+    COMFYUI_API_URL = settings.COMFYUI_API_URL[3]
+    logging.info("아웃페인팅 workflow를 불러옵니다.")
+    workflow = load_outpainting_workflow()
+    if not workflow:
+        logging.error("아웃페인팅 워크플로우를 로드할 수 없습니다.")
+        return None
+
+    if "17" in workflow and "inputs" in workflow["17"]:
+        workflow["17"]["inputs"]["url_or_path"] = image_url
+    else:
+        logging.error("워크플로우에서 LoadImageFromUrlOrPath 노드를 찾을 수 없습니다.")
+        return None
+
+    result = queue_prompt(workflow)
+
+    if result is None:
+        logging.error("ComfyUI 아웃페인팅 처리에 실패했습니다.")
+        return None
+
+    prompt_id = result.get("prompt_id")
+    if not prompt_id:
+        logging.error("ComfyUI 응답에서 prompt_id를 찾을 수 없습니다.")
+        return None
+
+    max_wait_time = 600
+    wait_interval = 2
+    total_waited = 0
+
+    while not check_workflow_status(prompt_id):
+        time.sleep(wait_interval)
+        total_waited += wait_interval
+        if total_waited >= max_wait_time:
+            logging.error(f"워크플로우 실행 제한 시간({max_wait_time}초) 초과")
+            return None
+
+    image_info = get_image_info(prompt_id)
+    if image_info:
+        try:
+            file_name = image_info[prompt_id]["outputs"]["14"]["images"][0]["filename"]
+            comfyui_image_url = (
+                f"{COMFYUI_API_URL}/view?filename={file_name}&type=output&subfolder="
+            )
+            logging.info(f"ComfyUI 아웃페인팅 이미지 URL: {comfyui_image_url}")
+
+            saved_image_url = save_image_to_blob_storage(
+                comfyui_image_url, None, "outpainting", prompt_id
+            )
+            if saved_image_url:
+                logging.info(f"아웃페인팅 이미지 저장 완료: {saved_image_url}")
+                return saved_image_url
+            else:
+                return comfyui_image_url
+
+        except KeyError as e:
+            logging.error(f"이미지 정보에서 파일 이름을 찾을 수 없습니다: {str(e)}")
+            logging.debug(f"이미지 정보: {image_info}")
+            return None
+
+    else:
+        logging.error("이미지 정보를 가져올 수 없습니다.")
+        return None
+
+
+@login_required
+def my_fullscreen_gallery(request):
+    posts = (
+        Post.objects.filter(current_owner=request.user)
+        .exclude(image__isnull=True)
+        .exclude(image__exact="")
+        .order_by("-date_posted")
+    )
+
+    return render(request, "app/fullscreen_gallery.html", {"posts": posts})

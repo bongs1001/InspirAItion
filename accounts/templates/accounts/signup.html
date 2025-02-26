@@ -5,20 +5,20 @@
 {% block title %}회원가입 - InspirAItion{% endblock title %}
 
 {% block content %}
-<div class="container-fluid bg-dark text-white min-vh-100 d-flex flex-column justify-content-center align-items-center py-5">
+<div class="container-fluid min-vh-100 d-flex flex-column justify-content-center align-items-center py-5" style="background-color: var(--bg-primary); color: var(--text-primary);">
     <div class="text-center mb-5">
-        <img src="{% static 'img/InspirAItion-logo2.png' %}" alt="InspirAItion Logo" height="80" class="mb-4">
-        <h1 class="display-5 fw-bold mb-4">가입하고<br>원하는 콘텐츠를<br>감상하세요</h1>
+        <img src="{% static 'img/InspirAItion-logo.png' %}" alt="InspirAItion Logo" height="80" class="mb-4">
+        <h1 class="display-5 fw-bold mb-4">상상을 현실로<br>AI와 함께 창작하는<br>예술의 세계</h1>
     </div>
     
-    <div class="card bg-dark text-white border-0 w-100" style="max-width: 450px;">
+    <div class="card border-0 w-100" style="max-width: 450px; background-color: var(--card-bg); color: var(--text-primary);">
         <div class="card-body">
             <form method="post" novalidate>
                 {% csrf_token %}
                 
                 <div class="mb-4">
                     <label for="{{ form.username.id_for_label }}" class="form-label">사용자 이름</label>
-                    {{ form.username|add_class:"form-control form-control-lg bg-dark text-white border-secondary" }}
+                    {{ form.username|add_class:"form-control form-control-lg border" }}
                     {% if form.username.errors %}
                         <div class="text-danger mt-1 small">{{ form.username.errors }}</div>
                     {% endif %}
@@ -26,7 +26,7 @@
                 
                 <div class="mb-4">
                     <label for="{{ form.nickname.id_for_label }}" class="form-label">닉네임</label>
-                    {{ form.nickname|add_class:"form-control form-control-lg bg-dark text-white border-secondary" }}
+                    {{ form.nickname|add_class:"form-control form-control-lg border" }}
                     {% if form.nickname.errors %}
                         <div class="text-danger mt-1 small">{{ form.nickname.errors }}</div>
                     {% endif %}
@@ -34,44 +34,44 @@
                 
                 <div class="mb-4">
                     <label for="{{ form.password1.id_for_label }}" class="form-label">비밀번호</label>
-                    {{ form.password1|add_class:"form-control form-control-lg bg-dark text-white border-secondary" }}
+                    {{ form.password1|add_class:"form-control form-control-lg border" }}
                     {% if form.password1.errors %}
                         <div class="text-danger mt-1 small">{{ form.password1.errors }}</div>
                     {% endif %}
-                    <div class="form-text text-muted small">{{ form.password1.help_text }}</div>
+                    <div class="form-text small" style="color: var(--text-secondary);">{{ form.password1.help_text }}</div>
                 </div>
                 
                 <div class="mb-5">
                     <label for="{{ form.password2.id_for_label }}" class="form-label">비밀번호 확인</label>
-                    {{ form.password2|add_class:"form-control form-control-lg bg-dark text-white border-secondary" }}
+                    {{ form.password2|add_class:"form-control form-control-lg border" }}
                     {% if form.password2.errors %}
                         <div class="text-danger mt-1 small">{{ form.password2.errors }}</div>
                     {% endif %}
                 </div>
                 
                 <div class="mb-4">
-                    <div class="card bg-dark border-secondary">
-                        <div class="card-body" style="height: 200px; overflow-y: auto;">
-                            <h5>InspirAItion 서비스 이용 약관</h5>
-                            <p><strong>1. 서비스 소개</strong><br>
+                    <div class="card" style="border-color: var(--border-color); background-color: var(--bg-secondary);">
+                        <div class="card-body terms-scroll" style="height: 200px; overflow-y: auto;">
+                            <h5 style="color: var(--text-primary);">InspirAItion 서비스 이용 약관</h5>
+                            <p style="color: var(--text-primary);"><strong>1. 서비스 소개</strong><br>
                                 InspirAItion 서비스는 사용자의 입력을 바탕으로 이미지를 생성합니다. 서비스를 이용함으로써 아래 가이드라인을 준수하는 것에 동의하게 됩니다.</p>
 
-                            <p><strong>2. 금지된 콘텐츠</strong><br>
+                            <p style="color: var(--text-primary);"><strong>2. 금지된 콘텐츠</strong><br>
                                 사용자는 다음과 같은 이미지를 요청할 수 없습니다:<br>
                                 🚫 저작권이 있는 캐릭터, 작품, 브랜드 등<br>
                                 🚫 실제 인물(연예인, 정치인 등)<br>
                                 🚫 유해하거나 폭력적이며 불법적인 콘텐츠</p>
 
-                            <p><strong>3. 저작권 및 사용 권한</strong><br>
+                            <p style="color: var(--text-primary);"><strong>3. 저작권 및 사용 권한</strong><br>
                                 ✅ 생성된 이미지는 비상업적 용도로 자유롭게 사용할 수 있습니다.<br>
                                 ✅ 기존 스타일과 유사할 수 있지만, 동일한 복제본은 아닙니다.<br>
                                 ⚠️ 생성된 콘텐츠의 저작권 문제는 사용자에게 책임이 있습니다.</p>
 
-                            <p><strong>4. 서비스 정책</strong><br>
+                            <p style="color: var(--text-primary);"><strong>4. 서비스 정책</strong><br>
                                 본 웹사이트는 서비스 변경 또는 중단할 권리를 가집니다.<br>
                                 약관 및 정책은 사전 공지 없이 변경될 수 있습니다.</p>
 
-                            <p><strong>5. 책임 한계</strong><br>
+                            <p style="color: var(--text-primary);"><strong>5. 책임 한계</strong><br>
                                 사용자는 생성된 이미지 사용에 대한 모든 책임을 집니다.<br>
                                 본 웹사이트는 사용자 생성 콘텐츠로 인한 법적 문제에 대한 책임을 지지 않습니다.</p>
                         </div>
@@ -89,29 +89,29 @@
                 </div>
 
                 <div class="d-grid gap-2 mb-4">
-                    <button type="submit" class="btn btn-success btn-lg" id="signupBtn" disabled>회원가입</button>
+                    <button type="submit" class="btn btn-primary btn-lg" id="signupBtn" disabled>회원가입</button>
                 </div>
             </form>
             
             <div class="text-center mb-3">또는</div>
             
             <div class="d-grid gap-2 mb-4">
-                <a href="#" class="btn btn-outline-light btn-lg">
+                <a href="#" class="btn btn-outline-secondary btn-lg">
                     <img src="{% static 'img/google-icon.svg' %}" alt="Google" height="20" class="me-2">
                     Google로 가입하기
                 </a>
-                <a href="#" class="btn btn-outline-light btn-lg">
+                <a href="#" class="btn btn-outline-secondary btn-lg">
                     <img src="{% static 'img/facebook-icon.svg' %}" alt="Facebook" height="20" class="me-2">
                     Facebook으로 가입하기
                 </a>
-                <a href="#" class="btn btn-outline-light btn-lg">
+                <a href="#" class="btn btn-outline-secondary btn-lg">
                     <img src="{% static 'img/apple-icon.svg' %}" alt="Apple" height="20" class="me-2">
-                    Apple로 가입하기
+                    Apple로 가입
                 </a>
             </div>
             
             <div class="text-center mt-4">
-                <p>이미 계정이 있으신가요? <a href="{% url 'login' %}" class="text-success">로그인</a></p>
+                <p>이미 계정이 있으신가요? <a href="{% url 'login' %}" class="link-primary">로그인</a></p>
             </div>
         </div>
     </div>

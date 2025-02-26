@@ -1,0 +1,177 @@
+{
+  "1": {
+    "inputs": {
+      "images": ["11", 0]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "2": {
+    "inputs": {
+      "fill": "navier-stokes",
+      "falloff": 0,
+      "image": ["11", 0],
+      "mask": ["11", 1]
+    },
+    "class_type": "INPAINT_MaskedFill",
+    "_meta": {
+      "title": "Fill Masked Area"
+    }
+  },
+  "3": {
+    "inputs": {
+      "images": ["2", 0]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "4": {
+    "inputs": {
+      "blur": 35,
+      "falloff": 0,
+      "image": ["2", 0],
+      "mask": ["11", 1]
+    },
+    "class_type": "INPAINT_MaskedBlur",
+    "_meta": {
+      "title": "Blur Masked Area"
+    }
+  },
+  "5": {
+    "inputs": {
+      "images": ["4", 0]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "6": {
+    "inputs": {
+      "samples": ["7", 0],
+      "vae": ["12", 2]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "7": {
+    "inputs": {
+      "seed": 552820889871956,
+      "steps": 30,
+      "cfg": 7,
+      "sampler_name": "dpmpp_sde",
+      "scheduler": "karras",
+      "denoise": 1,
+      "model": ["8", 0],
+      "positive": ["10", 0],
+      "negative": ["10", 1],
+      "latent_image": ["10", 2]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "8": {
+    "inputs": {
+      "model": ["12", 0]
+    },
+    "class_type": "DifferentialDiffusion",
+    "_meta": {
+      "title": "Differential Diffusion"
+    }
+  },
+  "9": {
+    "inputs": {
+      "kernel_size": 50,
+      "sigma": 50,
+      "mask": ["11", 1]
+    },
+    "class_type": "ImpactGaussianBlurMask",
+    "_meta": {
+      "title": "Gaussian Blur Mask"
+    }
+  },
+  "10": {
+    "inputs": {
+      "noise_mask": true,
+      "positive": ["15", 0],
+      "negative": ["13", 0],
+      "vae": ["12", 2],
+      "pixels": ["4", 0],
+      "mask": ["9", 0]
+    },
+    "class_type": "InpaintModelConditioning",
+    "_meta": {
+      "title": "InpaintModelConditioning"
+    }
+  },
+  "11": {
+    "inputs": {
+      "left": 256,
+      "top": 0,
+      "right": 256,
+      "bottom": 0,
+      "feathering": 40,
+      "image": ["17", 0]
+    },
+    "class_type": "ImagePadForOutpaint",
+    "_meta": {
+      "title": "Pad Image for Outpainting"
+    }
+  },
+  "12": {
+    "inputs": {
+      "ckpt_name": "majicmixRealistic_v7.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load Checkpoint"
+    }
+  },
+  "13": {
+    "inputs": {
+      "text": "text, watermark, embedding:BadDream, embedding: easynegative.",
+      "clip": ["12", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "14": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": ["6", 0]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "15": {
+    "inputs": {
+      "text": "A place reflected in the sunset",
+      "clip": ["12", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "17": {
+    "inputs": {
+      "url_or_path": "https://dalleproduse.blob.core.windows.net/private/images/e6014b26-8803-48bc-98bb-0f9858a462bb/generated_00.png?se=2025-02-24T22%3A43%3A09Z&sig=W4nztA4d7ObKwYQBOD58QqfdO%2BPYXo94gQpvgy6ycXE%3D&ske=2025-03-02T19%3A15%3A17Z&skoid=09ba021e-c417-441c-b203-c81e5dcd7b7f&sks=b&skt=2025-02-23T19%3A15%3A17Z&sktid=33e01921-4d64-4f8c-a055-5bdaffd5e33d&skv=2020-10-02&sp=r&spr=https&sr=b&sv=2020-10-02"
+    },
+    "class_type": "LoadImageFromUrlOrPath",
+    "_meta": {
+      "title": "LoadImageFromUrlOrPath"
+    }
+  }
+}

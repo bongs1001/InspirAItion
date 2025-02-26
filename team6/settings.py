@@ -65,7 +65,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "widget_tweaks",
     # third party apps
     "django_bootstrap5",
     "corsheaders",
@@ -79,6 +78,7 @@ INSTALLED_APPS = [
     "config",
     "email_app",
     "util",
+    "widget_tweaks",
 ]
 
 MIDDLEWARE = [
@@ -276,3 +276,40 @@ DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+# Azure 3oMINI RAG 적용
+AZURE_3OMINI_API_KEY = env("AZURE_3OMINI_API_KEY")
+AZURE_3OMINI_ENDPOINT = env("AZURE_3OMINI_ENDPOINT")
+AZURE_3OMINI_API_VERSION = env("AZURE_3OMINI_API_VERSION")
+# AZURE_3OMINI_ENGINE = env("AZURE_3OMINI_ENGINE")
+AZURE_3OMINI_LOCATION = env("AZURE_3OMINI_LOCATION")
+
+# AZURE OpenAI Service
+OPENAI_URI = env("OPENAI_URI")
+OPENAI_KEY = env("OPENAI_KEY")
+OPENAI_RESOURCE = env("OPENAI_RESOURCE")
+OPENAI_ENDPOINT = env("OPENAI_ENDPOINT")
+OPENAI_VERSION = env("OPENAI_VERSION")
+OPENAI_GPT_DEPLOYMENT = env("OPENAI_GPT_DEPLOYMENT")
+OPENAI_SERVICE_API_VERSION = env("OPENAI_SERVICE_API_VERSION")
+AGENT_ID = env("AGENT_ID")
+AGENT_NAME = env("AGENT_NAME")
+AZUREAIASSISTANT_ENDPOINT = env("AZUREAIASSISTANT_ENDPOINT")
+AZUREAIASSISTANT_API_KEY = env("AZUREAIASSISTANT_API_KEY")
+AZUREAIASSISTANT_API_VERSION = env("AZUREAIASSISTANT_API_VERSION")
+
+
+DALLE_CONTAINER_NAME = env("DALLE_CONTAINER_NAME")
+SD_OUTPAINT_CONTAINER_NAME = env("SD_OUTPAINT_CONTAINER_NAME")
+SD_UPSCALE_CONTAINER_NAME = env("SD_UPSCALE_CONTAINER_NAME")
+
+COMFYUI_API_URL = [
+    "http://comfyui.inspiraition.net:8188",
+    "http://comfyui.inspiraition.net:8189",
+    "http://comfyui.inspiraition.net:8190",
+    "http://comfyui.inspiraition.net:8181",
+]
+CMFYUI_TIMEOUT = 600
+
+# ComfiyUI API http 비보안 호출 위함
+SECURE_SSL_REDIRECT = False
