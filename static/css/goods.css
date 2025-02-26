@@ -1,4 +1,3 @@
-/* 기본 스타일링 */
 .product-display {
     background-color: var(--bg-primary);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -18,7 +17,6 @@
     transition: all 0.3s ease;
 }
 
-/* 프레임 스타일링 */
 .frame {
     position: relative;
     display: inline-block;
@@ -54,7 +52,6 @@
     background-color: white;
 }
 
-/* 프레임 옵션 그리드 */
 .frame-options {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -125,7 +122,6 @@ input[type="radio"]:checked + .frame-label {
     color: #6c757d;
 }
 
-/* 가격 정보 스타일링 */
 .price-info {
     background-color: #f8f9fa;
     padding: 15px;
@@ -133,7 +129,6 @@ input[type="radio"]:checked + .frame-label {
     border: 1px solid #dee2e6;
 }
 
-/* 굿즈 프리뷰 컨테이너 */
 .goods-preview-container {
     height: 200px;
     display: flex;
@@ -149,7 +144,6 @@ input[type="radio"]:checked + .frame-label {
     object-fit: contain;
 }
 
-/* 프레임 미리보기 컨테이너 */
 .frame-preview-container {
     display: inline-block;
 }
@@ -174,7 +168,6 @@ input[type="radio"]:checked + .frame-label {
     box-shadow: inset 0 0 0 1px #808080;
 }
 
-/* 스펙 정보 스타일링 */
 .specs {
     margin-top: 1rem;
 }
@@ -197,7 +190,6 @@ input[type="radio"]:checked + .frame-label {
     font-size: 1.1rem;
 }
 
-/* 다크 모드 스타일링 */
 [data-theme="dark"] .product-display {
     background-color: #2d2d2d;
 }
@@ -233,7 +225,6 @@ input[type="radio"]:checked + .frame-label {
     color: #6ea8fe;
 }
 
-/* 새로 추가된 스타일 - 상품 카드 */
 .goods-card {
     background-color: var(--card-bg);
     border-radius: 15px;
@@ -253,7 +244,7 @@ input[type="radio"]:checked + .frame-label {
 .goods-image-wrap {
     overflow: hidden;
     position: relative;
-    padding-top: 75%; /* 4:3 비율 */
+    padding-top: 75%; 
 }
 
 .goods-image {
@@ -303,7 +294,6 @@ input[type="radio"]:checked + .frame-label {
     margin-top: 1rem;
 }
 
-/* 개선된 옵션 버튼 스타일 */
 .option-button {
     display: block;
     border: 2px solid var(--border-color);
@@ -350,7 +340,6 @@ input[type="radio"]:checked + .frame-label {
     margin-top: 0.5rem;
 }
 
-/* 다크 모드 옵션 버튼 */
 [data-theme="dark"] .option-button {
     background-color: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 255, 255, 0.1);
@@ -366,7 +355,6 @@ input[type="radio"]:checked + .frame-label {
     background-color: rgba(108, 92, 231, 0.2);
 }
 
-/* 사이즈 비교 표시 */
 .size-comparison {
     display: flex;
     justify-content: space-between;
