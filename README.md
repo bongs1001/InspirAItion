@@ -83,6 +83,7 @@ Please read [cooldevsmart's readme.md](https://github.com/cooldevsmart) for deta
 * **cooldevsmart** - Initial work
 * **FaithCoderLab** - Back-End, Database
 * **jjaayy2222** - Front-End
+* **bongs1001** - AI Service
 
 ## License
 
