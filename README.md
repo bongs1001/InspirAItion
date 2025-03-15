@@ -1,3 +1,24 @@
+# Project Overview:
+
+InspirAItion is an innovative AI project that utilizes cutting-edge machine learning technologies to generate and explore artistic images. Users can experience various artistic styles and create unique works. This project was developed by the 6th team of the 3rd team project of MS AI School 5th.
+
+## Key Features:
+
+### AI-Based Image Generation:
+Generates images in various artistic styles using advanced AI models.
+Allows users to fine-tune prompts, models, and parameters to achieve desired effects.
+### Artistic Style Application:
+Enables users to experience diverse artistic styles.
+Allows users to apply specific artistic styles to their images or create new styles.
+### Art Community and Artwork Sharing:
+Allows users to share and communicate with others about generated artwork.
+Provides a gallery for users to view and be inspired by various artworks.
+### Additional Features:
+Leverages ComfyUI workflows for upscaling and outpainting.
+Upscaling is a technique that enlarges low-resolution images to high-resolution, and outpainting extends image boundaries to create new areas.
+### AI Curation:
+Provides Curation about generated images by selected style.
+
 
 # inspirAItion Project
 
